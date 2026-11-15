@@ -1,0 +1,282 @@
+// ============================================================
+// RecurringPage - Subscriptions & Recurring Transactions
+// ============================================================
+import React, { useState } from 'react';
+import { useLiveQuery } from 'dexie-react-hooks';
+import { db } from '@/db/database';
+import { recurringRepo } from '@/db/repositories';
+import { formatCurrency, toMinorUnits, DEFAULT_CURRENCY } from '@/utils/currency';
+import { formatDate, getCurrentDate } from '@/utils/date';
+import { Card, CardHeader, CardTitle, CardDescription, CardContent } from '@/components/ui/card';
+import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
+import { Badge } from '@/components/ui/badge';
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from '@/components/ui/dialog';
+import { ConfirmDialog } from '@/components/ui/confirm-dialog';
+import { useToast } from '@/components/ui/use-toast';
+import {
+  Repeat, Plus, Calendar, Clock, Trash2, Pause, Play,
+  CreditCard, CheckCircle2, AlertCircle
+} from 'lucide-react';
+import type { RecurringTransaction, RecurrenceFrequency, TransactionType } from '@/types';
+
+export default function RecurringPage() {
+  const { toast } = useToast();
+  const [isDialogOpen, setIsDialogOpen] = useState(false);
+  const [deleteId, setDeleteId] = useState<string | null>(null);
+
+  // Form states
+  const [description, setDescription] = useState('');
+  const [amount, setAmount] = useState('');
+  const [type, setType] = useState<TransactionType>('expense');
+  const [frequency, setFrequency] = useState<RecurrenceFrequency>('monthly');
+  const [startDate, setStartDate] = useState(getCurrentDate());
+  const [categoryId, setCategoryId] = useState('');
+  const [notes, setNotes] = useState('');
+
+  const recurringList = useLiveQuery(() => db.recurringTransactions.toArray()) ?? [];
+  const categories = useLiveQuery(() => db.expenseCategories.toArray()) ?? [];
+  const catMap = new Map(categories.map(c => [c.id, c]));
+
+  const handleOpenAdd = () => {
+    setDescription('');
+    setAmount('');
+    setType('expense');
+    setFrequency('monthly');
+    setStartDate(getCurrentDate());
+    setCategoryId(categories[0]?.id || '');
+    setNotes('');
+    setIsDialogOpen(true);
+  };
+
+  const handleSave = async () => {
+    const amtNum = parseFloat(amount);
+    if (!description.trim() || isNaN(amtNum) || amtNum <= 0) {
+      toast({ title: 'Validation Error', description: 'Enter description and valid amount.', variant: 'destructive' });
+      return;
+    }
+
+    try {
+      await recurringRepo.create({
+        type,
+        amount: toMinorUnits(amtNum),
+        currency: DEFAULT_CURRENCY.code,
+        categoryId: categoryId || categories[0]?.id || 'cat-exp-0',
+        description: description.trim(),
+        frequency,
+        interval: 1,
+        startDate,
+        nextDueDate: startDate,
+        isActive: true,
+        notes: notes.trim(),
+        tags: ['recurring'],
+      });
+      toast({ title: 'Recurring Schedule Created!' });
+      setIsDialogOpen(false);
+    } catch (err) {
+      toast({ title: 'Error creating recurring transaction', variant: 'destructive' });
+    }
+  };
+
+  const handleToggleStatus = async (item: RecurringTransaction) => {
+    try {
+      await recurringRepo.update(item.id, { isActive: !item.isActive });
+      toast({
+        title: item.isActive ? 'Subscription Paused' : 'Subscription Resumed',
+      });
+    } catch (err) {
+      toast({ title: 'Failed to update status', variant: 'destructive' });
+    }
+  };
+
+  const handleDelete = async () => {
+    if (!deleteId) return;
+    try {
+      await recurringRepo.delete(deleteId);
+      toast({ title: 'Recurring item removed' });
+    } finally {
+      setDeleteId(null);
+    }
+  };
+
+  return (
+    <div className="space-y-6 max-w-5xl mx-auto">
+      {/* Header */}
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+        <div>
+          <h1 className="text-2xl font-bold tracking-tight">Recurring Bills & Subscriptions</h1>
+          <p className="text-muted-foreground text-sm">
+            Monitor repeating commitments like Netflix, Rent, Broadband, and recurring income.
+          </p>
+        </div>
+        <Button onClick={handleOpenAdd} className="gap-2 shadow-sm">
+          <Plus className="w-4 h-4" /> Add Recurring
+        </Button>
+      </div>
+
+      {recurringList.length === 0 ? (
+        <Card className="py-16 text-center">
+          <CardContent className="space-y-3">
+            <Repeat className="w-12 h-12 mx-auto text-muted-foreground opacity-30" />
+            <h3 className="text-base font-semibold">No Recurring Transactions Set</h3>
+            <p className="text-xs text-muted-foreground max-w-md mx-auto">
+              Never miss a renewal. Add your monthly rent, gym membership, or streaming subscriptions.
+            </p>
+            <Button onClick={handleOpenAdd} className="mt-2">
+              Add Recurring Bill
+            </Button>
+          </CardContent>
+        </Card>
+      ) : (
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          {recurringList.map(item => {
+            const cat = catMap.get(item.categoryId);
+            return (
+              <Card key={item.id} className="hover:shadow-md transition-shadow">
+                <CardHeader className="pb-3 flex flex-row items-start justify-between">
+                  <div className="space-y-1">
+                    <div className="flex items-center gap-2">
+                      <CardTitle className="text-base font-semibold">{item.description}</CardTitle>
+                      <Badge variant={item.isActive ? 'default' : 'secondary'} className="text-[10px] capitalize">
+                        {item.isActive ? item.frequency : 'Paused'}
+                      </Badge>
+                    </div>
+                    {cat && (
+                      <p className="text-xs text-muted-foreground flex items-center gap-1.5">
+                        <span className="w-2 h-2 rounded-full inline-block" style={{ backgroundColor: cat.color }} />
+                        {cat.name}
+                      </p>
+                    )}
+                  </div>
+
+                  <div className="flex items-center gap-1">
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      className="h-8 w-8 p-0 text-muted-foreground hover:text-foreground"
+                      onClick={() => handleToggleStatus(item)}
+                    >
+                      {item.isActive ? <Pause className="w-3.5 h-3.5" /> : <Play className="w-3.5 h-3.5 text-emerald-500" />}
+                    </Button>
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      className="h-8 w-8 p-0 text-muted-foreground hover:text-rose-600"
+                      onClick={() => setDeleteId(item.id)}
+                    >
+                      <Trash2 className="w-3.5 h-3.5" />
+                    </Button>
+                  </div>
+                </CardHeader>
+
+                <CardContent className="space-y-2">
+                  <div className="flex justify-between items-baseline">
+                    <span className="text-xs text-muted-foreground">Amount:</span>
+                    <span className="text-lg font-bold text-foreground">
+                      {formatCurrency(item.amount)} <span className="text-xs font-normal text-muted-foreground">/{item.frequency}</span>
+                    </span>
+                  </div>
+
+                  <div className="flex justify-between items-center text-xs text-muted-foreground pt-2 border-t">
+                    <span className="flex items-center gap-1">
+                      <Calendar className="w-3.5 h-3.5" /> Next Due:
+                    </span>
+                    <strong className="text-foreground">{formatDate(item.nextDueDate)}</strong>
+                  </div>
+                </CardContent>
+              </Card>
+            );
+          })}
+        </div>
+      )}
+
+      {/* Add Dialog */}
+      <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Add Recurring Schedule</DialogTitle>
+          </DialogHeader>
+          <div className="space-y-4 py-2">
+            <div className="space-y-1.5">
+              <Label htmlFor="recDesc">Description *</Label>
+              <Input
+                id="recDesc"
+                placeholder="e.g. Netflix, Gym, Apartment Rent, Salary"
+                value={description}
+                onChange={e => setDescription(e.target.value)}
+                autoFocus
+              />
+            </div>
+
+            <div className="space-y-1.5">
+              <Label htmlFor="recAmount">Amount ({DEFAULT_CURRENCY.symbol}) *</Label>
+              <Input
+                id="recAmount"
+                type="number"
+                step="0.01"
+                placeholder="0.00"
+                value={amount}
+                onChange={e => setAmount(e.target.value)}
+              />
+            </div>
+
+            <div className="grid grid-cols-2 gap-3">
+              <div className="space-y-1.5">
+                <Label htmlFor="recType">Type</Label>
+                <select
+                  id="recType"
+                  value={type}
+                  onChange={e => setType(e.target.value as TransactionType)}
+                  className="w-full px-3 py-2 text-sm bg-background rounded-md border border-input focus:outline-none focus:ring-1 focus:ring-primary"
+                >
+                  <option value="expense">Expense</option>
+                  <option value="income">Income</option>
+                </select>
+              </div>
+
+              <div className="space-y-1.5">
+                <Label htmlFor="recFreq">Frequency</Label>
+                <select
+                  id="recFreq"
+                  value={frequency}
+                  onChange={e => setFrequency(e.target.value as RecurrenceFrequency)}
+                  className="w-full px-3 py-2 text-sm bg-background rounded-md border border-input focus:outline-none focus:ring-1 focus:ring-primary"
+                >
+                  <option value="monthly">Monthly</option>
+                  <option value="weekly">Weekly</option>
+                  <option value="yearly">Yearly</option>
+                  <option value="daily">Daily</option>
+                </select>
+              </div>
+            </div>
+
+            <div className="space-y-1.5">
+              <Label htmlFor="recDate">Next Due Date</Label>
+              <Input id="recDate" type="date" value={startDate} onChange={e => setStartDate(e.target.value)} />
+            </div>
+
+            <div className="space-y-1.5">
+              <Label htmlFor="recNotes">Notes</Label>
+              <Input id="recNotes" placeholder="Optional notes" value={notes} onChange={e => setNotes(e.target.value)} />
+            </div>
+          </div>
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setIsDialogOpen(false)}>Cancel</Button>
+            <Button onClick={handleSave} disabled={!description.trim() || !amount.trim()}>Create</Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      <ConfirmDialog
+        open={!!deleteId}
+        onOpenChange={(open: boolean) => !open && setDeleteId(null)}
+        title="Delete Recurring Schedule"
+        description="Are you sure you want to remove this recurring schedule?"
+        onConfirm={handleDelete}
+        confirmText="Delete"
+        variant="destructive"
+      />
+    </div>
+  );
+}
