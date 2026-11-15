@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
+import { HashRouter, Routes, Route, Navigate } from 'react-router-dom';
 import { ThemeProvider } from '@/contexts/ThemeContext';
 import { SettingsProvider } from '@/contexts/SettingsContext';
 import { AppLayout } from '@/components/layout/AppLayout';
@@ -72,12 +72,12 @@ function AppRoutes() {
 
 export default function App() {
   return (
-    <BrowserRouter>
+    <HashRouter>
       <ThemeProvider>
         <SettingsProvider>
           <AppRoutes />
         </SettingsProvider>
       </ThemeProvider>
-    </BrowserRouter>
+    </HashRouter>
   );
 }
