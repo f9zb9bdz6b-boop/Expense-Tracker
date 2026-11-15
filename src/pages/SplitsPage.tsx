@@ -4,7 +4,7 @@
 import React, { useState } from 'react';
 import { useLiveQuery } from 'dexie-react-hooks';
 import { db } from '@/db/database';
-import { splitRepo } from '@/db/repositories';
+import { splitRepo, expenseRepo } from '@/db/repositories';
 import { formatCurrency, toMinorUnits, DEFAULT_CURRENCY } from '@/utils/currency';
 import { Card, CardHeader, CardTitle, CardDescription, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -77,8 +77,25 @@ export default function SplitsPage() {
     }
 
     try {
+      const categories = await db.expenseCategories.toArray();
+      const pms = await db.paymentMethods.toArray();
+      const expense = await expenseRepo.create({
+        amount: toMinorUnits(totalNum),
+        currency: DEFAULT_CURRENCY.code,
+        categoryId: categories[0]?.id || 'cat-exp-0',
+        paymentMethodId: pms[0]?.id || 'pm-0',
+        date: new Date().toISOString().split('T')[0],
+        time: '12:00',
+        description: `[Split] ${description.trim()}`,
+        merchant: 'Split Bill',
+        classification: 'discretionary',
+        notes: `Split among: ${validParticipants.map(p => `${p.name} (${DEFAULT_CURRENCY.symbol}${p.share})`).join(', ')}`,
+        tags: ['split-bill'],
+        isRecurring: false,
+      });
+
       const split = await splitRepo.create({
-        expenseId: '',
+        expenseId: expense.id,
         totalAmount: toMinorUnits(totalNum),
         currency: DEFAULT_CURRENCY.code,
         description: description.trim(),

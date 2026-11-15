@@ -1,8 +1,8 @@
 // ============================================================
 // AddExpensePage - Record and Manage Every Expense
 // ============================================================
-import React, { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+import React, { useState, useEffect } from 'react';
+import { useNavigate, useSearchParams } from 'react-router-dom';
 import { useForm, Controller } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
@@ -43,6 +43,8 @@ type ExpenseFormValues = z.infer<typeof expenseSchema>;
 
 export default function AddExpensePage() {
   const navigate = useNavigate();
+  const [searchParams] = useSearchParams();
+  const urlEventId = searchParams.get('eventId') || '';
   const { toast } = useToast();
   const [tags, setTags] = useState<string[]>([]);
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -74,11 +76,17 @@ export default function AddExpensePage() {
       description: '',
       merchant: '',
       classification: 'necessary',
-      eventId: '',
+      eventId: urlEventId,
       notes: '',
       tagInput: '',
     }
   });
+
+  useEffect(() => {
+    if (urlEventId) {
+      setValue('eventId', urlEventId);
+    }
+  }, [urlEventId, setValue]);
 
   const selectedCategoryId = watch('categoryId') || (categories[0]?.id ?? '');
   const selectedPaymentMethodId = watch('paymentMethodId') || (paymentMethods[0]?.id ?? '');

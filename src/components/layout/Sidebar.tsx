@@ -24,7 +24,6 @@ const navItems: NavItem[] = [
   { to: '/analytics', icon: <BarChart3 className="h-5 w-5" />, label: 'Analytics' },
   { to: '/goals', icon: <Target className="h-5 w-5" />, label: 'Goals' },
   { to: '/ai-assistant', icon: <Bot className="h-5 w-5" />, label: 'AI Assistant' },
-  { to: '/receipts', icon: <Receipt className="h-5 w-5" />, label: 'Receipts' },
   { to: '/recurring', icon: <RefreshCw className="h-5 w-5" />, label: 'Recurring' },
   { to: '/splits', icon: <Users2 className="h-5 w-5" />, label: 'Splits' },
   { to: '/settings', icon: <Settings className="h-5 w-5" />, label: 'Settings' },

@@ -17,15 +17,17 @@ import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { useToast } from '@/components/ui/use-toast';
 import { ConfirmDialog } from '@/components/ui/confirm-dialog';
+import { Badge } from '@/components/ui/badge';
 import {
   TrendingUp, Plus, ArrowDownLeft, Trash2, Calendar,
-  Briefcase, DollarSign, Wallet
+  Briefcase, DollarSign, Wallet, CreditCard
 } from 'lucide-react';
 import { ResponsiveContainer, PieChart, Pie, Cell, Tooltip } from 'recharts';
 
 const incomeSchema = z.object({
   amount: z.string().min(1, 'Amount is required').refine(val => !isNaN(parseFloat(val)) && parseFloat(val) > 0, 'Enter a valid amount'),
   categoryId: z.string().min(1, 'Select a category'),
+  paymentMethod: z.string().optional(),
   date: z.string().min(1, 'Date is required'),
   time: z.string().min(1, 'Time is required'),
   source: z.string().min(1, 'Source is required'),
@@ -72,6 +74,7 @@ export default function IncomePage() {
     defaultValues: {
       amount: '',
       categoryId: categories[0]?.id || '',
+      paymentMethod: 'Bank Transfer',
       date: getCurrentDate(),
       time: getCurrentTime(),
       source: '',
@@ -89,6 +92,7 @@ export default function IncomePage() {
         amount: toMinorUnits(data.amount),
         currency: DEFAULT_CURRENCY.code,
         categoryId: data.categoryId || categories[0]?.id,
+        paymentMethod: data.paymentMethod || 'Bank Transfer',
         date: data.date,
         time: data.time,
         source: data.source.trim(),
@@ -106,6 +110,7 @@ export default function IncomePage() {
       reset({
         amount: '',
         categoryId: categories[0]?.id || '',
+        paymentMethod: 'Bank Transfer',
         date: getCurrentDate(),
         time: getCurrentTime(),
         source: '',
@@ -201,18 +206,38 @@ export default function IncomePage() {
                 {errors.description && <p className="text-xs text-rose-500">{errors.description.message}</p>}
               </div>
 
-              {/* Category */}
-              <div className="space-y-1.5">
-                <Label htmlFor="categoryId">Income Category *</Label>
-                <select
-                  id="categoryId"
-                  {...register('categoryId')}
-                  className="w-full px-3 py-2 text-sm bg-background rounded-md border border-input focus:outline-none focus:ring-1 focus:ring-primary"
-                >
-                  {categories.map(c => (
-                    <option key={c.id} value={c.id}>{c.name}</option>
-                  ))}
-                </select>
+              {/* Category & Payment Mode */}
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                <div className="space-y-1.5">
+                  <Label htmlFor="categoryId">Income Category *</Label>
+                  <select
+                    id="categoryId"
+                    {...register('categoryId')}
+                    className="w-full px-3 py-2 text-sm bg-background rounded-md border border-input focus:outline-none focus:ring-1 focus:ring-primary"
+                  >
+                    {categories.map(c => (
+                      <option key={c.id} value={c.id}>{c.name}</option>
+                    ))}
+                  </select>
+                </div>
+
+                <div className="space-y-1.5">
+                  <Label htmlFor="paymentMethod">Mode of Transaction</Label>
+                  <select
+                    id="paymentMethod"
+                    {...register('paymentMethod')}
+                    className="w-full px-3 py-2 text-sm bg-background rounded-md border border-input focus:outline-none focus:ring-1 focus:ring-primary"
+                  >
+                    <option value="Bank Transfer">Bank Transfer (NEFT/IMPS)</option>
+                    <option value="UPI">UPI</option>
+                    <option value="GPay">GPay</option>
+                    <option value="Cash">Cash</option>
+                    <option value="Cheque">Cheque</option>
+                    <option value="Credit Card">Credit Card</option>
+                    <option value="Direct Deposit">Direct Deposit</option>
+                    <option value="Other">Other</option>
+                  </select>
+                </div>
               </div>
 
               {/* Date and Time */}
@@ -294,8 +319,13 @@ export default function IncomePage() {
                             <ArrowDownLeft className="w-5 h-5" />
                           </div>
                           <div>
-                            <p className="text-sm font-semibold text-foreground">{item.description}</p>
-                            <p className="text-xs text-muted-foreground">
+                            <div className="flex items-center gap-2">
+                              <p className="text-sm font-semibold text-foreground">{item.description}</p>
+                              <Badge variant="outline" className="text-[10px] py-0 font-normal">
+                                {item.paymentMethod || 'Bank Transfer'}
+                              </Badge>
+                            </div>
+                            <p className="text-xs text-muted-foreground mt-0.5">
                               {formatDate(item.date)} • <span className="font-medium text-foreground">{item.source}</span>
                               {cat && <span> • {cat.name}</span>}
                             </p>

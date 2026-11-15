@@ -402,23 +402,120 @@ export const goalRepo = {
     await db.financialGoals.delete(id);
   },
 
-  async addContribution(goalId: string, amount: number, notes: string = ''): Promise<void> {
+  async addContribution(
+    goalId: string,
+    amount: number,
+    options?: {
+      source?: string;
+      notes?: string;
+      deductFromSavings?: boolean;
+      date?: string;
+    }
+  ): Promise<void> {
     const goal = await this.getById(goalId);
     if (!goal) throw new Error('Goal not found');
 
     const now = Date.now();
+    const date = options?.date || new Date().toISOString().split('T')[0];
+    const source = options?.source || 'Current Savings';
+    const notes = options?.notes || '';
+    const deductFromSavings = options?.deductFromSavings !== false;
+
     await db.savingsContributions.put({
       id: generateId(),
       goalId,
       amount,
-      date: new Date().toISOString().split('T')[0],
+      date,
+      source,
+      type: 'contribution',
+      deductFromSavings,
       notes,
       createdAt: now,
       updatedAt: now,
     });
 
+    // If deducted from normal savings/balance, record as an expense in transactions
+    if (deductFromSavings) {
+      const categories = await db.expenseCategories.toArray();
+      const defaultCat = categories.find(c => c.name.toLowerCase().includes('savings') || c.name.toLowerCase().includes('other')) || categories[0];
+      const pms = await db.paymentMethods.toArray();
+      await db.expenses.put({
+        id: generateId(),
+        amount,
+        currency: goal.currency || 'INR',
+        categoryId: defaultCat?.id || 'cat-exp-0',
+        paymentMethodId: pms[0]?.id || 'pm-0',
+        date,
+        time: '12:00',
+        description: `[Goal Contribution] ${goal.name}`,
+        merchant: `Savings: ${goal.name}`,
+        classification: 'necessary',
+        tags: ['goal-savings', goalId],
+        notes: `Allocated to goal "${goal.name}". Source: ${source}${notes ? ` • ${notes}` : ''}`,
+        isRecurring: false,
+        createdAt: now,
+        updatedAt: now,
+      });
+    }
+
     const newAmount = goal.currentAmount + amount;
     const status = newAmount >= goal.targetAmount ? 'completed' : goal.status;
+    await this.update(goalId, { currentAmount: newAmount, status });
+  },
+
+  async withdrawContribution(
+    goalId: string,
+    amount: number,
+    options?: {
+      reason?: string;
+      returnToSavings?: boolean;
+      date?: string;
+    }
+  ): Promise<void> {
+    const goal = await this.getById(goalId);
+    if (!goal) throw new Error('Goal not found');
+    if (amount > goal.currentAmount) throw new Error('Withdrawal amount exceeds current goal savings');
+
+    const now = Date.now();
+    const date = options?.date || new Date().toISOString().split('T')[0];
+    const reason = options?.reason || 'Reclaimed from Goal';
+    const returnToSavings = options?.returnToSavings !== false;
+
+    await db.savingsContributions.put({
+      id: generateId(),
+      goalId,
+      amount: -amount,
+      date,
+      source: reason,
+      type: 'withdrawal',
+      deductFromSavings: false,
+      notes: reason,
+      createdAt: now,
+      updatedAt: now,
+    });
+
+    // If returning funds to normal savings/balance, record as income in transactions
+    if (returnToSavings) {
+      const incCats = await db.incomeCategories.toArray();
+      await db.income.put({
+        id: generateId(),
+        amount,
+        currency: goal.currency || 'INR',
+        categoryId: incCats[0]?.id || 'cat-inc-0',
+        date,
+        time: '12:00',
+        description: `[Goal Withdrawal] Reclaimed from ${goal.name}`,
+        source: `Goal: ${goal.name}`,
+        notes: `Funds released from "${goal.name}". Reason: ${reason}`,
+        isRecurring: false,
+        tags: ['goal-withdrawal', goalId],
+        createdAt: now,
+        updatedAt: now,
+      });
+    }
+
+    const newAmount = Math.max(0, goal.currentAmount - amount);
+    const status = (goal.status === 'completed' && newAmount < goal.targetAmount) ? 'active' : goal.status;
     await this.update(goalId, { currentAmount: newAmount, status });
   },
 

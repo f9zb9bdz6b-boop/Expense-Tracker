@@ -56,6 +56,8 @@ export interface Income extends BaseEntity {
   amount: number;          // Minor units
   currency: string;
   categoryId: ID;
+  paymentMethodId?: ID;
+  paymentMethod?: string;
   date: string;
   time: string;
   description: string;
@@ -174,6 +176,9 @@ export interface SavingsContribution extends BaseEntity {
   goalId: ID;
   amount: number;
   date: string;
+  source?: string;
+  type?: 'contribution' | 'withdrawal';
+  deductFromSavings?: boolean;
   notes: string;
 }
 
