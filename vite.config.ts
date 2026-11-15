@@ -70,6 +70,11 @@ export default defineConfig({
   server: {
     host: '0.0.0.0',
     port: 5173,
+    strictPort: true,
+    allowedHosts: true,
+    hmr: {
+      clientPort: process.env.CODESPACES ? 443 : undefined,
+    },
   },
   build: {
     target: 'es2020',
