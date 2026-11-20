@@ -141,38 +141,38 @@ export default function DashboardPage() {
 
       // 2. Hero Card Entrance (Smooth cinematic rise)
       gsap.fromTo('.hero-mesh-card',
-        { y: 14, opacity: 0 },
-        { y: 0, opacity: 1, duration: 0.52, ease: 'power3.out', clearProps: 'all' }
+        { y: 28, opacity: 0 },
+        { y: 0, opacity: 1, duration: 0.85, ease: 'power3.out', clearProps: 'all' }
       );
 
       // 3. Staggered Entrance of 4 KPI Metric Cards
       gsap.fromTo('.kpi-stat-card',
-        { y: 14, opacity: 0 },
-        { y: 0, opacity: 1, duration: 0.5, stagger: 0.05, ease: 'power3.out', delay: 0.06, clearProps: 'all' }
+        { y: 26, opacity: 0 },
+        { y: 0, opacity: 1, duration: 0.82, stagger: 0.08, ease: 'power3.out', delay: 0.08, clearProps: 'all' }
       );
 
       // 4. Category Spending Staggered Rows Entrance
       gsap.fromTo('.category-row-item',
-        { y: 10, opacity: 0 },
-        { y: 0, opacity: 1, duration: 0.42, stagger: 0.03, ease: 'power2.out', delay: 0.1, clearProps: 'all' }
+        { y: 18, opacity: 0 },
+        { y: 0, opacity: 1, duration: 0.72, stagger: 0.04, ease: 'power2.out', delay: 0.16, clearProps: 'all' }
       );
 
       // 5. Dynamic Progress Bars Fill Expansion
       gsap.fromTo('.animated-meter-bar',
         { scaleX: 0, transformOrigin: 'left' },
-        { scaleX: 1, duration: 0.65, stagger: 0.05, ease: 'power2.out', delay: 0.15, clearProps: 'transformOrigin' }
+        { scaleX: 1, duration: 0.95, stagger: 0.06, ease: 'power2.out', delay: 0.22, clearProps: 'transformOrigin' }
       );
 
       // 6. Recent Activity Transaction Ledger Cascade
       gsap.fromTo('.recent-tx-row',
-        { y: 10, opacity: 0 },
-        { y: 0, opacity: 1, duration: 0.42, stagger: 0.03, ease: 'power2.out', delay: 0.1, clearProps: 'all' }
+        { y: 18, opacity: 0 },
+        { y: 0, opacity: 1, duration: 0.72, stagger: 0.04, ease: 'power2.out', delay: 0.16, clearProps: 'all' }
       );
 
       // 7. Budget & Goals Card Slide-In
       gsap.fromTo('.widget-card',
-        { y: 14, opacity: 0 },
-        { y: 0, opacity: 1, duration: 0.5, stagger: 0.06, ease: 'power3.out', delay: 0.12, clearProps: 'all' }
+        { y: 26, opacity: 0 },
+        { y: 0, opacity: 1, duration: 0.82, stagger: 0.08, ease: 'power3.out', delay: 0.18, clearProps: 'all' }
       );
     }, dashboardRef);
 

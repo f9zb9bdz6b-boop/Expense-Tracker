@@ -62,18 +62,18 @@ export function animateAvatarBounce(avatarElement: HTMLElement) {
 }
 
 /**
- * Page & Container Entrance Motion (Staggered orchestration, hardware accelerated)
+ * Page & Container Entrance Motion (Smooth, elongated glide with power3 deceleration)
  */
 export function animatePageEntrance(container: HTMLElement) {
-  const tl = gsap.timeline({ defaults: { ease: 'power2.out', force3D: true } });
+  const tl = gsap.timeline({ defaults: { ease: 'power3.out', force3D: true } });
 
-  // 1. Page Header Fade & Slide Down
+  // 1. Page Header Fade & Long Glide Up
   const header = container.querySelectorAll('.motion-header');
   if (header.length > 0) {
     tl.fromTo(
       header,
-      { y: -8, opacity: 0 },
-      { y: 0, opacity: 1, duration: 0.3, clearProps: 'all' },
+      { y: 28, opacity: 0 },
+      { y: 0, opacity: 1, duration: 0.85, clearProps: 'all' },
       0
     );
   }
@@ -83,9 +83,9 @@ export function animatePageEntrance(container: HTMLElement) {
   if (heroCards.length > 0) {
     tl.fromTo(
       heroCards,
-      { y: 12, opacity: 0, scale: 0.99 },
-      { y: 0, opacity: 1, scale: 1, duration: 0.35, stagger: 0.04, clearProps: 'all' },
-      0.05
+      { y: 28, opacity: 0, scale: 0.99 },
+      { y: 0, opacity: 1, scale: 1, duration: 0.85, stagger: 0.08, clearProps: 'all' },
+      0.08
     );
   }
 
@@ -94,9 +94,9 @@ export function animatePageEntrance(container: HTMLElement) {
   if (controls.length > 0) {
     tl.fromTo(
       controls,
-      { y: 8, opacity: 0 },
-      { y: 0, opacity: 1, duration: 0.3, stagger: 0.03, clearProps: 'all' },
-      0.1
+      { y: 20, opacity: 0 },
+      { y: 0, opacity: 1, duration: 0.75, stagger: 0.05, clearProps: 'all' },
+      0.12
     );
   }
 
@@ -105,8 +105,8 @@ export function animatePageEntrance(container: HTMLElement) {
   if (cards.length > 0) {
     tl.fromTo(
       cards,
-      { y: 12, opacity: 0 },
-      { y: 0, opacity: 1, duration: 0.3, stagger: 0.03, clearProps: 'all' },
+      { y: 26, opacity: 0 },
+      { y: 0, opacity: 1, duration: 0.82, stagger: 0.06, clearProps: 'all' },
       0.12
     );
   }
@@ -116,9 +116,9 @@ export function animatePageEntrance(container: HTMLElement) {
   if (listItems.length > 0) {
     tl.fromTo(
       listItems,
-      { x: -6, opacity: 0 },
-      { x: 0, opacity: 1, duration: 0.25, stagger: 0.02, clearProps: 'all' },
-      0.15
+      { y: 16, opacity: 0 },
+      { y: 0, opacity: 1, duration: 0.7, stagger: 0.03, ease: 'power2.out', clearProps: 'all' },
+      0.18
     );
   }
 
@@ -128,8 +128,8 @@ export function animatePageEntrance(container: HTMLElement) {
     tl.fromTo(
       meters,
       { scaleX: 0, transformOrigin: 'left' },
-      { scaleX: 1, duration: 0.5, stagger: 0.04, ease: 'power2.out', clearProps: 'transformOrigin' },
-      0.2
+      { scaleX: 1, duration: 0.95, stagger: 0.06, ease: 'power2.out', clearProps: 'transformOrigin' },
+      0.22
     );
   }
 

@@ -95,16 +95,16 @@ export default function AIAssistantPage() {
 
   useGSAP(() => {
     const ctx = gsap.context(() => {
-      gsap.fromTo('.motion-header', { y: 14, opacity: 0 }, { y: 0, opacity: 1, duration: 0.52, ease: 'power3.out', clearProps: 'all' });
+      gsap.fromTo('.motion-header', { y: 28, opacity: 0 }, { y: 0, opacity: 1, duration: 0.85, ease: 'power3.out', clearProps: 'all' });
       gsap.fromTo(
         '.motion-card',
-        { y: 14, opacity: 0 },
-        { y: 0, opacity: 1, duration: 0.45, stagger: 0.05, ease: 'power3.out', delay: 0.08, clearProps: 'all' }
+        { y: 26, opacity: 0 },
+        { y: 0, opacity: 1, duration: 0.82, stagger: 0.08, ease: 'power3.out', delay: 0.08, clearProps: 'all' }
       );
       gsap.fromTo(
         '.motion-chip',
-        { scale: 0.96, opacity: 0 },
-        { scale: 1, opacity: 1, duration: 0.35, stagger: 0.02, ease: 'power2.out', delay: 0.1, clearProps: 'all' }
+        { scale: 0.94, opacity: 0 },
+        { scale: 1, opacity: 1, duration: 0.5, stagger: 0.03, ease: 'back.out(1.2)', delay: 0.16, clearProps: 'all' }
       );
     }, pageRef);
     return () => ctx.revert();

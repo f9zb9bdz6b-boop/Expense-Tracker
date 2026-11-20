@@ -76,10 +76,10 @@ export default function IncomePage() {
 
   useGSAP(() => {
     const ctx = gsap.context(() => {
-      gsap.fromTo('.motion-header', { y: 14, opacity: 0 }, { y: 0, opacity: 1, duration: 0.52, ease: 'power3.out', clearProps: 'all' });
-      gsap.fromTo('.motion-hero-card', { y: 14, opacity: 0, scale: 0.98 }, { y: 0, opacity: 1, scale: 1, duration: 0.5, ease: 'power3.out', clearProps: 'all' });
-      gsap.fromTo('.motion-card', { y: 14, opacity: 0 }, { y: 0, opacity: 1, duration: 0.45, stagger: 0.05, ease: 'power3.out', delay: 0.08, clearProps: 'all' });
-      gsap.fromTo('.motion-row', { x: -8, opacity: 0 }, { x: 0, opacity: 1, duration: 0.35, stagger: 0.03, ease: 'power2.out', delay: 0.12, clearProps: 'all' });
+      gsap.fromTo('.motion-header', { y: 28, opacity: 0 }, { y: 0, opacity: 1, duration: 0.85, ease: 'power3.out', clearProps: 'all' });
+      gsap.fromTo('.motion-hero-card', { y: 26, opacity: 0, scale: 0.98 }, { y: 0, opacity: 1, scale: 1, duration: 0.82, ease: 'power3.out', clearProps: 'all' });
+      gsap.fromTo('.motion-card', { y: 26, opacity: 0 }, { y: 0, opacity: 1, duration: 0.82, stagger: 0.08, ease: 'power3.out', delay: 0.08, clearProps: 'all' });
+      gsap.fromTo('.motion-row', { y: 16, opacity: 0 }, { y: 0, opacity: 1, duration: 0.7, stagger: 0.03, ease: 'power2.out', delay: 0.16, clearProps: 'all' });
     }, pageRef);
     return () => ctx.revert();
   }, []);

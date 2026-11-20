@@ -74,12 +74,12 @@ export default function CategoriesPage() {
 
   useGSAP(() => {
     const ctx = gsap.context(() => {
-      gsap.fromTo('.motion-header', { y: 14, opacity: 0 }, { y: 0, opacity: 1, duration: 0.52, ease: 'power3.out', clearProps: 'all' });
-      gsap.fromTo('.motion-controls', { y: 14, opacity: 0 }, { y: 0, opacity: 1, duration: 0.5, ease: 'power3.out', delay: 0.05, clearProps: 'all' });
+      gsap.fromTo('.motion-header', { y: 28, opacity: 0 }, { y: 0, opacity: 1, duration: 0.85, ease: 'power3.out', clearProps: 'all' });
+      gsap.fromTo('.motion-controls', { y: 20, opacity: 0 }, { y: 0, opacity: 1, duration: 0.75, ease: 'power3.out', delay: 0.08, clearProps: 'all' });
       gsap.fromTo(
         '.motion-cat-card',
-        { y: 14, opacity: 0 },
-        { y: 0, opacity: 1, duration: 0.42, stagger: 0.03, ease: 'power3.out', delay: 0.08, clearProps: 'all' }
+        { y: 24, opacity: 0 },
+        { y: 0, opacity: 1, duration: 0.8, stagger: 0.035, ease: 'power3.out', delay: 0.12, clearProps: 'all' }
       );
     }, pageRef);
     return () => ctx.revert();
