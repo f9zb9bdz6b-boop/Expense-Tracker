@@ -27,49 +27,49 @@
 }
 
 :root {
-  /* Warm, human palette — money is green */
-  --background: #fafaf9;          /* stone-50 — warm white */
-  --foreground: #1c1917;          /* stone-900 — dark warm */
-  --card: #ffffff;
-  --card-foreground: #1c1917;
-  --primary: #16a34a;             /* green-600 */
+  /* Warm creamish editorial palette */
+  --background: #f7f4ea;          /* warm cream / ecru */
+  --foreground: #22201b;          /* warm dark espresso, soft contrast */
+  --card: #fefdfb;                /* warm ivory card surface */
+  --card-foreground: #22201b;
+  --primary: #15803d;             /* deep forest green — classic on cream paper */
   --primary-foreground: #ffffff;
-  --secondary: #f5f5f4;           /* stone-100 */
-  --secondary-foreground: #292524;
-  --muted: #f5f5f4;
-  --muted-foreground: #78716c;    /* stone-500 — warm gray */
-  --accent: #f5f5f4;
-  --accent-foreground: #1c1917;
+  --secondary: #ede7d8;           /* warm sand / oatmeal */
+  --secondary-foreground: #22201b;
+  --muted: #eee8db;               /* soft cream-sand */
+  --muted-foreground: #787265;    /* warm earthy stone */
+  --accent: #ede7d8;
+  --accent-foreground: #22201b;
   --destructive: #dc2626;
   --destructive-foreground: #ffffff;
-  --border: #e7e5e4;              /* stone-200 */
-  --input: #e7e5e4;
-  --ring: #16a34a;
-  --sidebar: #ffffff;
-  --sidebar-foreground: #44403c;  /* stone-700 */
-  --radius: 0.5rem;               /* less aggressively rounded */
+  --border: #e3dccf;              /* warm cream-taupe border */
+  --input: #e3dccf;
+  --ring: #15803d;
+  --sidebar: #f2eee3;             /* subtle deeper cream tone for sidebar */
+  --sidebar-foreground: #444036;  /* warm earthy charcoal */
+  --radius: 0.5rem;
 }
 
 .dark {
-  --background: #111110;          /* very dark warm */
-  --foreground: #e8e4de;
-  --card: #1c1b18;
-  --card-foreground: #e8e4de;
+  --background: #171512;          /* warm dark espresso */
+  --foreground: #f5f0e6;          /* cream text */
+  --card: #1f1c18;                /* warm roasted coffee card */
+  --card-foreground: #f5f0e6;
   --primary: #22c55e;             /* green-500 */
   --primary-foreground: #052e16;
-  --secondary: #28271f;
-  --secondary-foreground: #d6d2cb;
-  --muted: #28271f;
-  --muted-foreground: #a8a29e;    /* stone-400 */
-  --accent: #28271f;
-  --accent-foreground: #e8e4de;
+  --secondary: #2a2620;
+  --secondary-foreground: #f5f0e6;
+  --muted: #2a2620;
+  --muted-foreground: #9e9686;
+  --accent: #2a2620;
+  --accent-foreground: #f5f0e6;
   --destructive: #ef4444;
-  --destructive-foreground: #fff;
-  --border: #2c2a24;
-  --input: #2c2a24;
+  --destructive-foreground: #ffffff;
+  --border: #332e27;
+  --input: #332e27;
   --ring: #22c55e;
-  --sidebar: #161512;
-  --sidebar-foreground: #c8c4be;
+  --sidebar: #1b1915;
+  --sidebar-foreground: #e5decb;
 }
 
 /* Base styles */
