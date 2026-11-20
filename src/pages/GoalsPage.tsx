@@ -86,27 +86,20 @@ export default function GoalsPage() {
 
   useGSAP(() => {
     const ctx = gsap.context(() => {
-      gsap.from('.motion-header', { y: -16, opacity: 0, duration: 0.5, ease: 'power3.out' });
-      gsap.from('.motion-goal-card', {
-        y: 20,
-        opacity: 0,
-        duration: 0.45,
-        stagger: 0.08,
-        ease: 'power2.out',
-        delay: 0.1,
-        clearProps: 'transform,opacity',
-      });
-      gsap.from('.motion-meter', {
-        scaleX: 0,
-        transformOrigin: 'left',
-        duration: 0.85,
-        stagger: 0.08,
-        ease: 'power2.out',
-        delay: 0.25,
-      });
+      gsap.fromTo('.motion-header', { y: -12, opacity: 0 }, { y: 0, opacity: 1, duration: 0.45, ease: 'power2.out', clearProps: 'all' });
+      gsap.fromTo(
+        '.motion-goal-card',
+        { y: 16, opacity: 0 },
+        { y: 0, opacity: 1, duration: 0.45, stagger: 0.06, ease: 'power2.out', delay: 0.08, clearProps: 'all' }
+      );
+      gsap.fromTo(
+        '.motion-meter',
+        { scaleX: 0, transformOrigin: 'left' },
+        { scaleX: 1, duration: 0.75, stagger: 0.06, ease: 'power2.out', delay: 0.2, clearProps: 'transformOrigin' }
+      );
     }, pageRef);
     return () => ctx.revert();
-  }, [goals.length, contributions.length]);
+  }, []);
 
   const handleCreateGoal = async () => {
     const targetNum = parseFloat(targetAmount);

@@ -139,13 +139,10 @@ export default function DashboardPage() {
       });
 
       // MOTION ELEMENT 2: Hero Mesh Card Entrance
-      gsap.from('.hero-mesh-card', {
-        y: 28,
-        opacity: 0,
-        scale: 0.97,
-        duration: 0.7,
-        ease: 'back.out(1.2)',
-      });
+      gsap.fromTo('.hero-mesh-card',
+        { y: 20, opacity: 0, scale: 0.98 },
+        { y: 0, opacity: 1, scale: 1, duration: 0.6, ease: 'back.out(1.2)', clearProps: 'all' }
+      );
 
       // MOTION ELEMENT 3: Continuous Ambient Glow Orb Float
       gsap.to('.ambient-glow-orb', {
@@ -159,14 +156,10 @@ export default function DashboardPage() {
       });
 
       // MOTION ELEMENT 4: Staggered Entrance of 4 KPI Metric Cards
-      gsap.from('.kpi-stat-card', {
-        y: 22,
-        opacity: 0,
-        duration: 0.55,
-        stagger: 0.08,
-        ease: 'power3.out',
-        delay: 0.15,
-      });
+      gsap.fromTo('.kpi-stat-card',
+        { y: 16, opacity: 0 },
+        { y: 0, opacity: 1, duration: 0.45, stagger: 0.06, ease: 'power2.out', delay: 0.1, clearProps: 'all' }
+      );
 
       // MOTION ELEMENT 5: Pulse Breathing of Health Badge
       gsap.to('.health-pulse-pill', {
@@ -178,58 +171,38 @@ export default function DashboardPage() {
       });
 
       // MOTION ELEMENT 6: Category Spending Staggered Rows Entrance
-      gsap.from('.category-row-item', {
-        x: -16,
-        opacity: 0,
-        duration: 0.45,
-        stagger: 0.06,
-        ease: 'power2.out',
-        delay: 0.25,
-      });
+      gsap.fromTo('.category-row-item',
+        { x: -12, opacity: 0 },
+        { x: 0, opacity: 1, duration: 0.4, stagger: 0.04, ease: 'power2.out', delay: 0.15, clearProps: 'all' }
+      );
 
       // MOTION ELEMENT 7: Dynamic Progress Bars Fill Expansion
-      gsap.from('.animated-meter-bar', {
-        scaleX: 0,
-        transformOrigin: 'left',
-        duration: 0.9,
-        stagger: 0.1,
-        ease: 'power2.out',
-        delay: 0.3,
-      });
+      gsap.fromTo('.animated-meter-bar',
+        { scaleX: 0, transformOrigin: 'left' },
+        { scaleX: 1, duration: 0.8, stagger: 0.06, ease: 'power2.out', delay: 0.2, clearProps: 'transformOrigin' }
+      );
 
       // MOTION ELEMENT 8: Recent Activity Transaction Ledger Cascade
-      gsap.from('.recent-tx-row', {
-        y: 14,
-        opacity: 0,
-        duration: 0.4,
-        stagger: 0.05,
-        ease: 'power2.out',
-        delay: 0.2,
-      });
+      gsap.fromTo('.recent-tx-row',
+        { y: 12, opacity: 0 },
+        { y: 0, opacity: 1, duration: 0.35, stagger: 0.04, ease: 'power2.out', delay: 0.15, clearProps: 'all' }
+      );
 
       // MOTION ELEMENT 9: Quick Action Buttons Stagger
-      gsap.from('.hero-action-btn', {
-        scale: 0.9,
-        opacity: 0,
-        duration: 0.45,
-        stagger: 0.08,
-        ease: 'back.out(2)',
-        delay: 0.3,
-      });
+      gsap.fromTo('.hero-action-btn',
+        { scale: 0.92, opacity: 0 },
+        { scale: 1, opacity: 1, duration: 0.4, stagger: 0.06, ease: 'back.out(1.5)', delay: 0.2, clearProps: 'all' }
+      );
 
       // MOTION ELEMENT 10: Budget & Goals Card Slide-In
-      gsap.from('.widget-card', {
-        y: 20,
-        opacity: 0,
-        duration: 0.55,
-        stagger: 0.1,
-        ease: 'power3.out',
-        delay: 0.25,
-      });
+      gsap.fromTo('.widget-card',
+        { y: 16, opacity: 0 },
+        { y: 0, opacity: 1, duration: 0.45, stagger: 0.08, ease: 'power2.out', delay: 0.2, clearProps: 'all' }
+      );
     }, dashboardRef);
 
     return () => ctx.revert();
-  }, [isLoading, summary]);
+  }, [isLoading]);
 
   // Handle period change transition
   useGSAP(() => {
@@ -261,9 +234,9 @@ export default function DashboardPage() {
   return (
     <div ref={dashboardRef} className="space-y-6 pb-12">
       {/* ============================================================
-          TOP HERO CARD: Executive Midnight Mesh with Ambient Glow
+          TOP HERO CARD: Executive Roasted Espresso & Forest Emerald with Ambient Glow
           ============================================================ */}
-      <div className="hero-mesh-card relative overflow-hidden rounded-3xl bg-gradient-to-br from-slate-950 via-slate-900 to-emerald-950 text-white p-6 sm:p-8 shadow-xl border border-emerald-500/20">
+      <div className="hero-mesh-card relative overflow-hidden rounded-3xl bg-gradient-to-br from-[#1a1714] via-[#231f1c] to-[#152e20] text-white p-6 sm:p-8 shadow-xl border border-emerald-500/25">
         {/* Background Ambient Floating Orb (Motion Element 3) */}
         <div
           className="ambient-glow-orb absolute -top-24 -right-24 w-80 h-80 rounded-full bg-emerald-500/20 blur-3xl pointer-events-none"

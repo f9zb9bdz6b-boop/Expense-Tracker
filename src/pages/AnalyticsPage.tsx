@@ -119,27 +119,21 @@ export default function AnalyticsPage() {
 
   useGSAP(() => {
     const ctx = gsap.context(() => {
-      gsap.from('.motion-header', { y: -16, opacity: 0, duration: 0.5, ease: 'power3.out' });
-      gsap.from('.motion-controls', { y: 12, opacity: 0, duration: 0.4, ease: 'power2.out', delay: 0.1 });
-      gsap.from('.motion-pulse-card', {
-        y: 20,
-        opacity: 0,
-        duration: 0.45,
-        stagger: 0.08,
-        ease: 'power2.out',
-        delay: 0.15,
-      });
-      gsap.from('.motion-card', {
-        y: 24,
-        opacity: 0,
-        duration: 0.55,
-        stagger: 0.1,
-        ease: 'power3.out',
-        delay: 0.25,
-      });
+      gsap.fromTo('.motion-header', { y: -12, opacity: 0 }, { y: 0, opacity: 1, duration: 0.45, ease: 'power2.out', clearProps: 'all' });
+      gsap.fromTo('.motion-controls', { y: 10, opacity: 0 }, { y: 0, opacity: 1, duration: 0.4, ease: 'power2.out', delay: 0.08, clearProps: 'all' });
+      gsap.fromTo(
+        '.motion-pulse-card',
+        { y: 16, opacity: 0 },
+        { y: 0, opacity: 1, duration: 0.45, stagger: 0.06, ease: 'power2.out', delay: 0.12, clearProps: 'all' }
+      );
+      gsap.fromTo(
+        '.motion-card',
+        { y: 16, opacity: 0 },
+        { y: 0, opacity: 1, duration: 0.45, stagger: 0.08, ease: 'power2.out', delay: 0.2, clearProps: 'all' }
+      );
     }, pageRef);
     return () => ctx.revert();
-  }, [timeRange, filteredExpenses.length]);
+  }, []);
 
   return (
     <div ref={pageRef} className="space-y-6 max-w-6xl mx-auto pb-12">

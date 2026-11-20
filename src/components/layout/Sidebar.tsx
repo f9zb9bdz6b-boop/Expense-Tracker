@@ -57,23 +57,10 @@ export function Sidebar() {
     animateAvatarBounce(e.currentTarget);
   });
 
-  useGSAP(() => {
-    const ctx = gsap.context(() => {
-      gsap.from('.motion-nav-item', {
-        x: -10,
-        opacity: 0,
-        stagger: 0.025,
-        duration: 0.35,
-        ease: 'power2.out',
-      });
-    }, sidebarRef);
-    return () => ctx.revert();
-  }, []);
-
   return (
-    <aside ref={sidebarRef} className="hidden lg:flex flex-col w-56 shrink-0 h-screen sticky top-0 border-r bg-sidebar select-none">
+    <aside ref={sidebarRef} className="hidden lg:flex flex-col w-56 shrink-0 h-screen sticky top-0 border-r bg-sidebar select-none shadow-xs">
       {/* Brand Header */}
-      <div className="flex items-center gap-2.5 px-5 py-4 border-b">
+      <div className="flex items-center gap-2.5 px-5 py-4 border-b border-border">
         <div
           onMouseEnter={handleLogoHover}
           className="flex h-8 w-8 items-center justify-center rounded-lg bg-primary text-primary-foreground text-xs font-bold tracking-tight shadow-sm cursor-pointer select-none"
@@ -91,7 +78,7 @@ export function Sidebar() {
         {navGroups.map((group, gi) => (
           <div key={gi}>
             {group.label && (
-              <p className="px-2 mb-1.5 text-[10px] font-bold uppercase tracking-wider text-muted-foreground">
+              <p className="px-2 mb-1.5 text-[10px] font-bold uppercase tracking-wider text-muted-foreground/80">
                 {group.label}
               </p>
             )}
@@ -104,10 +91,10 @@ export function Sidebar() {
                   onClick={handleLinkPress}
                   className={({ isActive }) =>
                     cn(
-                      'motion-nav-item flex items-center gap-2.5 px-2.5 py-1.5 rounded-md text-sm font-medium transition-all active:scale-95',
+                      'flex items-center gap-2.5 px-2.5 py-1.5 rounded-md text-sm font-medium transition-all active:scale-95',
                       isActive
-                        ? 'bg-primary/10 text-primary font-semibold shadow-xs'
-                        : 'text-sidebar-foreground hover:bg-muted hover:text-foreground'
+                        ? 'bg-primary/15 text-primary font-semibold shadow-xs'
+                        : 'text-sidebar-foreground hover:bg-muted/70 hover:text-foreground'
                     )
                   }
                 >
@@ -121,16 +108,16 @@ export function Sidebar() {
       </nav>
 
       {/* Settings pinned at the very bottom */}
-      <div className="p-3 border-t mt-auto">
+      <div className="p-3 border-t border-border mt-auto">
         <NavLink
           to="/settings"
           onClick={handleLinkPress}
           className={({ isActive }) =>
             cn(
-              'motion-nav-item flex items-center gap-2.5 px-2.5 py-2 rounded-md text-sm font-medium transition-all w-full active:scale-95',
+              'flex items-center gap-2.5 px-2.5 py-2 rounded-md text-sm font-medium transition-all w-full active:scale-95',
               isActive
-                ? 'bg-primary/10 text-primary font-semibold'
-                : 'text-sidebar-foreground hover:bg-muted hover:text-foreground'
+                ? 'bg-primary/15 text-primary font-semibold shadow-xs'
+                : 'text-sidebar-foreground hover:bg-muted/70 hover:text-foreground'
             )
           }
         >

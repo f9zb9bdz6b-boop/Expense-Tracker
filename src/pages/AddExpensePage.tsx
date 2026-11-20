@@ -71,11 +71,11 @@ export default function AddExpensePage() {
 
   useGSAP(() => {
     const ctx = gsap.context(() => {
-      gsap.from('.motion-header', { y: -16, opacity: 0, duration: 0.45, ease: 'power3.out' });
-      gsap.from('.motion-hero-amount', { y: 20, opacity: 0, scale: 0.98, duration: 0.5, ease: 'back.out(1.2)' });
-      gsap.from('.motion-card', { y: 20, opacity: 0, duration: 0.45, stagger: 0.08, ease: 'power2.out', delay: 0.1 });
-      gsap.from('.motion-category-btn', { scale: 0.9, opacity: 0, duration: 0.35, stagger: 0.02, ease: 'back.out(1.5)', delay: 0.2 });
-      gsap.from('.motion-payment-btn', { scale: 0.9, opacity: 0, duration: 0.35, stagger: 0.03, ease: 'back.out(1.5)', delay: 0.25 });
+      gsap.fromTo('.motion-header', { y: -12, opacity: 0 }, { y: 0, opacity: 1, duration: 0.45, ease: 'power2.out', clearProps: 'all' });
+      gsap.fromTo('.motion-hero-amount', { y: 16, opacity: 0, scale: 0.98 }, { y: 0, opacity: 1, scale: 1, duration: 0.45, ease: 'back.out(1.2)', clearProps: 'all' });
+      gsap.fromTo('.motion-card', { y: 16, opacity: 0 }, { y: 0, opacity: 1, duration: 0.45, stagger: 0.06, ease: 'power2.out', delay: 0.08, clearProps: 'all' });
+      gsap.fromTo('.motion-category-btn', { scale: 0.94, opacity: 0 }, { scale: 1, opacity: 1, duration: 0.35, stagger: 0.02, ease: 'back.out(1.5)', delay: 0.12, clearProps: 'all' });
+      gsap.fromTo('.motion-payment-btn', { scale: 0.94, opacity: 0 }, { scale: 1, opacity: 1, duration: 0.35, stagger: 0.02, ease: 'back.out(1.5)', delay: 0.15, clearProps: 'all' });
     }, pageRef);
     return () => ctx.revert();
   }, []);

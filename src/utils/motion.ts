@@ -74,69 +74,76 @@ export function animateAvatarBounce(avatarElement: HTMLElement) {
 
 /**
  * Page & Container Entrance Motion (Staggered orchestration)
+ * Uses fromTo with explicit end states and clearProps: 'all' to guarantee
+ * zero ghost-text or opacity-sticking issues in React.
  */
 export function animatePageEntrance(container: HTMLElement) {
-  const tl = gsap.timeline({ defaults: { ease: 'power3.out' } });
+  const tl = gsap.timeline({ defaults: { ease: 'power2.out' } });
 
   // 1. Page Header Fade & Slide Down
-  const header = container.querySelector('.motion-header');
-  if (header) {
-    tl.from(header, { y: -16, opacity: 0, duration: 0.5 }, 0);
+  const header = container.querySelectorAll('.motion-header');
+  if (header.length > 0) {
+    tl.fromTo(
+      header,
+      { y: -12, opacity: 0 },
+      { y: 0, opacity: 1, duration: 0.45, clearProps: 'all' },
+      0
+    );
   }
 
   // 2. Summary & Hero Pulse Cards Stagger
   const heroCards = container.querySelectorAll('.motion-hero-card, .motion-pulse-card');
   if (heroCards.length > 0) {
-    tl.from(heroCards, {
-      y: 24,
-      opacity: 0,
-      scale: 0.97,
-      duration: 0.6,
-      stagger: 0.08,
-      ease: 'back.out(1.2)',
-    }, 0.1);
+    tl.fromTo(
+      heroCards,
+      { y: 16, opacity: 0, scale: 0.98 },
+      { y: 0, opacity: 1, scale: 1, duration: 0.5, stagger: 0.06, ease: 'back.out(1.2)', clearProps: 'all' },
+      0.08
+    );
   }
 
   // 3. Filter controls & Action Bars
   const controls = container.querySelectorAll('.motion-controls');
   if (controls.length > 0) {
-    tl.from(controls, { y: 12, opacity: 0, duration: 0.4, stagger: 0.05 }, 0.2);
+    tl.fromTo(
+      controls,
+      { y: 10, opacity: 0 },
+      { y: 0, opacity: 1, duration: 0.4, stagger: 0.04, clearProps: 'all' },
+      0.15
+    );
   }
 
   // 4. Grid Cards & Panels Stagger
   const cards = container.querySelectorAll('.motion-card');
   if (cards.length > 0) {
-    tl.from(cards, {
-      y: 20,
-      opacity: 0,
-      duration: 0.5,
-      stagger: 0.06,
-      clearProps: 'transform,opacity',
-    }, 0.25);
+    tl.fromTo(
+      cards,
+      { y: 16, opacity: 0 },
+      { y: 0, opacity: 1, duration: 0.45, stagger: 0.05, clearProps: 'all' },
+      0.2
+    );
   }
 
   // 5. List items & Table rows cascade
   const listItems = container.querySelectorAll('.motion-row, .motion-item');
   if (listItems.length > 0) {
-    tl.from(listItems, {
-      x: -12,
-      opacity: 0,
-      duration: 0.35,
-      stagger: 0.04,
-      clearProps: 'transform,opacity',
-    }, 0.3);
+    tl.fromTo(
+      listItems,
+      { x: -8, opacity: 0 },
+      { x: 0, opacity: 1, duration: 0.35, stagger: 0.03, clearProps: 'all' },
+      0.25
+    );
   }
 
   // 6. Progress meters & Progress bars fill
   const meters = container.querySelectorAll('.motion-meter');
   if (meters.length > 0) {
-    tl.from(meters, {
-      scaleX: 0,
-      transformOrigin: 'left',
-      duration: 0.8,
-      stagger: 0.08,
-      ease: 'power2.out',
-    }, 0.4);
+    tl.fromTo(
+      meters,
+      { scaleX: 0, transformOrigin: 'left' },
+      { scaleX: 1, duration: 0.7, stagger: 0.06, ease: 'power2.out', clearProps: 'transformOrigin' },
+      0.3
+    );
   }
 
   // 7. Ambient Pulse Badges continuous float

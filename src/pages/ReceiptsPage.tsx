@@ -50,12 +50,12 @@ export default function ReceiptsPage() {
 
   useGSAP(() => {
     const ctx = gsap.context(() => {
-      gsap.from('.motion-header', { y: -16, opacity: 0, duration: 0.5, ease: 'power3.out' });
-      gsap.from('.motion-upload-card', { y: 20, opacity: 0, scale: 0.98, duration: 0.5, ease: 'back.out(1.2)', delay: 0.1 });
-      gsap.from('.motion-receipt-card', { y: 20, opacity: 0, scale: 0.96, duration: 0.45, stagger: 0.08, ease: 'back.out(1.3)', delay: 0.2 });
+      gsap.fromTo('.motion-header', { y: -12, opacity: 0 }, { y: 0, opacity: 1, duration: 0.45, ease: 'power2.out', clearProps: 'all' });
+      gsap.fromTo('.motion-upload-card', { y: 16, opacity: 0, scale: 0.98 }, { y: 0, opacity: 1, scale: 1, duration: 0.45, ease: 'back.out(1.2)', delay: 0.08, clearProps: 'all' });
+      gsap.fromTo('.motion-receipt-card', { y: 16, opacity: 0, scale: 0.98 }, { y: 0, opacity: 1, scale: 1, duration: 0.4, stagger: 0.06, ease: 'back.out(1.2)', delay: 0.15, clearProps: 'all' });
     }, pageRef);
     return () => ctx.revert();
-  }, [receipts.length]);
+  }, []);
 
   const handleFileUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];

@@ -27,49 +27,50 @@
 }
 
 :root {
-  /* Crisp, modern financial palette — clean, high-contrast, purely human */
-  --background: #f8fafc;          /* slate-50 — crisp, bright, clean */
-  --foreground: #0f172a;          /* slate-900 — rich deep obsidian/slate */
-  --card: #ffffff;                /* pure white card surface */
-  --card-foreground: #0f172a;
-  --primary: #059669;             /* emerald-600 — money green, confident & fresh */
+  /* Apple Books "Focus" Cream & Warm Linen Palette */
+  --background: #f8f4ec;          /* Apple Books Focus warm paper cream */
+  --foreground: #2c2621;          /* Deep warm espresso / obsidian charcoal */
+  --card: #fffdf9;                /* Warm milk / soft alabaster card surface */
+  --card-foreground: #2c2621;
+  --primary: #1e5a38;             /* Heritage forest emerald */
   --primary-foreground: #ffffff;
-  --secondary: #f1f5f9;           /* slate-100 */
-  --secondary-foreground: #0f172a;
-  --muted: #f1f5f9;               /* slate-100 */
-  --muted-foreground: #64748b;    /* slate-500 */
-  --accent: #f1f5f9;
-  --accent-foreground: #0f172a;
-  --destructive: #ef4444;         /* rose-500 */
+  --secondary: #f0e9dc;           /* Soft warm linen */
+  --secondary-foreground: #2c2621;
+  --muted: #f0e9dc;               /* Subtle parchment tint */
+  --muted-foreground: #766e65;    /* Warm cedar / taupe — rich contrast & readable */
+  --accent: #ebe3d3;
+  --accent-foreground: #2c2621;
+  --destructive: #b91c1c;         /* Vintage warm crimson */
   --destructive-foreground: #ffffff;
-  --border: #e2e8f0;              /* slate-200 — clean definition */
-  --input: #e2e8f0;
-  --ring: #059669;
-  --sidebar: #ffffff;             /* clean white sidebar */
-  --sidebar-foreground: #334155;  /* slate-700 */
+  --border: #e6ddce;              /* Delicate warm deckle paper border */
+  --input: #e6ddce;
+  --ring: #1e5a38;
+  --sidebar: #f3ede1;             /* Richer warm parchment for sidebar structure */
+  --sidebar-foreground: #2c2621;  /* High-contrast deep warm espresso */
   --radius: 0.625rem;
 }
 
 .dark {
-  --background: #090d16;          /* deep midnight obsidian */
-  --foreground: #f8fafc;
-  --card: #111827;                /* gray-900 card */
-  --card-foreground: #f8fafc;
-  --primary: #10b981;             /* emerald-500 */
+  /* Apple Books Night / Roasted Espresso dark palette */
+  --background: #171513;          /* Deep roasted espresso bean */
+  --foreground: #f4eee4;          /* Warm cream text */
+  --card: #221f1b;                /* Warm dark card surface */
+  --card-foreground: #f4eee4;
+  --primary: #34d399;             /* Warm glowing emerald */
   --primary-foreground: #022c22;
-  --secondary: #1f2937;
-  --secondary-foreground: #f8fafc;
-  --muted: #1f2937;
-  --muted-foreground: #9ca3af;
-  --accent: #1f2937;
-  --accent-foreground: #f8fafc;
+  --secondary: #2a2521;
+  --secondary-foreground: #f4eee4;
+  --muted: #2a2521;
+  --muted-foreground: #9d9285;
+  --accent: #2a2521;
+  --accent-foreground: #f4eee4;
   --destructive: #f87171;
   --destructive-foreground: #ffffff;
-  --border: #374151;
-  --input: #374151;
-  --ring: #10b981;
-  --sidebar: #0f172a;
-  --sidebar-foreground: #cbd5e1;
+  --border: #38322c;
+  --input: #38322c;
+  --ring: #34d399;
+  --sidebar: #1c1916;             /* Slightly deeper warm espresso sidebar */
+  --sidebar-foreground: #e8e0d4;
 }
 
 /* Base styles */
