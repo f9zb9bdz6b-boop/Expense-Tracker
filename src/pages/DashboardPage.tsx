@@ -29,6 +29,14 @@ export default function DashboardPage() {
   const { summary, isLoading } = useDashboard();
   const [activePeriod, setActivePeriod] = useState<'month' | 'today' | 'all'>('month');
 
+  const categoriesList = useLiveQuery(() => Promise.all([db.expenseCategories.toArray(), db.incomeCategories.toArray()])) ?? [[], []];
+  const catEmojiMap = useMemo(() => {
+    const map = new Map<string, string>();
+    categoriesList[0]?.forEach(c => map.set(c.id, getCategoryEmoji(c)));
+    categoriesList[1]?.forEach(c => map.set(c.id, getCategoryEmoji(c)));
+    return map;
+  }, [categoriesList]);
+
   if (isLoading || !summary) {
     return (
       <div className="space-y-5 animate-pulse">
@@ -42,14 +50,6 @@ export default function DashboardPage() {
       </div>
     );
   }
-
-  const categoriesList = useLiveQuery(() => Promise.all([db.expenseCategories.toArray(), db.incomeCategories.toArray()])) ?? [[], []];
-  const catEmojiMap = useMemo(() => {
-    const map = new Map<string, string>();
-    categoriesList[0]?.forEach(c => map.set(c.id, getCategoryEmoji(c)));
-    categoriesList[1]?.forEach(c => map.set(c.id, getCategoryEmoji(c)));
-    return map;
-  }, [categoriesList]);
 
   const {
     totalIncome, totalExpenses, netBalance,

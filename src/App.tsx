@@ -73,11 +73,7 @@ function AppRoutes() {
 export default function App() {
   return (
     <HashRouter>
-      <ThemeProvider>
-        <SettingsProvider>
-          <AppRoutes />
-        </SettingsProvider>
-      </ThemeProvider>
+      <AppRoutes />
     </HashRouter>
   );
 }
