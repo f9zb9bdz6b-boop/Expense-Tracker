@@ -21,7 +21,7 @@ export default defineConfig({
         name: 'Expense Tracker - Personal Finance Manager',
         short_name: 'ExpenseTracker',
         description: 'A comprehensive personal expense tracking and financial management application',
-        theme_color: '#6366f1',
+        theme_color: '#16a34a',
         background_color: '#0f172a',
         display: 'standalone',
         orientation: 'portrait-primary',

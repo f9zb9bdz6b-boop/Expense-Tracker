@@ -27,48 +27,49 @@
 }
 
 :root {
-  --background: #fafafa;
-  --foreground: #0f172a;
+  /* Warm, human palette — money is green */
+  --background: #fafaf9;          /* stone-50 — warm white */
+  --foreground: #1c1917;          /* stone-900 — dark warm */
   --card: #ffffff;
-  --card-foreground: #0f172a;
-  --primary: #6366f1;
+  --card-foreground: #1c1917;
+  --primary: #16a34a;             /* green-600 */
   --primary-foreground: #ffffff;
-  --secondary: #f1f5f9;
-  --secondary-foreground: #1e293b;
-  --muted: #f1f5f9;
-  --muted-foreground: #64748b;
-  --accent: #8b5cf6;
-  --accent-foreground: #ffffff;
-  --destructive: #ef4444;
+  --secondary: #f5f5f4;           /* stone-100 */
+  --secondary-foreground: #292524;
+  --muted: #f5f5f4;
+  --muted-foreground: #78716c;    /* stone-500 — warm gray */
+  --accent: #f5f5f4;
+  --accent-foreground: #1c1917;
+  --destructive: #dc2626;
   --destructive-foreground: #ffffff;
-  --border: #e2e8f0;
-  --input: #e2e8f0;
-  --ring: #6366f1;
+  --border: #e7e5e4;              /* stone-200 */
+  --input: #e7e5e4;
+  --ring: #16a34a;
   --sidebar: #ffffff;
-  --sidebar-foreground: #334155;
-  --radius: 0.625rem;
+  --sidebar-foreground: #44403c;  /* stone-700 */
+  --radius: 0.5rem;               /* less aggressively rounded */
 }
 
 .dark {
-  --background: #0c0a1d;
-  --foreground: #f1f5f9;
-  --card: #1a1633;
-  --card-foreground: #f1f5f9;
-  --primary: #818cf8;
-  --primary-foreground: #0f0d23;
-  --secondary: #1e1b3a;
-  --secondary-foreground: #e2e8f0;
-  --muted: #1e1b3a;
-  --muted-foreground: #94a3b8;
-  --accent: #a78bfa;
-  --accent-foreground: #0f0d23;
-  --destructive: #f87171;
-  --destructive-foreground: #1c0a0a;
-  --border: #2d2854;
-  --input: #2d2854;
-  --ring: #818cf8;
-  --sidebar: #12102b;
-  --sidebar-foreground: #cbd5e1;
+  --background: #111110;          /* very dark warm */
+  --foreground: #e8e4de;
+  --card: #1c1b18;
+  --card-foreground: #e8e4de;
+  --primary: #22c55e;             /* green-500 */
+  --primary-foreground: #052e16;
+  --secondary: #28271f;
+  --secondary-foreground: #d6d2cb;
+  --muted: #28271f;
+  --muted-foreground: #a8a29e;    /* stone-400 */
+  --accent: #28271f;
+  --accent-foreground: #e8e4de;
+  --destructive: #ef4444;
+  --destructive-foreground: #fff;
+  --border: #2c2a24;
+  --input: #2c2a24;
+  --ring: #22c55e;
+  --sidebar: #161512;
+  --sidebar-foreground: #c8c4be;
 }
 
 /* Base styles */
