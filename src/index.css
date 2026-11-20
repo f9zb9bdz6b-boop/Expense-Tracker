@@ -27,33 +27,33 @@
 }
 
 :root {
-  /* Warm creamish editorial palette */
-  --background: #f7f4ea;          /* warm cream / ecru */
-  --foreground: #22201b;          /* warm dark espresso, soft contrast */
-  --card: #fefdfb;                /* warm ivory card surface */
-  --card-foreground: #22201b;
-  --primary: #15803d;             /* deep forest green — classic on cream paper */
+  /* Apple Books Focus reading palette — warm, muted, glare-free, no harsh white */
+  --background: #ece4d4;          /* Apple Books warm Focus/Paper reading tone */
+  --foreground: #24211a;          /* deep book-press ink / dark charcoal */
+  --card: #f1eade;                /* matching warm reading card surface (no white) */
+  --card-foreground: #24211a;
+  --primary: #15803d;             /* deep forest green */
   --primary-foreground: #ffffff;
-  --secondary: #ede7d8;           /* warm sand / oatmeal */
-  --secondary-foreground: #22201b;
-  --muted: #eee8db;               /* soft cream-sand */
-  --muted-foreground: #787265;    /* warm earthy stone */
-  --accent: #ede7d8;
-  --accent-foreground: #22201b;
+  --secondary: #dfd6c4;           /* muted warm taupe/sand */
+  --secondary-foreground: #24211a;
+  --muted: #dfd6c4;               /* soft warm oatmeal */
+  --muted-foreground: #766e5f;    /* warm earthy book annotation tone */
+  --accent: #dfd6c4;
+  --accent-foreground: #24211a;
   --destructive: #dc2626;
   --destructive-foreground: #ffffff;
-  --border: #e3dccf;              /* warm cream-taupe border */
-  --input: #e3dccf;
+  --border: #d4caa8;              /* warm linen border */
+  --input: #d4caa8;
   --ring: #15803d;
-  --sidebar: #f2eee3;             /* subtle deeper cream tone for sidebar */
-  --sidebar-foreground: #444036;  /* warm earthy charcoal */
+  --sidebar: #e6ded0;             /* grounded matching sidebar tone */
+  --sidebar-foreground: #423d32;  /* warm charcoal */
   --radius: 0.5rem;
 }
 
 .dark {
   --background: #171512;          /* warm dark espresso */
   --foreground: #f5f0e6;          /* cream text */
-  --card: #1f1c18;                /* warm roasted coffee card */
+  --card: #201d19;                /* matching dark warm card */
   --card-foreground: #f5f0e6;
   --primary: #22c55e;             /* green-500 */
   --primary-foreground: #052e16;
@@ -65,8 +65,8 @@
   --accent-foreground: #f5f0e6;
   --destructive: #ef4444;
   --destructive-foreground: #ffffff;
-  --border: #332e27;
-  --input: #332e27;
+  --border: #353028;
+  --input: #353028;
   --ring: #22c55e;
   --sidebar: #1b1915;
   --sidebar-foreground: #e5decb;
