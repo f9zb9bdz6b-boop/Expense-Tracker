@@ -22,6 +22,7 @@ import { Textarea } from '@/components/ui/textarea';
 import { useToast } from '@/components/ui/use-toast';
 import { ConfirmDialog } from '@/components/ui/confirm-dialog';
 import { Badge } from '@/components/ui/badge';
+import { InfoHint } from '@/components/ui/info-hint';
 import {
   TrendingUp, Plus, ArrowDownLeft, Trash2, Calendar,
   Briefcase, DollarSign, Wallet, CreditCard
@@ -75,10 +76,10 @@ export default function IncomePage() {
 
   useGSAP(() => {
     const ctx = gsap.context(() => {
-      gsap.fromTo('.motion-header', { y: -12, opacity: 0 }, { y: 0, opacity: 1, duration: 0.45, ease: 'power2.out', clearProps: 'all' });
-      gsap.fromTo('.motion-hero-card', { y: 16, opacity: 0, scale: 0.98 }, { y: 0, opacity: 1, scale: 1, duration: 0.45, ease: 'back.out(1.2)', clearProps: 'all' });
-      gsap.fromTo('.motion-card', { y: 16, opacity: 0 }, { y: 0, opacity: 1, duration: 0.45, stagger: 0.06, ease: 'power2.out', delay: 0.08, clearProps: 'all' });
-      gsap.fromTo('.motion-row', { x: -8, opacity: 0 }, { x: 0, opacity: 1, duration: 0.35, stagger: 0.03, ease: 'power2.out', delay: 0.15, clearProps: 'all' });
+      gsap.fromTo('.motion-header', { y: 14, opacity: 0 }, { y: 0, opacity: 1, duration: 0.52, ease: 'power3.out', clearProps: 'all' });
+      gsap.fromTo('.motion-hero-card', { y: 14, opacity: 0, scale: 0.98 }, { y: 0, opacity: 1, scale: 1, duration: 0.5, ease: 'power3.out', clearProps: 'all' });
+      gsap.fromTo('.motion-card', { y: 14, opacity: 0 }, { y: 0, opacity: 1, duration: 0.45, stagger: 0.05, ease: 'power3.out', delay: 0.08, clearProps: 'all' });
+      gsap.fromTo('.motion-row', { x: -8, opacity: 0 }, { x: 0, opacity: 1, duration: 0.35, stagger: 0.03, ease: 'power2.out', delay: 0.12, clearProps: 'all' });
     }, pageRef);
     return () => ctx.revert();
   }, []);
@@ -169,11 +170,12 @@ export default function IncomePage() {
   return (
     <div ref={pageRef} className="space-y-6 max-w-5xl mx-auto pb-12">
       <div className="motion-header flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-        <div>
+        <div className="flex items-center gap-2">
           <h1 className="text-xl font-bold tracking-tight">Income & Inflows</h1>
-          <p className="text-muted-foreground text-sm mt-0.5">
-            Track salaries, freelance, investments and other cash inflows.
-          </p>
+          <InfoHint
+            title="Income & Inflows"
+            description="Track salaries, freelance, investments and other cash inflows."
+          />
         </div>
         <div className="motion-hero-card bg-card border border-border/80 rounded-2xl px-5 py-3 shadow-xs text-right">
           <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">Total Received</p>
@@ -189,8 +191,8 @@ export default function IncomePage() {
           <CardHeader>
             <CardTitle className="text-base font-semibold flex items-center gap-2">
               <TrendingUp className="w-4 h-4 text-emerald-500" /> Record Income
+              <InfoHint text="Log incoming payments, bonuses, or side income." />
             </CardTitle>
-            <CardDescription className="text-xs">Add an incoming payment</CardDescription>
           </CardHeader>
           <CardContent>
             <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">

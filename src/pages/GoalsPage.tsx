@@ -18,6 +18,7 @@ import { Badge } from '@/components/ui/badge';
 import { Progress } from '@/components/ui/progress';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from '@/components/ui/dialog';
 import { ConfirmDialog } from '@/components/ui/confirm-dialog';
+import { InfoHint } from '@/components/ui/info-hint';
 import { useToast } from '@/components/ui/use-toast';
 import {
   Target, Plus, Minus, CheckCircle2, TrendingUp, Trash2,
@@ -86,16 +87,16 @@ export default function GoalsPage() {
 
   useGSAP(() => {
     const ctx = gsap.context(() => {
-      gsap.fromTo('.motion-header', { y: -8, opacity: 0 }, { y: 0, opacity: 1, duration: 0.28, ease: 'power2.out', clearProps: 'all' });
+      gsap.fromTo('.motion-header', { y: 14, opacity: 0 }, { y: 0, opacity: 1, duration: 0.52, ease: 'power3.out', clearProps: 'all' });
       gsap.fromTo(
         '.motion-goal-card',
-        { y: 10, opacity: 0 },
-        { y: 0, opacity: 1, duration: 0.3, stagger: 0.04, ease: 'power2.out', delay: 0.05, clearProps: 'all' }
+        { y: 14, opacity: 0 },
+        { y: 0, opacity: 1, duration: 0.45, stagger: 0.05, ease: 'power3.out', delay: 0.08, clearProps: 'all' }
       );
       gsap.fromTo(
         '.motion-meter',
         { scaleX: 0, transformOrigin: 'left' },
-        { scaleX: 1, duration: 0.5, stagger: 0.04, ease: 'power2.out', delay: 0.1, clearProps: 'transformOrigin' }
+        { scaleX: 1, duration: 0.55, stagger: 0.04, ease: 'power2.out', delay: 0.12, clearProps: 'transformOrigin' }
       );
     }, pageRef);
     return () => ctx.revert();
@@ -235,11 +236,12 @@ export default function GoalsPage() {
     <div ref={pageRef} className="space-y-6 max-w-5xl mx-auto pb-12">
       {/* Header */}
       <div className="motion-header flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-        <div>
+        <div className="flex items-center gap-2">
           <h1 className="text-2xl font-bold tracking-tight">Financial Goals & Savings</h1>
-          <p className="text-muted-foreground text-sm">
-            Set savings targets, track source of contributions, withdraw funds when needed, and sync with transactions.
-          </p>
+          <InfoHint
+            title="Savings Goals"
+            description="Set targeted milestones, log deposits and source allocations, manage withdrawals, and track progress."
+          />
         </div>
         <Button
           onClick={e => {

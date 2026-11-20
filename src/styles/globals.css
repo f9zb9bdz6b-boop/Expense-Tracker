@@ -27,50 +27,50 @@
 }
 
 :root {
-  /* Coinest Modern Sage & Pistachio-Lime Palette */
+  /* Coinest Modern Sage & Ultra-Vibrant Lime-Green Palette */
   --background: #f4f7f4;          /* Soft modern sage-white canvas */
   --foreground: #12261b;          /* Deep pine charcoal */
   --card: #ffffff;                /* Pure clean white card */
   --card-foreground: #12261b;
-  --primary: #153928;             /* Deep Coinest forest green */
+  --primary: #15803d;             /* Vibrant rich emerald green */
   --primary-foreground: #ffffff;
-  --secondary: #eaf0ea;           /* Soft sage mint tint */
+  --secondary: #e6f3e4;           /* Fresh soft mint tint */
   --secondary-foreground: #12261b;
-  --muted: #ebf1eb;               /* Pale sage surface */
-  --muted-foreground: #63756a;    /* High contrast sage slate */
-  --accent: #d8f5cb;              /* Pastel pistachio mint highlight */
-  --accent-foreground: #12261b;
+  --muted: #eaf1ea;               /* Pale sage surface */
+  --muted-foreground: #5a7062;    /* High contrast sage slate */
+  --accent: #7cf046;              /* Ultra-vibrant pistachio-lime neon */
+  --accent-foreground: #082b14;
   --destructive: #ef4444;         /* Coral rose */
   --destructive-foreground: #ffffff;
-  --border: #e2ebe2;              /* Delicate clean border */
-  --input: #e2ebe2;
-  --ring: #153928;
-  --sidebar: #eaf0ea;             /* Coinest pale sage sidebar */
-  --sidebar-foreground: #183324;  /* Deep pine text */
+  --border: #dfebdf;              /* Delicate clean border */
+  --input: #dfebdf;
+  --ring: #22c55e;
+  --sidebar: #e9f2e9;             /* Coinest pale sage sidebar */
+  --sidebar-foreground: #143321;  /* Deep pine text */
   --radius: 0.875rem;             /* 14px smooth modern corners */
 }
 
 .dark {
-  /* Coinest Dark Forest Executive Mode */
-  --background: #0d1712;          /* Deep obsidian forest */
-  --foreground: #eef5ee;          /* Crisp mint white */
-  --card: #13221a;                /* Deep forest card */
-  --card-foreground: #eef5ee;
-  --primary: #4ade80;             /* Vibrant mint green */
-  --primary-foreground: #091a10;
-  --secondary: #1a2e23;
-  --secondary-foreground: #eef5ee;
-  --muted: #1a2e23;
-  --muted-foreground: #8aa192;
-  --accent: #233d2f;
-  --accent-foreground: #eef5ee;
+  /* Coinest Dark Forest Executive Mode with Vibrant Neon Accents */
+  --background: #0b1510;          /* Deep obsidian forest */
+  --foreground: #eff7ef;          /* Crisp mint white */
+  --card: #112018;                /* Deep forest card */
+  --card-foreground: #eff7ef;
+  --primary: #4ade80;             /* Ultra-vibrant neon emerald */
+  --primary-foreground: #041f0f;
+  --secondary: #182e21;
+  --secondary-foreground: #eff7ef;
+  --muted: #182e21;
+  --muted-foreground: #8aa694;
+  --accent: #22c55e;
+  --accent-foreground: #041f0f;
   --destructive: #f87171;
   --destructive-foreground: #ffffff;
-  --border: #223c2e;
-  --input: #223c2e;
+  --border: #1e3828;
+  --input: #1e3828;
   --ring: #4ade80;
-  --sidebar: #0f1c15;             /* Deepest forest sidebar */
-  --sidebar-foreground: #d2e4d7;
+  --sidebar: #0e1a13;             /* Deepest forest sidebar */
+  --sidebar-foreground: #d4ebd9;
 }
 
 /* Base styles */

@@ -21,6 +21,7 @@ import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { Badge } from '@/components/ui/badge';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from '@/components/ui/dialog';
+import { InfoHint } from '@/components/ui/info-hint';
 import { useToast } from '@/components/ui/use-toast';
 import {
   Plus, Check, Sparkles, Tag, Calendar, Clock,
@@ -71,9 +72,9 @@ export default function AddExpensePage() {
 
   useGSAP(() => {
     const ctx = gsap.context(() => {
-      gsap.fromTo('.motion-header', { y: -12, opacity: 0 }, { y: 0, opacity: 1, duration: 0.45, ease: 'power2.out', clearProps: 'all' });
-      gsap.fromTo('.motion-hero-amount', { y: 16, opacity: 0, scale: 0.98 }, { y: 0, opacity: 1, scale: 1, duration: 0.45, ease: 'back.out(1.2)', clearProps: 'all' });
-      gsap.fromTo('.motion-card', { y: 16, opacity: 0 }, { y: 0, opacity: 1, duration: 0.45, stagger: 0.06, ease: 'power2.out', delay: 0.08, clearProps: 'all' });
+      gsap.fromTo('.motion-header', { y: 14, opacity: 0 }, { y: 0, opacity: 1, duration: 0.52, ease: 'power3.out', clearProps: 'all' });
+      gsap.fromTo('.motion-hero-amount', { y: 14, opacity: 0, scale: 0.98 }, { y: 0, opacity: 1, scale: 1, duration: 0.5, ease: 'power3.out', clearProps: 'all' });
+      gsap.fromTo('.motion-card', { y: 14, opacity: 0 }, { y: 0, opacity: 1, duration: 0.45, stagger: 0.05, ease: 'power3.out', delay: 0.08, clearProps: 'all' });
       gsap.fromTo('.motion-category-btn', { scale: 0.94, opacity: 0 }, { scale: 1, opacity: 1, duration: 0.35, stagger: 0.02, ease: 'back.out(1.5)', delay: 0.12, clearProps: 'all' });
       gsap.fromTo('.motion-payment-btn', { scale: 0.94, opacity: 0 }, { scale: 1, opacity: 1, duration: 0.35, stagger: 0.02, ease: 'back.out(1.5)', delay: 0.15, clearProps: 'all' });
     }, pageRef);
@@ -213,11 +214,17 @@ export default function AddExpensePage() {
 
   return (
     <div ref={pageRef} className="max-w-2xl mx-auto space-y-6 pb-12">
-      <div className="motion-header flex items-center gap-2">
-        <Button variant="ghost" size="sm" onClick={() => navigate(-1)} className="gap-1 text-muted-foreground">
-          <ArrowLeft className="w-4 h-4" /> Back
-        </Button>
-        <h1 className="text-xl font-bold tracking-tight">Record Expense</h1>
+      <div className="motion-header flex items-center justify-between">
+        <div className="flex items-center gap-2">
+          <Button variant="ghost" size="sm" onClick={() => navigate(-1)} className="gap-1 text-muted-foreground">
+            <ArrowLeft className="w-4 h-4" /> Back
+          </Button>
+          <h1 className="text-xl font-bold tracking-tight">Record Expense</h1>
+          <InfoHint
+            title="Fast Expense Entry"
+            description="Log an expense with quick tags, split classification (Needs vs Wants), and payment method."
+          />
+        </div>
       </div>
 
       <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">

@@ -17,6 +17,7 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Switch } from '@/components/ui/switch';
 import { ConfirmDialog } from '@/components/ui/confirm-dialog';
+import { InfoHint } from '@/components/ui/info-hint';
 import { useToast } from '@/components/ui/use-toast';
 import {
   Settings, Download, Upload, Trash2, Sun, Moon,
@@ -111,11 +112,11 @@ export default function SettingsPage() {
 
   useGSAP(() => {
     const ctx = gsap.context(() => {
-      gsap.fromTo('.motion-header', { y: -12, opacity: 0 }, { y: 0, opacity: 1, duration: 0.45, ease: 'power2.out', clearProps: 'all' });
+      gsap.fromTo('.motion-header', { y: 14, opacity: 0 }, { y: 0, opacity: 1, duration: 0.52, ease: 'power3.out', clearProps: 'all' });
       gsap.fromTo(
         '.motion-card',
-        { y: 16, opacity: 0 },
-        { y: 0, opacity: 1, duration: 0.45, stagger: 0.06, ease: 'power2.out', delay: 0.08, clearProps: 'all' }
+        { y: 14, opacity: 0 },
+        { y: 0, opacity: 1, duration: 0.45, stagger: 0.05, ease: 'power3.out', delay: 0.08, clearProps: 'all' }
       );
     }, pageRef);
     return () => ctx.revert();
@@ -124,18 +125,23 @@ export default function SettingsPage() {
   return (
     <div ref={pageRef} className="space-y-6 max-w-4xl mx-auto pb-12">
       {/* Header */}
-      <div className="motion-header">
-        <h1 className="text-2xl font-bold tracking-tight">Settings & Preferences</h1>
-        <p className="text-muted-foreground text-sm">
-          Customize currency, themes, offline local storage, data backup and restore.
-        </p>
+      <div className="motion-header flex items-center justify-between">
+        <div className="flex items-center gap-2">
+          <h1 className="text-2xl font-bold tracking-tight">Settings & Preferences</h1>
+          <InfoHint
+            title="Application Settings"
+            description="Customize currency, themes, offline local storage, data backup and restore."
+          />
+        </div>
       </div>
 
       {/* General Preferences */}
       <Card className="motion-card">
         <CardHeader>
-          <CardTitle className="text-base font-semibold">General Preferences</CardTitle>
-          <CardDescription className="text-xs">Select your currency and appearance</CardDescription>
+          <CardTitle className="text-base font-semibold flex items-center gap-2">
+            General Preferences
+            <InfoHint text="Select your primary currency and appearance theme." />
+          </CardTitle>
         </CardHeader>
         <CardContent className="space-y-5">
           {/* Currency Selection */}
@@ -189,14 +195,12 @@ export default function SettingsPage() {
       </Card>
 
       {/* Backup and Restore */}
-      <Card>
+      <Card className="motion-card">
         <CardHeader>
           <CardTitle className="text-base font-semibold flex items-center gap-2">
             <Database className="w-4 h-4 text-primary" /> Data Protection & Backup
+            <InfoHint text="Export a full JSON backup of your records or restore from an existing file." />
           </CardTitle>
-          <CardDescription className="text-xs">
-            Export a full JSON backup of your records or restore from an existing file.
-          </CardDescription>
         </CardHeader>
         <CardContent className="space-y-4">
           <div className="flex flex-col sm:flex-row gap-3">
@@ -233,10 +237,12 @@ export default function SettingsPage() {
       </Card>
 
       {/* Danger Zone */}
-      <Card className="border-rose-500/20">
+      <Card className="motion-card border-rose-500/20">
         <CardHeader>
-          <CardTitle className="text-base font-semibold text-rose-600 dark:text-rose-400">Danger Zone</CardTitle>
-          <CardDescription className="text-xs">Irreversible data operations</CardDescription>
+          <CardTitle className="text-base font-semibold text-rose-600 dark:text-rose-400 flex items-center gap-2">
+            Danger Zone
+            <InfoHint text="Irreversible data operations. Clears all IndexedDB ledger entries." />
+          </CardTitle>
         </CardHeader>
         <CardContent>
           <Button

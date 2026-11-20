@@ -12,6 +12,7 @@ import { animateSpringPress } from '@/utils/motion';
 import { Card, CardHeader, CardTitle, CardDescription, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
+import { InfoHint } from '@/components/ui/info-hint';
 import {
   TrendingUp, TrendingDown, Calendar, PieChart as PieChartIcon,
   BarChart3, Sparkles, Award, Zap, ArrowUpRight, ArrowDownRight,
@@ -119,17 +120,17 @@ export default function AnalyticsPage() {
 
   useGSAP(() => {
     const ctx = gsap.context(() => {
-      gsap.fromTo('.motion-header', { y: -8, opacity: 0 }, { y: 0, opacity: 1, duration: 0.28, ease: 'power2.out', clearProps: 'all' });
-      gsap.fromTo('.motion-controls', { y: 8, opacity: 0 }, { y: 0, opacity: 1, duration: 0.28, ease: 'power2.out', delay: 0.05, clearProps: 'all' });
+      gsap.fromTo('.motion-header', { y: 14, opacity: 0 }, { y: 0, opacity: 1, duration: 0.52, ease: 'power3.out', clearProps: 'all' });
+      gsap.fromTo('.motion-controls', { y: 14, opacity: 0 }, { y: 0, opacity: 1, duration: 0.5, ease: 'power3.out', delay: 0.05, clearProps: 'all' });
       gsap.fromTo(
         '.motion-pulse-card',
-        { y: 10, opacity: 0 },
-        { y: 0, opacity: 1, duration: 0.3, stagger: 0.04, ease: 'power2.out', delay: 0.08, clearProps: 'all' }
+        { y: 14, opacity: 0 },
+        { y: 0, opacity: 1, duration: 0.45, stagger: 0.05, ease: 'power3.out', delay: 0.08, clearProps: 'all' }
       );
       gsap.fromTo(
         '.motion-card',
-        { y: 10, opacity: 0 },
-        { y: 0, opacity: 1, duration: 0.3, stagger: 0.04, ease: 'power2.out', delay: 0.1, clearProps: 'all' }
+        { y: 14, opacity: 0 },
+        { y: 0, opacity: 1, duration: 0.45, stagger: 0.05, ease: 'power3.out', delay: 0.1, clearProps: 'all' }
       );
     }, pageRef);
     return () => ctx.revert();
@@ -139,11 +140,12 @@ export default function AnalyticsPage() {
     <div ref={pageRef} className="space-y-6 max-w-6xl mx-auto pb-12">
       {/* Header & Controls */}
       <div className="motion-header flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-        <div>
+        <div className="flex items-center gap-2">
           <h1 className="text-2xl font-bold tracking-tight">Spending Analytics</h1>
-          <p className="text-muted-foreground text-sm">
-            Understand trends, discretionary behavior, and opportunities to save.
-          </p>
+          <InfoHint
+            title="Spending Analytics"
+            description="Understand trends, discretionary behavior, and opportunities to save across timeframes."
+          />
         </div>
         <div className="motion-controls flex rounded-lg border bg-muted/40 p-1">
           <button
@@ -237,8 +239,8 @@ export default function AnalyticsPage() {
           <CardHeader>
             <CardTitle className="text-base font-semibold flex items-center gap-2">
               <BarChart3 className="w-4 h-4 text-primary" /> Daily Spending Trend
+              <InfoHint text="Timeline of expenses across the selected timeframe" />
             </CardTitle>
-            <CardDescription className="text-xs">Timeline of expenses across the selected timeframe</CardDescription>
           </CardHeader>
           <CardContent>
             {trendData.length === 0 ? (
@@ -283,8 +285,8 @@ export default function AnalyticsPage() {
           <CardHeader>
             <CardTitle className="text-base font-semibold flex items-center gap-2">
               <PieChartIcon className="w-4 h-4 text-primary" /> Category Breakdown
+              <InfoHint text="Percentage distribution of total expenditures" />
             </CardTitle>
-            <CardDescription className="text-xs">Percentage of total expenditures</CardDescription>
           </CardHeader>
           <CardContent>
             {categoryData.length === 0 ? (

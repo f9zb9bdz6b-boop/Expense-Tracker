@@ -15,6 +15,7 @@ import { formatDate } from '@/utils/date';
 import { downloadFile } from '@/utils/helpers';
 import { getCategoryEmoji, getPaymentMethodEmoji } from '@/utils/emojis';
 import { animateSpringPress, animateHoverLift } from '@/utils/motion';
+import { InfoHint } from '@/components/ui/info-hint';
 import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -144,17 +145,17 @@ export default function TransactionsPage() {
 
   useGSAP(() => {
     const ctx = gsap.context(() => {
-      gsap.fromTo('.motion-header', { y: -8, opacity: 0 }, { y: 0, opacity: 1, duration: 0.28, ease: 'power2.out', clearProps: 'all' });
+      gsap.fromTo('.motion-header', { y: 14, opacity: 0 }, { y: 0, opacity: 1, duration: 0.52, ease: 'power3.out', clearProps: 'all' });
       gsap.fromTo(
         '.motion-pulse-card',
-        { y: 10, opacity: 0 },
-        { y: 0, opacity: 1, duration: 0.3, stagger: 0.03, ease: 'power2.out', clearProps: 'all', delay: 0.04 }
+        { y: 14, opacity: 0 },
+        { y: 0, opacity: 1, duration: 0.48, stagger: 0.05, ease: 'power3.out', clearProps: 'all', delay: 0.06 }
       );
-      gsap.fromTo('.motion-controls', { y: 8, opacity: 0 }, { y: 0, opacity: 1, duration: 0.28, ease: 'power2.out', delay: 0.06, clearProps: 'all' });
+      gsap.fromTo('.motion-controls', { y: 10, opacity: 0 }, { y: 0, opacity: 1, duration: 0.45, ease: 'power2.out', delay: 0.1, clearProps: 'all' });
       gsap.fromTo(
         '.motion-row',
-        { y: 6, opacity: 0 },
-        { y: 0, opacity: 1, duration: 0.25, stagger: 0.02, ease: 'power2.out', delay: 0.08, clearProps: 'all' }
+        { y: 10, opacity: 0 },
+        { y: 0, opacity: 1, duration: 0.38, stagger: 0.02, ease: 'power2.out', delay: 0.12, clearProps: 'all' }
       );
     }, pageRef);
     return () => ctx.revert();
@@ -325,10 +326,8 @@ export default function TransactionsPage() {
           <div className="flex items-center gap-2">
             <span className="text-2xl">🧾</span>
             <h1 className="text-2xl font-bold tracking-tight text-foreground">Transaction Log</h1>
+            <InfoHint text="Your chronological financial ledger. Search by merchant, filter by category or date, and export CSV." />
           </div>
-          <p className="text-muted-foreground text-sm mt-0.5">
-            Your real-time financial ledger with categorized expenses, income, and split bills.
-          </p>
         </div>
         <div className="flex items-center gap-2.5">
           <Button
@@ -348,7 +347,7 @@ export default function TransactionsPage() {
               handleBtnClick(e);
               navigate('/add-expense');
             }}
-            className="gap-1.5 bg-primary hover:bg-primary/90 text-primary-foreground shadow-sm cursor-pointer select-none"
+            className="gap-1.5 bg-[#7cf046] hover:bg-[#6ee33a] text-[#082b14] font-extrabold shadow-sm cursor-pointer select-none"
           >
             <Plus className="w-4 h-4" /> Add Expense
           </Button>
@@ -361,14 +360,13 @@ export default function TransactionsPage() {
           <div>
             <div className="flex items-center gap-2">
               <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">Total Outflow</p>
-              <span className="bg-[#fee2e2] text-[#b91c1c] text-[10px] font-bold px-2 py-0.5 rounded-full">
+              <span className="bg-[#fee2e2] text-[#b91c1c] text-[10px] font-bold px-2 py-0.5 rounded-full border border-rose-200">
                 ↓ Outflow
               </span>
             </div>
             <p className="text-xl font-bold text-rose-600 dark:text-rose-400 mt-1">
               -{formatCurrency(metrics.spent)}
             </p>
-            <p className="text-[11px] text-muted-foreground mt-0.5">Filtered expenses</p>
           </div>
           <div className="w-10 h-10 rounded-xl bg-rose-50 dark:bg-rose-500/10 text-rose-600 flex items-center justify-center text-lg">
             💸
@@ -379,14 +377,13 @@ export default function TransactionsPage() {
           <div>
             <div className="flex items-center gap-2">
               <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">Total Inflow</p>
-              <span className="bg-[#d7f7ce] text-[#15803d] text-[10px] font-bold px-2 py-0.5 rounded-full">
+              <span className="bg-[#7cf046]/20 text-[#0d5926] border border-[#7cf046]/40 text-[10px] font-extrabold px-2 py-0.5 rounded-full">
                 ↑ Inflow
               </span>
             </div>
             <p className="text-xl font-bold text-emerald-600 dark:text-emerald-400 mt-1">
               +{formatCurrency(metrics.received)}
             </p>
-            <p className="text-[11px] text-muted-foreground mt-0.5">Filtered income</p>
           </div>
           <div className="w-10 h-10 rounded-xl bg-emerald-50 dark:bg-emerald-500/10 text-emerald-600 flex items-center justify-center text-lg">
             💰
@@ -397,14 +394,13 @@ export default function TransactionsPage() {
           <div>
             <div className="flex items-center gap-2">
               <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">Net Position</p>
-              <span className="bg-[#edf4ed] text-[#153928] text-[10px] font-bold px-2 py-0.5 rounded-full">
+              <span className="bg-[#7cf046]/20 text-[#0d5926] border border-[#7cf046]/40 text-[10px] font-extrabold px-2 py-0.5 rounded-full">
                 ⚖️ Net
               </span>
             </div>
             <p className={`text-xl font-bold mt-1 ${metrics.net >= 0 ? 'text-primary' : 'text-rose-600'}`}>
               {metrics.net >= 0 ? '+' : ''}{formatCurrency(metrics.net)}
             </p>
-            <p className="text-[11px] text-muted-foreground mt-0.5">{metrics.count} total records</p>
           </div>
           <div className="w-10 h-10 rounded-xl bg-slate-100 dark:bg-slate-800 text-foreground flex items-center justify-center text-lg">
             📊

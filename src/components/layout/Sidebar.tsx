@@ -66,10 +66,10 @@ export function Sidebar() {
           className="flex h-9 w-9 items-center justify-center rounded-xl bg-primary text-primary-foreground text-xs font-bold tracking-tight shadow-xs cursor-pointer select-none"
         >
           <div className="grid grid-cols-2 gap-0.5">
-            <span className="w-1.5 h-1.5 rounded-xs bg-[#bcf3b0]" />
+            <span className="w-1.5 h-1.5 rounded-xs bg-[#7cf046]" />
             <span className="w-1.5 h-1.5 rounded-xs bg-white" />
             <span className="w-1.5 h-1.5 rounded-xs bg-white" />
-            <span className="w-1.5 h-1.5 rounded-xs bg-[#bcf3b0]" />
+            <span className="w-1.5 h-1.5 rounded-xs bg-[#7cf046]" />
           </div>
         </div>
         <div>
@@ -96,10 +96,10 @@ export function Sidebar() {
                   onClick={handleLinkPress}
                   className={({ isActive }) =>
                     cn(
-                      'flex items-center gap-3 px-3 py-2 rounded-xl text-sm font-medium transition-all active:scale-95',
+                      'flex items-center gap-3 px-3.5 py-2.5 rounded-xl text-sm font-medium transition-all active:scale-95',
                       isActive
-                        ? 'bg-[#bcf3b0] dark:bg-emerald-500/20 text-[#122b1e] dark:text-emerald-300 font-bold shadow-xs'
-                        : 'text-sidebar-foreground hover:bg-[#dfe8df] dark:hover:bg-muted/40 hover:text-foreground'
+                        ? 'bg-[#7cf046] dark:bg-emerald-500/25 text-[#082b14] dark:text-emerald-300 font-bold shadow-xs'
+                        : 'text-sidebar-foreground hover:bg-[#dfeadf] dark:hover:bg-muted/40 hover:text-foreground'
                     )
                   }
                 >
@@ -114,12 +114,12 @@ export function Sidebar() {
 
       {/* Bottom Vault Card (Coinest Dark Card Style) */}
       <div className="px-3 py-2">
-        <div className="bg-[#12291d] dark:bg-[#152e20] text-white p-3 rounded-2xl space-y-1.5 border border-white/10 shadow-xs">
+        <div className="bg-[#10241a] dark:bg-[#152e20] text-white p-3.5 rounded-2xl space-y-1.5 border border-white/10 shadow-xs">
           <div className="flex items-center justify-between">
             <span className="text-xs font-bold text-white flex items-center gap-1.5">
               <span>🛡️</span> Local Vault
             </span>
-            <span className="text-[9px] bg-[#bcf3b0] text-[#12291d] font-bold px-1.5 py-0.5 rounded-full">
+            <span className="text-[9px] bg-[#7cf046] text-[#082b14] font-extrabold px-1.5 py-0.5 rounded-full">
               SECURE
             </span>
           </div>
@@ -136,10 +136,10 @@ export function Sidebar() {
           onClick={handleLinkPress}
           className={({ isActive }) =>
             cn(
-              'flex items-center gap-3 px-3 py-2 rounded-xl text-sm font-medium transition-all w-full active:scale-95',
+              'flex items-center gap-3 px-3.5 py-2.5 rounded-xl text-sm font-medium transition-all w-full active:scale-95',
               isActive
-                ? 'bg-[#bcf3b0] dark:bg-emerald-500/20 text-[#122b1e] dark:text-emerald-300 font-bold shadow-xs'
-                : 'text-sidebar-foreground hover:bg-[#dfe8df] dark:hover:bg-muted/40 hover:text-foreground'
+                ? 'bg-[#7cf046] dark:bg-emerald-500/25 text-[#082b14] dark:text-emerald-300 font-bold shadow-xs'
+                : 'text-sidebar-foreground hover:bg-[#dfeadf] dark:hover:bg-muted/40 hover:text-foreground'
             )
           }
         >

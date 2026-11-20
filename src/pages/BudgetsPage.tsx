@@ -18,6 +18,7 @@ import { Badge } from '@/components/ui/badge';
 import { Progress } from '@/components/ui/progress';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from '@/components/ui/dialog';
 import { ConfirmDialog } from '@/components/ui/confirm-dialog';
+import { InfoHint } from '@/components/ui/info-hint';
 import { useToast } from '@/components/ui/use-toast';
 import {
   Target, Plus, AlertTriangle, CheckCircle2, Trash2,
@@ -62,16 +63,16 @@ export default function BudgetsPage() {
 
   useGSAP(() => {
     const ctx = gsap.context(() => {
-      gsap.fromTo('.motion-header', { y: -8, opacity: 0 }, { y: 0, opacity: 1, duration: 0.28, ease: 'power2.out', clearProps: 'all' });
+      gsap.fromTo('.motion-header', { y: 14, opacity: 0 }, { y: 0, opacity: 1, duration: 0.52, ease: 'power3.out', clearProps: 'all' });
       gsap.fromTo(
         '.motion-budget-card',
-        { y: 10, opacity: 0 },
-        { y: 0, opacity: 1, duration: 0.3, stagger: 0.04, ease: 'power2.out', delay: 0.05, clearProps: 'all' }
+        { y: 14, opacity: 0 },
+        { y: 0, opacity: 1, duration: 0.45, stagger: 0.05, ease: 'power3.out', delay: 0.08, clearProps: 'all' }
       );
       gsap.fromTo(
         '.motion-meter',
         { scaleX: 0, transformOrigin: 'left' },
-        { scaleX: 1, duration: 0.5, stagger: 0.04, ease: 'power2.out', delay: 0.1, clearProps: 'transformOrigin' }
+        { scaleX: 1, duration: 0.55, stagger: 0.04, ease: 'power2.out', delay: 0.12, clearProps: 'transformOrigin' }
       );
     }, pageRef);
     return () => ctx.revert();
@@ -149,11 +150,12 @@ export default function BudgetsPage() {
     <div ref={pageRef} className="space-y-6 max-w-5xl mx-auto pb-12">
       {/* Top Header */}
       <div className="motion-header flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-        <div>
+        <div className="flex items-center gap-2">
           <h1 className="text-2xl font-bold tracking-tight">Budget Management</h1>
-          <p className="text-muted-foreground text-sm">
-            Set and monitor overall or category-specific spending caps with real-time alerts.
-          </p>
+          <InfoHint
+            title="Budget Management"
+            description="Set and monitor overall or category-specific spending caps with real-time threshold alerts."
+          />
         </div>
         <Button
           onClick={e => {

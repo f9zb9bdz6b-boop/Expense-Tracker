@@ -13,6 +13,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Badge } from '@/components/ui/badge';
 import { Progress } from '@/components/ui/progress';
+import { InfoHint } from '@/components/ui/info-hint';
 import {
   Sparkles, Send, Bot, User, Zap, Lightbulb,
   ShieldCheck, AlertCircle, HelpCircle, ArrowRight
@@ -94,16 +95,16 @@ export default function AIAssistantPage() {
 
   useGSAP(() => {
     const ctx = gsap.context(() => {
-      gsap.fromTo('.motion-header', { y: -8, opacity: 0 }, { y: 0, opacity: 1, duration: 0.28, ease: 'power2.out', clearProps: 'all' });
+      gsap.fromTo('.motion-header', { y: 14, opacity: 0 }, { y: 0, opacity: 1, duration: 0.52, ease: 'power3.out', clearProps: 'all' });
       gsap.fromTo(
         '.motion-card',
-        { y: 10, opacity: 0 },
-        { y: 0, opacity: 1, duration: 0.28, stagger: 0.04, ease: 'power2.out', delay: 0.05, clearProps: 'all' }
+        { y: 14, opacity: 0 },
+        { y: 0, opacity: 1, duration: 0.45, stagger: 0.05, ease: 'power3.out', delay: 0.08, clearProps: 'all' }
       );
       gsap.fromTo(
         '.motion-chip',
         { scale: 0.96, opacity: 0 },
-        { scale: 1, opacity: 1, duration: 0.25, stagger: 0.02, ease: 'power2.out', delay: 0.08, clearProps: 'all' }
+        { scale: 1, opacity: 1, duration: 0.35, stagger: 0.02, ease: 'power2.out', delay: 0.1, clearProps: 'all' }
       );
     }, pageRef);
     return () => ctx.revert();
@@ -113,13 +114,14 @@ export default function AIAssistantPage() {
     <div ref={pageRef} className="space-y-6 max-w-6xl mx-auto pb-12">
       {/* Header */}
       <div className="motion-header flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-        <div>
+        <div className="flex items-center gap-2">
           <h1 className="text-2xl font-bold tracking-tight flex items-center gap-2">
             AI Financial Assistant <Sparkles className="w-5 h-5 text-indigo-500" />
           </h1>
-          <p className="text-muted-foreground text-sm">
-            Private, 100% on-device intelligent financial analysis and conversational advisory.
-          </p>
+          <InfoHint
+            title="Local AI Assistant"
+            description="Private, 100% on-device heuristic financial analysis and conversational advisory."
+          />
         </div>
         <Badge variant="outline" className="px-3 py-1 gap-1.5 text-xs text-indigo-600 dark:text-indigo-400 border-indigo-500/30 w-fit">
           <Zap className="w-3.5 h-3.5" /> Local Intelligence Engine Active
@@ -134,9 +136,9 @@ export default function AIAssistantPage() {
               <div className="w-8 h-8 rounded-full bg-primary/10 text-primary flex items-center justify-center font-bold">
                 <Bot className="w-5 h-5" />
               </div>
-              <div>
+              <div className="flex items-center gap-2">
                 <CardTitle className="text-sm font-semibold">Financial Advisory Chat</CardTitle>
-                <p className="text-[11px] text-muted-foreground">Answers grounded strictly in your financial transactions</p>
+                <InfoHint text="Grounded strictly in your local transactions and budget data." />
               </div>
             </div>
           </CardHeader>

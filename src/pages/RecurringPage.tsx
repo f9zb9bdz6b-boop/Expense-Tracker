@@ -9,7 +9,7 @@ import { db } from '@/db/database';
 import { recurringRepo } from '@/db/repositories';
 import { formatCurrency, toMinorUnits, DEFAULT_CURRENCY } from '@/utils/currency';
 import { formatDate, getCurrentDate } from '@/utils/date';
-import { animateSpringPress, animateHoverLift } from '@/utils/motion';
+import { animateSpringPress } from '@/utils/motion';
 import { Card, CardHeader, CardTitle, CardDescription, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -17,6 +17,7 @@ import { Label } from '@/components/ui/label';
 import { Badge } from '@/components/ui/badge';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from '@/components/ui/dialog';
 import { ConfirmDialog } from '@/components/ui/confirm-dialog';
+import { InfoHint } from '@/components/ui/info-hint';
 import { useToast } from '@/components/ui/use-toast';
 import {
   Repeat, Plus, Calendar, Clock, Trash2, Pause, Play,
@@ -49,17 +50,13 @@ export default function RecurringPage() {
     animateSpringPress(e.currentTarget);
   });
 
-  const handleCardHover = contextSafe((e: React.MouseEvent<HTMLElement>, isEntering: boolean) => {
-    animateHoverLift(e.currentTarget, isEntering);
-  });
-
   useGSAP(() => {
     const ctx = gsap.context(() => {
-      gsap.fromTo('.motion-header', { y: -8, opacity: 0 }, { y: 0, opacity: 1, duration: 0.28, ease: 'power2.out', clearProps: 'all' });
+      gsap.fromTo('.motion-header', { y: 14, opacity: 0 }, { y: 0, opacity: 1, duration: 0.52, ease: 'power3.out', clearProps: 'all' });
       gsap.fromTo(
         '.motion-card',
-        { y: 10, opacity: 0 },
-        { y: 0, opacity: 1, duration: 0.28, stagger: 0.03, ease: 'power2.out', delay: 0.05, clearProps: 'all' }
+        { y: 14, opacity: 0 },
+        { y: 0, opacity: 1, duration: 0.45, stagger: 0.04, ease: 'power3.out', delay: 0.08, clearProps: 'all' }
       );
     }, pageRef);
     return () => ctx.revert();
@@ -130,11 +127,12 @@ export default function RecurringPage() {
     <div ref={pageRef} className="space-y-6 max-w-5xl mx-auto pb-12">
       {/* Header */}
       <div className="motion-header flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-        <div>
+        <div className="flex items-center gap-2">
           <h1 className="text-2xl font-bold tracking-tight">Recurring Bills & Subscriptions</h1>
-          <p className="text-muted-foreground text-sm">
-            Monitor repeating commitments like Netflix, Rent, Broadband, and recurring income.
-          </p>
+          <InfoHint
+            title="Recurring Commitments"
+            description="Monitor repeating commitments like Netflix, Rent, Broadband, and recurring income schedules."
+          />
         </div>
         <Button
           onClick={(e) => {
@@ -173,8 +171,6 @@ export default function RecurringPage() {
             return (
               <Card
                 key={item.id}
-                onMouseEnter={(e) => handleCardHover(e, true)}
-                onMouseLeave={(e) => handleCardHover(e, false)}
                 className="motion-card hover:shadow-md transition-all duration-200"
               >
                 <CardHeader className="pb-3 flex flex-row items-start justify-between">

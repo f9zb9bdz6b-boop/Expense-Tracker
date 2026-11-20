@@ -16,6 +16,7 @@ import { Progress } from '@/components/ui/progress';
 import { formatCurrency, formatCurrencyCompact } from '@/utils/currency';
 import { formatDate } from '@/utils/date';
 import { getCategoryEmoji, getPaymentMethodEmoji } from '@/utils/emojis';
+import { InfoHint } from '@/components/ui/info-hint';
 import {
   TrendingUp, TrendingDown, Wallet, ArrowUpRight, ArrowDownLeft,
   PlusCircle, Target, ArrowRight, Sparkles, ShieldCheck,
@@ -120,17 +121,17 @@ export default function DashboardPage() {
   }, []);
 
   // ============================================================
-  // GSAP ENTRANCE & SNAP TRANSITIONS (Hardware-Accelerated, Zero-Lag)
+  // GSAP ENTRANCE & SNAP TRANSITIONS (Cinematic, Smooth, Zero-Lag)
   // ============================================================
   useGSAP(() => {
     if (isLoading || !summary) return;
 
     const ctx = gsap.context(() => {
-      // 1. Live Rolling Number Ticker (Snappy 350ms, GPU composite)
+      // 1. Live Rolling Number Ticker (Smooth glide)
       gsap.to(balanceTween.current, {
         val: netBalance,
-        duration: 0.35,
-        ease: 'power2.out',
+        duration: 0.55,
+        ease: 'power3.out',
         onUpdate: () => {
           if (balanceValRef.current) {
             balanceValRef.current.textContent = formatCurrency(Math.round(balanceTween.current.val));
@@ -138,40 +139,40 @@ export default function DashboardPage() {
         },
       });
 
-      // 2. Hero Card Entrance
+      // 2. Hero Card Entrance (Smooth cinematic rise)
       gsap.fromTo('.hero-mesh-card',
-        { y: 12, opacity: 0 },
-        { y: 0, opacity: 1, duration: 0.3, ease: 'power2.out', clearProps: 'all' }
+        { y: 14, opacity: 0 },
+        { y: 0, opacity: 1, duration: 0.52, ease: 'power3.out', clearProps: 'all' }
       );
 
       // 3. Staggered Entrance of 4 KPI Metric Cards
       gsap.fromTo('.kpi-stat-card',
-        { y: 12, opacity: 0 },
-        { y: 0, opacity: 1, duration: 0.3, stagger: 0.04, ease: 'power2.out', delay: 0.05, clearProps: 'all' }
+        { y: 14, opacity: 0 },
+        { y: 0, opacity: 1, duration: 0.5, stagger: 0.05, ease: 'power3.out', delay: 0.06, clearProps: 'all' }
       );
 
       // 4. Category Spending Staggered Rows Entrance
       gsap.fromTo('.category-row-item',
-        { x: -8, opacity: 0 },
-        { x: 0, opacity: 1, duration: 0.25, stagger: 0.03, ease: 'power2.out', delay: 0.1, clearProps: 'all' }
+        { y: 10, opacity: 0 },
+        { y: 0, opacity: 1, duration: 0.42, stagger: 0.03, ease: 'power2.out', delay: 0.1, clearProps: 'all' }
       );
 
       // 5. Dynamic Progress Bars Fill Expansion
       gsap.fromTo('.animated-meter-bar',
         { scaleX: 0, transformOrigin: 'left' },
-        { scaleX: 1, duration: 0.5, stagger: 0.05, ease: 'power2.out', delay: 0.15, clearProps: 'transformOrigin' }
+        { scaleX: 1, duration: 0.65, stagger: 0.05, ease: 'power2.out', delay: 0.15, clearProps: 'transformOrigin' }
       );
 
       // 6. Recent Activity Transaction Ledger Cascade
       gsap.fromTo('.recent-tx-row',
-        { y: 8, opacity: 0 },
-        { y: 0, opacity: 1, duration: 0.25, stagger: 0.03, ease: 'power2.out', delay: 0.1, clearProps: 'all' }
+        { y: 10, opacity: 0 },
+        { y: 0, opacity: 1, duration: 0.42, stagger: 0.03, ease: 'power2.out', delay: 0.1, clearProps: 'all' }
       );
 
       // 7. Budget & Goals Card Slide-In
       gsap.fromTo('.widget-card',
-        { y: 12, opacity: 0 },
-        { y: 0, opacity: 1, duration: 0.3, stagger: 0.05, ease: 'power2.out', delay: 0.12, clearProps: 'all' }
+        { y: 14, opacity: 0 },
+        { y: 0, opacity: 1, duration: 0.5, stagger: 0.06, ease: 'power3.out', delay: 0.12, clearProps: 'all' }
       );
     }, dashboardRef);
 
@@ -208,28 +209,34 @@ export default function DashboardPage() {
   return (
     <div ref={dashboardRef} className="space-y-6 pb-12">
       {/* ============================================================
-          TOP HERO CARD: Coinest Deep Forest with Pistachio Highlights
+          TOP HERO CARD: Coinest Deep Forest with Vibrant Lime Highlights
           ============================================================ */}
-      <div className="hero-mesh-card relative overflow-hidden rounded-3xl bg-gradient-to-br from-[#12291d] via-[#163826] to-[#0e2217] text-white p-6 sm:p-7 shadow-sm border border-[#1d422e]">
+      <div className="hero-mesh-card relative overflow-hidden rounded-3xl bg-gradient-to-br from-[#10241a] via-[#143322] to-[#0c1d14] text-white p-6 sm:p-7 shadow-sm border border-[#1b3d2b]">
         <div className="relative z-10 flex flex-col md:flex-row md:items-center justify-between gap-6">
           {/* Left Column: Date, Health Badge, Net Balance Ticker */}
           <div className="space-y-3">
             <div className="flex items-center gap-2.5">
-              <span className="text-xs font-semibold text-[#bcf3b0] tracking-wider uppercase">
+              <span className="text-xs font-semibold text-[#7cf046] tracking-wider uppercase">
                 {todayDateStr}
               </span>
               <span className="w-1 h-1 rounded-full bg-white/40" />
               {/* Health Pulse Pill */}
-              <div className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full bg-white/10 border border-white/15 text-[#bcf3b0] text-[11px] font-semibold">
-                <span className="w-1.5 h-1.5 rounded-full bg-[#bcf3b0] animate-pulse" />
+              <div className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full bg-white/10 border border-white/15 text-[#7cf046] text-[11px] font-bold">
+                <span className="w-1.5 h-1.5 rounded-full bg-[#7cf046] animate-pulse" />
                 <span>{netBalance >= 0 ? 'Healthy Cash Flow' : 'Deficit Alert'}</span>
               </div>
             </div>
 
             <div>
-              <p className="text-xs font-medium text-white/70 uppercase tracking-wider">
-                Total Net Balance
-              </p>
+              <div className="flex items-center gap-1.5">
+                <p className="text-xs font-medium text-white/70 uppercase tracking-wider">
+                  Total Net Balance
+                </p>
+                <InfoHint
+                  text="100% Private local vault with zero cloud tracking. Stored securely in your browser's Dexie database."
+                  className="text-white/60"
+                />
+              </div>
               <div className="flex items-baseline gap-2 mt-1">
                 {/* Live Animated Number Ticker (Motion Element 1) */}
                 <span
@@ -238,16 +245,11 @@ export default function DashboardPage() {
                 >
                   {formatCurrency(netBalance)}
                 </span>
-                <span className="text-xs text-[#bcf3b0] font-bold bg-[#bcf3b0]/15 border border-[#bcf3b0]/30 px-2 py-0.5 rounded-md">
+                <span className="text-xs text-[#7cf046] font-extrabold bg-[#7cf046]/15 border border-[#7cf046]/30 px-2 py-0.5 rounded-md">
                   INR
                 </span>
               </div>
             </div>
-
-            <p className="text-xs text-white/70 max-w-md flex items-center gap-1.5">
-              <ShieldCheck className="w-3.5 h-3.5 text-[#bcf3b0] shrink-0" />
-              <span>100% Private local vault · Real-time Dexie ledger</span>
-            </p>
           </div>
 
           {/* Right Column: Interactive Quick Action Buttons */}
@@ -257,7 +259,7 @@ export default function DashboardPage() {
                 handleButtonPress(e);
                 navigate('/add-expense');
               }}
-              className="hero-action-btn flex items-center justify-center gap-2 bg-[#bcf3b0] hover:bg-[#aaf09d] text-[#122b1e] font-bold px-5 py-2.5 rounded-xl shadow-xs transition-transform active:scale-95 text-sm cursor-pointer select-none"
+              className="hero-action-btn flex items-center justify-center gap-2 bg-[#7cf046] hover:bg-[#6ee33a] text-[#082b14] font-extrabold px-5 py-2.5 rounded-xl shadow-xs transition-transform active:scale-95 text-sm cursor-pointer select-none"
             >
               <PlusCircle className="w-4 h-4" /> Add Expense
             </button>
@@ -268,19 +270,20 @@ export default function DashboardPage() {
               }}
               className="hero-action-btn flex items-center justify-center gap-2 bg-white/10 hover:bg-white/15 text-white border border-white/20 font-semibold px-4 py-2.5 rounded-xl transition-transform active:scale-95 text-sm cursor-pointer select-none"
             >
-              <ArrowDownLeft className="w-4 h-4 text-[#bcf3b0]" /> Log Income
+              <ArrowDownLeft className="w-4 h-4 text-[#7cf046]" /> Log Income
             </button>
           </div>
         </div>
       </div>
 
       {/* ============================================================
-          PERIOD GLIDING CONTROLLER (Motion Element 6)
+          PERIOD GLIDING CONTROLLER
           ============================================================ */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 px-1">
         <div className="flex items-center gap-2">
           <Activity className="w-4 h-4 text-primary" />
           <h2 className="text-base font-bold text-foreground tracking-tight">Financial Pulse</h2>
+          <InfoHint text="Real-time cash flow, savings velocity, and 50/30/20 needs vs wants split." />
         </div>
 
         {/* Gliding Period Toggle Pills */}
@@ -302,20 +305,16 @@ export default function DashboardPage() {
       </div>
 
       {/* ============================================================
-          KPI METRIC CARDS GRID (Coinest Clean White with Pill Badges)
+          KPI METRIC CARDS GRID (Coinest Clean White with Vibrant Pill Badges)
           ============================================================ */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
         {/* Card 1: Inflow */}
-        <div
-          onMouseEnter={handleCardMouseEnter}
-          onMouseLeave={handleCardMouseLeave}
-          className="kpi-stat-card bg-card border border-border/80 rounded-2xl p-5 shadow-xs transition-shadow cursor-default"
-        >
+        <div className="kpi-stat-card bg-card border border-border/80 rounded-2xl p-5 shadow-xs hover:-translate-y-1 hover:shadow-md transition-all duration-200 cursor-default">
           <div className="flex items-center justify-between">
             <span className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">
               Cash Inflow
             </span>
-            <span className="inline-flex items-center gap-1 bg-[#d7f7ce] text-[#15803d] text-[11px] font-bold px-2.5 py-0.5 rounded-full">
+            <span className="inline-flex items-center gap-1 bg-[#7cf046]/20 text-[#0e5c27] border border-[#7cf046]/40 text-[11px] font-extrabold px-2.5 py-0.5 rounded-full">
               ↑ Inflow
             </span>
           </div>
@@ -331,16 +330,12 @@ export default function DashboardPage() {
         </div>
 
         {/* Card 2: Outflow */}
-        <div
-          onMouseEnter={handleCardMouseEnter}
-          onMouseLeave={handleCardMouseLeave}
-          className="kpi-stat-card bg-card border border-border/80 rounded-2xl p-5 shadow-xs transition-shadow cursor-default"
-        >
+        <div className="kpi-stat-card bg-card border border-border/80 rounded-2xl p-5 shadow-xs hover:-translate-y-1 hover:shadow-md transition-all duration-200 cursor-default">
           <div className="flex items-center justify-between">
             <span className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">
               Total Outflow
             </span>
-            <span className="inline-flex items-center gap-1 bg-[#fee2e2] text-[#b91c1c] text-[11px] font-bold px-2.5 py-0.5 rounded-full">
+            <span className="inline-flex items-center gap-1 bg-[#fee2e2] text-[#b91c1c] border border-rose-200 text-[11px] font-extrabold px-2.5 py-0.5 rounded-full">
               ↓ Outflow
             </span>
           </div>
@@ -355,16 +350,12 @@ export default function DashboardPage() {
         </div>
 
         {/* Card 3: Net Savings Velocity */}
-        <div
-          onMouseEnter={handleCardMouseEnter}
-          onMouseLeave={handleCardMouseLeave}
-          className="kpi-stat-card bg-card border border-border/80 rounded-2xl p-5 shadow-xs transition-shadow cursor-default"
-        >
+        <div className="kpi-stat-card bg-card border border-border/80 rounded-2xl p-5 shadow-xs hover:-translate-y-1 hover:shadow-md transition-all duration-200 cursor-default">
           <div className="flex items-center justify-between">
             <span className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">
               Savings Velocity
             </span>
-            <span className="inline-flex items-center gap-1 bg-[#d7f7ce] text-[#15803d] text-[11px] font-bold px-2.5 py-0.5 rounded-full">
+            <span className="inline-flex items-center gap-1 bg-[#7cf046]/20 text-[#0e5c27] border border-[#7cf046]/40 text-[11px] font-extrabold px-2.5 py-0.5 rounded-full">
               ↑ Savings
             </span>
           </div>
@@ -383,16 +374,12 @@ export default function DashboardPage() {
         </div>
 
         {/* Card 4: Needs vs Wants Equilibrium */}
-        <div
-          onMouseEnter={handleCardMouseEnter}
-          onMouseLeave={handleCardMouseLeave}
-          className="kpi-stat-card bg-card border border-border/80 rounded-2xl p-5 shadow-xs transition-shadow cursor-default"
-        >
+        <div className="kpi-stat-card bg-card border border-border/80 rounded-2xl p-5 shadow-xs hover:-translate-y-1 hover:shadow-md transition-all duration-200 cursor-default">
           <div className="flex items-center justify-between">
             <span className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">
               Needs vs Wants
             </span>
-            <span className="inline-flex items-center gap-1 bg-[#d7f7ce] text-[#15803d] text-[11px] font-bold px-2.5 py-0.5 rounded-full">
+            <span className="inline-flex items-center gap-1 bg-[#7cf046]/20 text-[#0e5c27] border border-[#7cf046]/40 text-[11px] font-extrabold px-2.5 py-0.5 rounded-full">
               ⚖️ Balance
             </span>
           </div>
@@ -405,7 +392,7 @@ export default function DashboardPage() {
                 {hasClassified ? `${wantsPercent}% Wants` : ''}
               </span>
             </div>
-            {/* Split Progress Meter Bar - Always prominently visible */}
+            {/* Split Progress Meter Bar */}
             <div className="w-full bg-[#edf4ed] dark:bg-slate-800 rounded-full h-3 mt-2 flex overflow-hidden border border-[#dce8dc] dark:border-slate-700/80 p-0.5">
               <div
                 className="h-full bg-emerald-500 rounded-l-full transition-all duration-500"
@@ -434,17 +421,13 @@ export default function DashboardPage() {
           MAIN BODY: Top Categories + Active Budgets
           ============================================================ */}
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-        {/* Top Spending Categories (Motion Element 6 & 7) */}
-        <Card className="widget-card lg:col-span-2 rounded-2xl border-border/80 shadow-xs">
+        {/* Top Spending Categories */}
+        <Card className="widget-card lg:col-span-2 rounded-2xl border-border/80 shadow-xs hover:shadow-md transition-shadow">
           <CardHeader className="flex flex-row items-center justify-between pb-3">
-            <div>
-              <CardTitle className="text-base font-bold text-foreground flex items-center gap-2">
-                <span>🥧</span> Top Spending Categories
-              </CardTitle>
-              <p className="text-xs text-muted-foreground mt-0.5">
-                Where your money flows this billing cycle.
-              </p>
-            </div>
+            <CardTitle className="text-base font-bold text-foreground flex items-center gap-2">
+              <span>🥧</span> Top Spending Categories
+              <InfoHint text="Breakdown of your highest spending categories this billing cycle." />
+            </CardTitle>
             <Button
               variant="ghost"
               size="sm"
@@ -519,6 +502,7 @@ export default function DashboardPage() {
           <CardHeader className="flex flex-row items-center justify-between pb-3">
             <CardTitle className="text-base font-bold text-foreground flex items-center gap-2">
               <span>🎯</span> Active Budgets
+              <InfoHint text="Monthly budget envelopes and spending limits to keep you on track." />
             </CardTitle>
             <Button
               variant="ghost"
@@ -533,8 +517,7 @@ export default function DashboardPage() {
           <CardContent className="space-y-4">
             {budgetProgress.length === 0 ? (
               <div className="text-center py-8 text-muted-foreground">
-                <p className="text-sm font-medium">No budgets created</p>
-                <p className="text-xs mt-1">Set monthly limits to guard your runway.</p>
+                <p className="text-sm font-medium">No budgets created yet</p>
                 <Button
                   size="sm"
                   variant="outline"

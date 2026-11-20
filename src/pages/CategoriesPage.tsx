@@ -9,13 +9,14 @@ import { db } from '@/db/database';
 import { expenseCategoryRepo, incomeCategoryRepo } from '@/db/repositories';
 import { formatCurrency } from '@/utils/currency';
 import { getCategoryEmoji, POPULAR_CATEGORY_EMOJIS } from '@/utils/emojis';
-import { animateSpringPress, animateHoverLift } from '@/utils/motion';
+import { animateSpringPress } from '@/utils/motion';
 import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from '@/components/ui/dialog';
 import { ConfirmDialog } from '@/components/ui/confirm-dialog';
+import { InfoHint } from '@/components/ui/info-hint';
 import { useToast } from '@/components/ui/use-toast';
 import {
   Plus, Edit2, Trash2, Tag, Layers, Check
@@ -73,12 +74,12 @@ export default function CategoriesPage() {
 
   useGSAP(() => {
     const ctx = gsap.context(() => {
-      gsap.fromTo('.motion-header', { y: -8, opacity: 0 }, { y: 0, opacity: 1, duration: 0.28, ease: 'power2.out', clearProps: 'all' });
-      gsap.fromTo('.motion-controls', { y: 8, opacity: 0 }, { y: 0, opacity: 1, duration: 0.28, ease: 'power2.out', delay: 0.05, clearProps: 'all' });
+      gsap.fromTo('.motion-header', { y: 14, opacity: 0 }, { y: 0, opacity: 1, duration: 0.52, ease: 'power3.out', clearProps: 'all' });
+      gsap.fromTo('.motion-controls', { y: 14, opacity: 0 }, { y: 0, opacity: 1, duration: 0.5, ease: 'power3.out', delay: 0.05, clearProps: 'all' });
       gsap.fromTo(
         '.motion-cat-card',
-        { y: 10, opacity: 0 },
-        { y: 0, opacity: 1, duration: 0.28, stagger: 0.02, ease: 'power2.out', delay: 0.08, clearProps: 'all' }
+        { y: 14, opacity: 0 },
+        { y: 0, opacity: 1, duration: 0.42, stagger: 0.03, ease: 'power3.out', delay: 0.08, clearProps: 'all' }
       );
     }, pageRef);
     return () => ctx.revert();
@@ -181,11 +182,12 @@ export default function CategoriesPage() {
     <div ref={pageRef} className="space-y-6 max-w-5xl mx-auto pb-12">
       {/* Top Header */}
       <div className="motion-header flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-        <div>
+        <div className="flex items-center gap-2">
           <h1 className="text-2xl font-bold tracking-tight text-foreground">Categories & Tags</h1>
-          <p className="text-muted-foreground text-sm mt-0.5">
-            Organize expenses and income with expressive emojis and tracking.
-          </p>
+          <InfoHint
+            title="Category Management"
+            description="Organize expenses and income with expressive emojis, custom color tags, and transaction tracking."
+          />
         </div>
         <Button
           onClick={e => {

@@ -19,6 +19,7 @@ import { Label } from '@/components/ui/label';
 import { Badge } from '@/components/ui/badge';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from '@/components/ui/dialog';
 import { ConfirmDialog } from '@/components/ui/confirm-dialog';
+import { InfoHint } from '@/components/ui/info-hint';
 import { useToast } from '@/components/ui/use-toast';
 import {
   Camera, Upload, FileText, CheckCircle2, Sparkles,
@@ -50,9 +51,9 @@ export default function ReceiptsPage() {
 
   useGSAP(() => {
     const ctx = gsap.context(() => {
-      gsap.fromTo('.motion-header', { y: -8, opacity: 0 }, { y: 0, opacity: 1, duration: 0.28, ease: 'power2.out', clearProps: 'all' });
-      gsap.fromTo('.motion-upload-card', { y: 10, opacity: 0 }, { y: 0, opacity: 1, duration: 0.28, ease: 'power2.out', delay: 0.05, clearProps: 'all' });
-      gsap.fromTo('.motion-receipt-card', { y: 10, opacity: 0 }, { y: 0, opacity: 1, duration: 0.28, stagger: 0.03, ease: 'power2.out', delay: 0.08, clearProps: 'all' });
+      gsap.fromTo('.motion-header', { y: 14, opacity: 0 }, { y: 0, opacity: 1, duration: 0.52, ease: 'power3.out', clearProps: 'all' });
+      gsap.fromTo('.motion-upload-card', { y: 14, opacity: 0 }, { y: 0, opacity: 1, duration: 0.45, ease: 'power3.out', delay: 0.05, clearProps: 'all' });
+      gsap.fromTo('.motion-receipt-card', { y: 14, opacity: 0 }, { y: 0, opacity: 1, duration: 0.45, stagger: 0.04, ease: 'power3.out', delay: 0.08, clearProps: 'all' });
     }, pageRef);
     return () => ctx.revert();
   }, []);
@@ -157,11 +158,12 @@ export default function ReceiptsPage() {
     <div ref={pageRef} className="space-y-6 max-w-5xl mx-auto pb-12">
       {/* Header */}
       <div className="motion-header flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-        <div>
+        <div className="flex items-center gap-2">
           <h1 className="text-2xl font-bold tracking-tight">Receipt Scanner & OCR</h1>
-          <p className="text-muted-foreground text-sm">
-            Scan paper receipts, extract merchant and totals, and link images directly to expenses.
-          </p>
+          <InfoHint
+            title="Receipt Scanner"
+            description="Scan paper receipts, extract merchant and totals with local OCR heuristics, and link images directly to expenses."
+          />
         </div>
 
         <div className="flex items-center gap-2">
