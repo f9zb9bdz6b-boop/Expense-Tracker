@@ -27,8 +27,8 @@ import type { ExpenseCategory, PaymentMethod, SpecialEvent, ExpenseClassificatio
 
 const expenseSchema = z.object({
   amount: z.string().min(1, 'Amount is required').refine(val => !isNaN(parseFloat(val)) && parseFloat(val) > 0, 'Enter a valid positive amount'),
-  categoryId: z.string().min(1, 'Please select a category'),
-  paymentMethodId: z.string().min(1, 'Please select a payment method'),
+  categoryId: z.string().optional(),
+  paymentMethodId: z.string().optional(),
   date: z.string().min(1, 'Date is required'),
   time: z.string().min(1, 'Time is required'),
   description: z.string().min(1, 'Description is required'),
@@ -88,8 +88,22 @@ export default function AddExpensePage() {
     }
   }, [urlEventId, setValue]);
 
-  const selectedCategoryId = watch('categoryId') || (categories[0]?.id ?? '');
-  const selectedPaymentMethodId = watch('paymentMethodId') || (paymentMethods[0]?.id ?? '');
+  useEffect(() => {
+    if (categories.length > 0 && !watch('categoryId')) {
+      setValue('categoryId', categories[0].id, { shouldValidate: true, shouldDirty: true });
+    }
+  }, [categories, setValue, watch]);
+
+  useEffect(() => {
+    if (paymentMethods.length > 0 && !watch('paymentMethodId')) {
+      setValue('paymentMethodId', paymentMethods[0].id, { shouldValidate: true, shouldDirty: true });
+    }
+  }, [paymentMethods, setValue, watch]);
+
+  const watchedCategoryId = watch('categoryId');
+  const watchedPaymentMethodId = watch('paymentMethodId');
+  const selectedCategoryId = watchedCategoryId || (categories[0]?.id ?? '');
+  const selectedPaymentMethodId = watchedPaymentMethodId || (paymentMethods[0]?.id ?? '');
   const classification = watch('classification');
 
   const handleAddTag = (e: React.KeyboardEvent<HTMLInputElement>) => {
@@ -134,11 +148,13 @@ export default function AddExpensePage() {
     setIsSubmitting(true);
     try {
       const minorUnits = toMinorUnits(data.amount);
+      const finalCategoryId = data.categoryId || selectedCategoryId || categories[0]?.id;
+      const finalPaymentMethodId = data.paymentMethodId || selectedPaymentMethodId || paymentMethods[0]?.id;
       await expenseRepo.create({
         amount: minorUnits,
         currency: DEFAULT_CURRENCY.code,
-        categoryId: data.categoryId || categories[0]?.id,
-        paymentMethodId: data.paymentMethodId || paymentMethods[0]?.id,
+        categoryId: finalCategoryId,
+        paymentMethodId: finalPaymentMethodId,
         date: data.date,
         time: data.time,
         description: data.description.trim(),
@@ -150,8 +166,8 @@ export default function AddExpensePage() {
         isRecurring: false,
       });
 
-      if (data.merchant?.trim()) {
-        await merchantRepo.upsert(data.merchant.trim(), minorUnits, data.categoryId);
+      if (data.merchant?.trim() && finalCategoryId) {
+        await merchantRepo.upsert(data.merchant.trim(), minorUnits, finalCategoryId);
       }
 
       toast({
@@ -256,7 +272,7 @@ export default function AddExpensePage() {
                   <button
                     key={cat.id}
                     type="button"
-                    onClick={() => setValue('categoryId', cat.id)}
+                    onClick={() => setValue('categoryId', cat.id, { shouldValidate: true, shouldDirty: true })}
                     className={`flex items-center gap-2 p-2.5 rounded-xl border text-left text-xs font-medium transition-all ${
                       isSelected
                         ? 'border-primary bg-primary/10 shadow-sm ring-1 ring-primary text-foreground font-semibold'
@@ -290,7 +306,7 @@ export default function AddExpensePage() {
                     <button
                       key={pm.id}
                       type="button"
-                      onClick={() => setValue('paymentMethodId', pm.id)}
+                      onClick={() => setValue('paymentMethodId', pm.id, { shouldValidate: true, shouldDirty: true })}
                       className={`px-3 py-1.5 rounded-lg border text-xs font-medium transition-all ${
                         isSelected
                           ? 'border-primary bg-primary text-primary-foreground font-semibold shadow-sm'

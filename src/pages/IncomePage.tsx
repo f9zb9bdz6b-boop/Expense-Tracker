@@ -1,7 +1,7 @@
 // ============================================================
 // IncomePage - Income Tracking, Sources & Summaries
 // ============================================================
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
@@ -26,7 +26,7 @@ import { ResponsiveContainer, PieChart, Pie, Cell, Tooltip } from 'recharts';
 
 const incomeSchema = z.object({
   amount: z.string().min(1, 'Amount is required').refine(val => !isNaN(parseFloat(val)) && parseFloat(val) > 0, 'Enter a valid amount'),
-  categoryId: z.string().min(1, 'Select a category'),
+  categoryId: z.string().optional(),
   paymentMethod: z.string().optional(),
   date: z.string().min(1, 'Date is required'),
   time: z.string().min(1, 'Time is required'),
@@ -83,15 +83,22 @@ export default function IncomePage() {
     }
   });
 
+  useEffect(() => {
+    if (categories.length > 0 && !watch('categoryId')) {
+      setValue('categoryId', categories[0].id, { shouldValidate: true });
+    }
+  }, [categories, setValue, watch]);
+
   const selectedCategoryId = watch('categoryId') || (categories[0]?.id ?? '');
 
   const onSubmit = async (data: IncomeFormValues) => {
     setIsSubmitting(true);
     try {
+      const finalCategoryId = data.categoryId || selectedCategoryId || categories[0]?.id;
       await incomeRepo.create({
         amount: toMinorUnits(data.amount),
         currency: DEFAULT_CURRENCY.code,
-        categoryId: data.categoryId || categories[0]?.id,
+        categoryId: finalCategoryId,
         paymentMethod: data.paymentMethod || 'Bank Transfer',
         date: data.date,
         time: data.time,
