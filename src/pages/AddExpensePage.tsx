@@ -197,6 +197,8 @@ export default function AddExpensePage() {
       </div>
 
       <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
+        <input type="hidden" {...register('categoryId')} />
+        <input type="hidden" {...register('paymentMethodId')} />
         {/* Main Card: Amount & Description */}
         <Card className="border-primary/20 shadow-sm">
           <CardContent className="pt-6 space-y-4">
