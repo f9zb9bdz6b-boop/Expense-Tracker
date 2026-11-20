@@ -10,6 +10,7 @@ import { db } from '@/db/database';
 import { incomeRepo, incomeCategoryRepo } from '@/db/repositories';
 import { toMinorUnits, formatCurrency, DEFAULT_CURRENCY } from '@/utils/currency';
 import { getCurrentDate, getCurrentTime, formatDate } from '@/utils/date';
+import { getCategoryEmoji, getPaymentMethodEmoji } from '@/utils/emojis';
 import { Card, CardHeader, CardTitle, CardDescription, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -222,7 +223,9 @@ export default function IncomePage() {
                     className="w-full px-3 py-2 text-sm bg-background rounded-md border border-input focus:outline-none focus:ring-1 focus:ring-primary"
                   >
                     {categories.map(c => (
-                      <option key={c.id} value={c.id}>{c.name}</option>
+                      <option key={c.id} value={c.id}>
+                        {getCategoryEmoji(c)} {c.name}
+                      </option>
                     ))}
                   </select>
                 </div>
@@ -232,16 +235,16 @@ export default function IncomePage() {
                   <select
                     id="paymentMethod"
                     {...register('paymentMethod')}
-                    className="w-full px-3 py-2 text-sm bg-background rounded-md border border-input focus:outline-none focus:ring-1 focus:ring-primary"
+                    className="w-full px-3 py-2 text-sm bg-background rounded-md border border-input focus:outline-none focus:ring-1 focus:ring-primary font-medium"
                   >
-                    <option value="Bank Transfer">Bank Transfer (NEFT/IMPS)</option>
-                    <option value="UPI">UPI</option>
-                    <option value="GPay">GPay</option>
-                    <option value="Cash">Cash</option>
-                    <option value="Cheque">Cheque</option>
-                    <option value="Credit Card">Credit Card</option>
-                    <option value="Direct Deposit">Direct Deposit</option>
-                    <option value="Other">Other</option>
+                    <option value="Bank Transfer">🏦 Bank Transfer (NEFT/IMPS)</option>
+                    <option value="UPI">📱 UPI</option>
+                    <option value="GPay">📱 GPay</option>
+                    <option value="Cash">💵 Cash</option>
+                    <option value="Cheque">📜 Cheque</option>
+                    <option value="Credit Card">💳 Credit Card</option>
+                    <option value="Direct Deposit">💼 Direct Deposit</option>
+                    <option value="Other">✨ Other</option>
                   </select>
                 </div>
               </div>
@@ -319,21 +322,22 @@ export default function IncomePage() {
                   {incomeList.map(item => {
                     const cat = catMap.get(item.categoryId);
                     return (
-                      <div key={item.id} className="py-3 flex items-center justify-between hover:bg-muted/30 px-2 rounded-lg">
+                      <div key={item.id} className="py-3 flex items-center justify-between hover:bg-muted/30 px-2 rounded-xl group transition-colors">
                         <div className="flex items-center gap-3">
-                          <div className="w-9 h-9 rounded-full bg-emerald-500/10 text-emerald-500 flex items-center justify-center shrink-0">
-                            <ArrowDownLeft className="w-5 h-5" />
+                          <div className="w-10 h-10 rounded-xl bg-emerald-50 dark:bg-emerald-500/10 text-emerald-600 flex items-center justify-center shrink-0 text-lg shadow-xs">
+                            <span>{cat ? getCategoryEmoji(cat) : '💰'}</span>
                           </div>
                           <div>
                             <div className="flex items-center gap-2">
                               <p className="text-sm font-semibold text-foreground">{item.description}</p>
-                              <Badge variant="outline" className="text-[10px] py-0 font-normal">
+                              <span className="inline-flex items-center gap-1 bg-muted/60 text-foreground px-2 py-0.5 rounded-md text-[10px] font-medium">
+                                <span>{getPaymentMethodEmoji(item.paymentMethod || 'Bank Transfer')}</span>
                                 {item.paymentMethod || 'Bank Transfer'}
-                              </Badge>
+                              </span>
                             </div>
                             <p className="text-xs text-muted-foreground mt-0.5">
                               {formatDate(item.date)} • <span className="font-medium text-foreground">{item.source}</span>
-                              {cat && <span> • {cat.name}</span>}
+                              {cat && <span> • {getCategoryEmoji(cat)} {cat.name}</span>}
                             </p>
                           </div>
                         </div>

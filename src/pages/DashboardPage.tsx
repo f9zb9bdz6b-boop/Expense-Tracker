@@ -1,8 +1,10 @@
 // ============================================================
 // DashboardPage - Human-first redesign (warm, editorial)
 // ============================================================
-import React, { useState } from 'react';
+import React, { useState, useMemo } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { useLiveQuery } from 'dexie-react-hooks';
+import { db } from '@/db/database';
 import { useDashboard } from '@/hooks/useDashboard';
 import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -10,6 +12,7 @@ import { Badge } from '@/components/ui/badge';
 import { Progress } from '@/components/ui/progress';
 import { formatCurrency, formatCurrencyCompact } from '@/utils/currency';
 import { formatDate } from '@/utils/date';
+import { getCategoryEmoji } from '@/utils/emojis';
 import {
   TrendingUp, TrendingDown, Wallet,
   ArrowUpRight, ArrowDownLeft,
@@ -39,6 +42,14 @@ export default function DashboardPage() {
       </div>
     );
   }
+
+  const categoriesList = useLiveQuery(() => Promise.all([db.expenseCategories.toArray(), db.incomeCategories.toArray()])) ?? [[], []];
+  const catEmojiMap = useMemo(() => {
+    const map = new Map<string, string>();
+    categoriesList[0]?.forEach(c => map.set(c.id, getCategoryEmoji(c)));
+    categoriesList[1]?.forEach(c => map.set(c.id, getCategoryEmoji(c)));
+    return map;
+  }, [categoriesList]);
 
   const {
     totalIncome, totalExpenses, netBalance,
@@ -228,8 +239,10 @@ export default function DashboardPage() {
                   {topCategories.map((cat) => (
                     <div key={cat.categoryId} className="flex items-center justify-between text-sm">
                       <div className="flex items-center gap-2">
-                        <span className="w-2.5 h-2.5 rounded-full shrink-0" style={{ backgroundColor: cat.categoryColor }} />
-                        <span className="text-foreground truncate max-w-[130px]">{cat.categoryName}</span>
+                        <span className="text-base shrink-0">
+                          {catEmojiMap.get(cat.categoryId) || getCategoryEmoji(cat.categoryName)}
+                        </span>
+                        <span className="text-foreground truncate max-w-[130px] font-medium">{cat.categoryName}</span>
                       </div>
                       <div className="text-right">
                         <div className="font-medium">{formatCurrency(cat.amount)}</div>
@@ -302,19 +315,23 @@ export default function DashboardPage() {
               <div className="divide-y divide-border">
                 {recentTransactions.map((item) => {
                   const isExpense = 'classification' in item;
+                  const emoji = catEmojiMap.get((item as any).categoryId) || (isExpense ? '💸' : '💰');
                   return (
                     <div
                       key={item.id}
-                      className="py-2.5 flex items-center justify-between gap-3"
+                      className="py-2.5 flex items-center justify-between gap-3 group"
                     >
                       <div className="flex items-center gap-3 min-w-0">
-                        <div className={`w-7 h-7 rounded flex items-center justify-center shrink-0 ${isExpense ? 'bg-rose-50 text-rose-500 dark:bg-rose-500/10' : 'bg-green-50 text-green-600 dark:bg-green-500/10'}`}>
-                          {isExpense
-                            ? <ArrowUpRight className="w-3.5 h-3.5" />
-                            : <ArrowDownLeft className="w-3.5 h-3.5" />}
+                        <div
+                          className="w-8 h-8 rounded-xl flex items-center justify-center shrink-0 text-base shadow-xs"
+                          style={{
+                            backgroundColor: isExpense ? '#fee2e2' : '#dcfce7',
+                          }}
+                        >
+                          <span>{emoji}</span>
                         </div>
                         <div className="min-w-0">
-                          <p className="text-sm text-foreground truncate">
+                          <p className="text-sm font-medium text-foreground truncate">
                             {item.description || (isExpense ? 'Expense' : 'Income')}
                           </p>
                           <p className="text-[11px] text-muted-foreground">
@@ -324,7 +341,7 @@ export default function DashboardPage() {
                         </div>
                       </div>
                       <div className="text-right shrink-0">
-                        <p className={`text-sm font-medium ${isExpense ? 'text-rose-600 dark:text-rose-400' : 'text-primary'}`}>
+                        <p className={`text-sm font-semibold tabular-nums ${isExpense ? 'text-rose-600 dark:text-rose-400' : 'text-primary'}`}>
                           {isExpense ? '−' : '+'}{formatCurrency(item.amount)}
                         </p>
                         {isExpense && (

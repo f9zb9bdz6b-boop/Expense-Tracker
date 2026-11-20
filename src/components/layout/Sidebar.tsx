@@ -40,30 +40,28 @@ const navGroups: { label?: string; items: NavItem[] }[] = [
       { to: '/analytics', icon: <BarChart3 className="h-4 w-4" />, label: 'Analytics' },
     ],
   },
-  {
-    items: [
-      { to: '/settings', icon: <Settings className="h-4 w-4" />, label: 'Settings' },
-    ],
-  },
 ];
 
 export function Sidebar() {
   return (
-    <aside className="hidden lg:flex flex-col w-56 shrink-0 h-screen sticky top-0 border-r bg-sidebar overflow-y-auto">
-      {/* Wordmark */}
+    <aside className="hidden lg:flex flex-col w-56 shrink-0 h-screen sticky top-0 border-r bg-sidebar select-none">
+      {/* Brand Header */}
       <div className="flex items-center gap-2.5 px-5 py-4 border-b">
-        <div className="flex h-7 w-7 items-center justify-center rounded bg-primary text-primary-foreground text-xs font-bold tracking-tight select-none">
+        <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-primary text-primary-foreground text-xs font-bold tracking-tight shadow-sm">
           ET
         </div>
-        <span className="text-sm font-medium text-sidebar-foreground">Expense Tracker</span>
+        <div>
+          <span className="text-sm font-semibold tracking-tight text-sidebar-foreground">Expense Tracker</span>
+          <p className="text-[10px] text-muted-foreground leading-none mt-0.5">Personal Finance</p>
+        </div>
       </div>
 
-      {/* Navigation */}
-      <nav className="flex-1 px-3 py-3 space-y-4">
+      {/* Navigation Groups */}
+      <nav className="flex-1 px-3 py-3 space-y-4 overflow-y-auto">
         {navGroups.map((group, gi) => (
           <div key={gi}>
             {group.label && (
-              <p className="px-2 mb-1 text-[10px] font-semibold uppercase tracking-widest text-muted-foreground/60">
+              <p className="px-2 mb-1.5 text-[10px] font-bold uppercase tracking-wider text-muted-foreground">
                 {group.label}
               </p>
             )}
@@ -75,15 +73,15 @@ export function Sidebar() {
                   end={item.end}
                   className={({ isActive }) =>
                     cn(
-                      'flex items-center gap-2.5 px-2 py-1.5 rounded text-sm transition-colors',
+                      'flex items-center gap-2.5 px-2.5 py-1.5 rounded-md text-sm font-medium transition-all',
                       isActive
-                        ? 'border-l-2 border-primary pl-[6px] text-primary font-medium bg-primary/5'
-                        : 'text-sidebar-foreground hover:bg-muted hover:text-foreground border-l-2 border-transparent pl-[6px]'
+                        ? 'bg-primary/10 text-primary font-semibold shadow-xs'
+                        : 'text-sidebar-foreground hover:bg-muted hover:text-foreground'
                     )
                   }
                 >
                   {item.icon}
-                  {item.label}
+                  <span>{item.label}</span>
                 </NavLink>
               ))}
             </div>
@@ -91,9 +89,22 @@ export function Sidebar() {
         ))}
       </nav>
 
-      {/* Footer */}
-      <div className="px-5 py-3 border-t">
-        <p className="text-[11px] text-muted-foreground/50">All data stored locally</p>
+      {/* Settings pinned at the very bottom */}
+      <div className="p-3 border-t mt-auto">
+        <NavLink
+          to="/settings"
+          className={({ isActive }) =>
+            cn(
+              'flex items-center gap-2.5 px-2.5 py-2 rounded-md text-sm font-medium transition-all w-full',
+              isActive
+                ? 'bg-primary/10 text-primary font-semibold'
+                : 'text-sidebar-foreground hover:bg-muted hover:text-foreground'
+            )
+          }
+        >
+          <Settings className="h-4 w-4" />
+          <span>Settings</span>
+        </NavLink>
       </div>
     </aside>
   );

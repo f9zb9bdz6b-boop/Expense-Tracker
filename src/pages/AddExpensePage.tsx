@@ -23,6 +23,7 @@ import {
   Plus, Check, Sparkles, Tag, Calendar, Clock,
   Store, FileText, ArrowLeft, Layers, Camera
 } from 'lucide-react';
+import { getCategoryEmoji, getPaymentMethodEmoji, POPULAR_CATEGORY_EMOJIS } from '@/utils/emojis';
 import type { ExpenseCategory, PaymentMethod, SpecialEvent, ExpenseClassification } from '@/types';
 
 const expenseSchema = z.object({
@@ -50,7 +51,8 @@ export default function AddExpensePage() {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [showNewCatDialog, setShowNewCatDialog] = useState(false);
   const [newCatName, setNewCatName] = useState('');
-  const [newCatColor, setNewCatColor] = useState('#3b82f6');
+  const [newCatEmoji, setNewCatEmoji] = useState('🍔');
+  const [newCatColor, setNewCatColor] = useState('#10b981');
 
   // Load Categories, Payment Methods, and Active Events reactively
   const categories = useLiveQuery(() => db.expenseCategories.orderBy('order').toArray()) ?? [];
@@ -124,10 +126,11 @@ export default function AddExpensePage() {
   const handleCreateCategory = async () => {
     if (!newCatName.trim()) return;
     try {
+      const finalEmoji = newCatEmoji.trim() || getCategoryEmoji({ name: newCatName });
       const created = await expenseCategoryRepo.create({
         name: newCatName.trim(),
         color: newCatColor,
-        icon: 'Tag',
+        icon: finalEmoji,
         order: categories.length,
         isDefault: false,
         isArchived: false,
@@ -137,7 +140,7 @@ export default function AddExpensePage() {
       setNewCatName('');
       toast({
         title: 'Category Created',
-        description: `Added "${created.name}" to your expense categories.`,
+        description: `Added "${finalEmoji} ${created.name}" to your categories.`,
       });
     } catch (err) {
       console.error(err);
@@ -270,23 +273,21 @@ export default function AddExpensePage() {
             <div className="grid grid-cols-2 sm:grid-cols-4 gap-2.5 max-h-56 overflow-y-auto p-1">
               {categories.map(cat => {
                 const isSelected = selectedCategoryId === cat.id;
+                const emoji = getCategoryEmoji(cat);
                 return (
                   <button
                     key={cat.id}
                     type="button"
                     onClick={() => setValue('categoryId', cat.id, { shouldValidate: true, shouldDirty: true })}
-                    className={`flex items-center gap-2 p-2.5 rounded border text-left text-xs font-medium transition-all ${
+                    className={`flex items-center gap-2.5 p-2.5 rounded-xl border text-left text-xs font-medium transition-all ${
                       isSelected
-                        ? 'border-primary bg-primary/8 text-foreground font-semibold'
-                        : 'border-border/60 hover:bg-muted/50 text-muted-foreground'
+                        ? 'border-primary bg-primary/10 text-primary font-semibold ring-1 ring-primary shadow-xs'
+                        : 'border-border/80 hover:bg-muted text-foreground'
                     }`}
                   >
-                    <span
-                      className="w-3 h-3 rounded-full shrink-0"
-                      style={{ backgroundColor: cat.color }}
-                    />
+                    <span className="text-base shrink-0 select-none">{emoji}</span>
                     <span className="truncate">{cat.name}</span>
-                    {isSelected && <Check className="w-3 h-3 text-primary ml-auto shrink-0" />}
+                    {isSelected && <Check className="w-3.5 h-3.5 text-primary ml-auto shrink-0" />}
                   </button>
                 );
               })}
@@ -304,18 +305,20 @@ export default function AddExpensePage() {
               <div className="flex flex-wrap gap-2">
                 {paymentMethods.map(pm => {
                   const isSelected = selectedPaymentMethodId === pm.id;
+                  const pmEmoji = getPaymentMethodEmoji(pm.name);
                   return (
                     <button
                       key={pm.id}
                       type="button"
                       onClick={() => setValue('paymentMethodId', pm.id, { shouldValidate: true, shouldDirty: true })}
-                      className={`px-3 py-1.5 rounded border text-xs font-medium transition-all ${
+                      className={`flex items-center gap-1.5 px-3 py-2 rounded-lg border text-xs font-medium transition-all ${
                         isSelected
-                          ? 'border-primary bg-primary text-primary-foreground'
-                          : 'border-border hover:bg-muted text-foreground'
+                          ? 'border-primary bg-primary text-primary-foreground font-semibold shadow-xs'
+                          : 'border-border/80 hover:bg-muted text-foreground'
                       }`}
                     >
-                      {pm.name}
+                      <span className="text-sm select-none">{pmEmoji}</span>
+                      <span>{pm.name}</span>
                     </button>
                   );
                 })}
@@ -446,6 +449,32 @@ export default function AddExpensePage() {
           </DialogHeader>
           <div className="space-y-4 py-2">
             <div className="space-y-1.5">
+              <Label>Category Emoji</Label>
+              <div className="flex items-center gap-2">
+                <span className="text-3xl w-10 h-10 flex items-center justify-center rounded border bg-muted select-none">
+                  {newCatEmoji}
+                </span>
+                <Input
+                  className="w-24 text-center text-lg"
+                  value={newCatEmoji}
+                  onChange={e => setNewCatEmoji(e.target.value)}
+                  maxLength={4}
+                />
+                <div className="flex gap-1 overflow-x-auto py-1">
+                  {POPULAR_CATEGORY_EMOJIS.slice(0, 8).map(em => (
+                    <button
+                      key={em}
+                      type="button"
+                      onClick={() => setNewCatEmoji(em)}
+                      className="w-8 h-8 flex items-center justify-center text-base rounded hover:bg-muted"
+                    >
+                      {em}
+                    </button>
+                  ))}
+                </div>
+              </div>
+            </div>
+            <div className="space-y-1.5">
               <Label htmlFor="catName">Category Name</Label>
               <Input
                 id="catName"
@@ -454,18 +483,6 @@ export default function AddExpensePage() {
                 onChange={e => setNewCatName(e.target.value)}
                 autoFocus
               />
-            </div>
-            <div className="space-y-1.5">
-              <Label>Category Color</Label>
-              <div className="flex items-center gap-2">
-                <input
-                  type="color"
-                  value={newCatColor}
-                  onChange={e => setNewCatColor(e.target.value)}
-                  className="w-10 h-10 rounded border cursor-pointer"
-                />
-                <span className="text-xs text-muted-foreground">{newCatColor}</span>
-              </div>
             </div>
           </div>
           <DialogFooter>

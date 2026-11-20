@@ -10,6 +10,8 @@ import type {
   PriceRecord, Notification, UserSettings,
 } from '@/types';
 
+import { getCategoryEmoji, getPaymentMethodEmoji } from '@/utils/emojis';
+
 export class ExpenseTrackerDB extends Dexie {
   expenses!: Table<Expense>;
   income!: Table<Income>;
@@ -61,7 +63,32 @@ export const db = new ExpenseTrackerDB();
 // --- Seed default data ---
 export async function seedDefaultData(): Promise<void> {
   const settingsCount = await db.settings.count();
-  if (settingsCount > 0) return; // Already seeded
+  if (settingsCount > 0) {
+    // Migration: ensure any legacy icons are upgraded to rich emojis
+    try {
+      const allCats = await db.expenseCategories.toArray();
+      for (const cat of allCats) {
+        if (!cat.icon || !/\p{Extended_Pictographic}/u.test(cat.icon)) {
+          await db.expenseCategories.update(cat.id, { icon: getCategoryEmoji(cat) });
+        }
+      }
+      const allIncCats = await db.incomeCategories.toArray();
+      for (const cat of allIncCats) {
+        if (!cat.icon || !/\p{Extended_Pictographic}/u.test(cat.icon)) {
+          await db.incomeCategories.update(cat.id, { icon: getCategoryEmoji(cat) });
+        }
+      }
+      const allPms = await db.paymentMethods.toArray();
+      for (const pm of allPms) {
+        if (!pm.icon || !/\p{Extended_Pictographic}/u.test(pm.icon)) {
+          await db.paymentMethods.update(pm.id, { icon: getPaymentMethodEmoji(pm.name) });
+        }
+      }
+    } catch (e) {
+      // Silently handle migration errors
+    }
+    return;
+  }
 
   const now = Date.now();
 
@@ -91,22 +118,22 @@ export async function seedDefaultData(): Promise<void> {
     updatedAt: now,
   });
 
-  // Default expense categories
+  // Default expense categories with expressive emojis
   const defaultExpenseCategories: Omit<ExpenseCategory, 'id' | 'createdAt' | 'updatedAt'>[] = [
-    { name: 'Food', icon: 'UtensilsCrossed', color: '#ef4444', order: 0, isDefault: true, isArchived: false },
-    { name: 'Groceries', icon: 'ShoppingCart', color: '#f97316', order: 1, isDefault: true, isArchived: false },
-    { name: 'Transportation', icon: 'Car', color: '#eab308', order: 2, isDefault: true, isArchived: false },
-    { name: 'Shopping', icon: 'ShoppingBag', color: '#84cc16', order: 3, isDefault: true, isArchived: false },
-    { name: 'Entertainment', icon: 'Film', color: '#22c55e', order: 4, isDefault: true, isArchived: false },
-    { name: 'Education', icon: 'GraduationCap', color: '#14b8a6', order: 5, isDefault: true, isArchived: false },
-    { name: 'Healthcare', icon: 'Heart', color: '#06b6d4', order: 6, isDefault: true, isArchived: false },
-    { name: 'Rent', icon: 'Home', color: '#3b82f6', order: 7, isDefault: true, isArchived: false },
-    { name: 'Utilities', icon: 'Zap', color: '#6366f1', order: 8, isDefault: true, isArchived: false },
-    { name: 'Travel', icon: 'Plane', color: '#8b5cf6', order: 9, isDefault: true, isArchived: false },
-    { name: 'Subscriptions', icon: 'CreditCard', color: '#a855f7', order: 10, isDefault: true, isArchived: false },
-    { name: 'Personal Care', icon: 'Sparkles', color: '#d946ef', order: 11, isDefault: true, isArchived: false },
-    { name: 'Gifts', icon: 'Gift', color: '#ec4899', order: 12, isDefault: true, isArchived: false },
-    { name: 'Other', icon: 'MoreHorizontal', color: '#6b7280', order: 13, isDefault: true, isArchived: false },
+    { name: 'Food', icon: '🍔', color: '#ef4444', order: 0, isDefault: true, isArchived: false },
+    { name: 'Groceries', icon: '🛒', color: '#f97316', order: 1, isDefault: true, isArchived: false },
+    { name: 'Transportation', icon: '🚗', color: '#eab308', order: 2, isDefault: true, isArchived: false },
+    { name: 'Shopping', icon: '🛍️', color: '#84cc16', order: 3, isDefault: true, isArchived: false },
+    { name: 'Entertainment', icon: '🎬', color: '#22c55e', order: 4, isDefault: true, isArchived: false },
+    { name: 'Education', icon: '📚', color: '#14b8a6', order: 5, isDefault: true, isArchived: false },
+    { name: 'Healthcare', icon: '💊', color: '#06b6d4', order: 6, isDefault: true, isArchived: false },
+    { name: 'Rent', icon: '🏠', color: '#3b82f6', order: 7, isDefault: true, isArchived: false },
+    { name: 'Utilities', icon: '⚡', color: '#6366f1', order: 8, isDefault: true, isArchived: false },
+    { name: 'Travel', icon: '✈️', color: '#8b5cf6', order: 9, isDefault: true, isArchived: false },
+    { name: 'Subscriptions', icon: '📱', color: '#a855f7', order: 10, isDefault: true, isArchived: false },
+    { name: 'Personal Care', icon: '💅', color: '#d946ef', order: 11, isDefault: true, isArchived: false },
+    { name: 'Gifts', icon: '🎁', color: '#ec4899', order: 12, isDefault: true, isArchived: false },
+    { name: 'Other', icon: '📦', color: '#6b7280', order: 13, isDefault: true, isArchived: false },
   ];
 
   await db.expenseCategories.bulkPut(
@@ -120,13 +147,13 @@ export async function seedDefaultData(): Promise<void> {
 
   // Default income categories
   const defaultIncomeCategories: Omit<IncomeCategory, 'id' | 'createdAt' | 'updatedAt'>[] = [
-    { name: 'Salary', icon: 'Briefcase', color: '#22c55e', order: 0, isDefault: true, isArchived: false },
-    { name: 'Freelance', icon: 'Laptop', color: '#3b82f6', order: 1, isDefault: true, isArchived: false },
-    { name: 'Business', icon: 'Building2', color: '#8b5cf6', order: 2, isDefault: true, isArchived: false },
-    { name: 'Gifts', icon: 'Gift', color: '#ec4899', order: 3, isDefault: true, isArchived: false },
-    { name: 'Allowance', icon: 'Wallet', color: '#f97316', order: 4, isDefault: true, isArchived: false },
-    { name: 'Investment', icon: 'TrendingUp', color: '#14b8a6', order: 5, isDefault: true, isArchived: false },
-    { name: 'Other', icon: 'MoreHorizontal', color: '#6b7280', order: 6, isDefault: true, isArchived: false },
+    { name: 'Salary', icon: '💼', color: '#22c55e', order: 0, isDefault: true, isArchived: false },
+    { name: 'Freelance', icon: '💻', color: '#3b82f6', order: 1, isDefault: true, isArchived: false },
+    { name: 'Business', icon: '🏢', color: '#8b5cf6', order: 2, isDefault: true, isArchived: false },
+    { name: 'Gifts', icon: '🎁', color: '#ec4899', order: 3, isDefault: true, isArchived: false },
+    { name: 'Allowance', icon: '🪙', color: '#f97316', order: 4, isDefault: true, isArchived: false },
+    { name: 'Investment', icon: '📈', color: '#14b8a6', order: 5, isDefault: true, isArchived: false },
+    { name: 'Other', icon: '📦', color: '#6b7280', order: 6, isDefault: true, isArchived: false },
   ];
 
   await db.incomeCategories.bulkPut(
@@ -138,15 +165,15 @@ export async function seedDefaultData(): Promise<void> {
     }))
   );
 
-  // Default payment methods
+  // Default payment methods with real emoji icons
   const defaultPaymentMethods: Omit<PaymentMethod, 'id' | 'createdAt' | 'updatedAt'>[] = [
-    { name: 'Cash', icon: 'Banknote', color: '#22c55e', isDefault: true, isArchived: false, order: 0 },
-    { name: 'UPI', icon: 'Smartphone', color: '#6366f1', isDefault: true, isArchived: false, order: 1 },
-    { name: 'GPay', icon: 'Wallet', color: '#3b82f6', isDefault: true, isArchived: false, order: 2 },
-    { name: 'Credit Card', icon: 'CreditCard', color: '#ef4444', isDefault: true, isArchived: false, order: 3 },
-    { name: 'Debit Card', icon: 'CreditCard', color: '#f97316', isDefault: true, isArchived: false, order: 4 },
-    { name: 'Bank Transfer', icon: 'Building2', color: '#14b8a6', isDefault: true, isArchived: false, order: 5 },
-    { name: 'Other', icon: 'MoreHorizontal', color: '#6b7280', isDefault: true, isArchived: false, order: 6 },
+    { name: 'Cash', icon: '💵', color: '#22c55e', isDefault: true, isArchived: false, order: 0 },
+    { name: 'UPI', icon: '📱', color: '#6366f1', isDefault: true, isArchived: false, order: 1 },
+    { name: 'GPay', icon: '📱', color: '#3b82f6', isDefault: true, isArchived: false, order: 2 },
+    { name: 'Credit Card', icon: '💳', color: '#ef4444', isDefault: true, isArchived: false, order: 3 },
+    { name: 'Debit Card', icon: '💳', color: '#f97316', isDefault: true, isArchived: false, order: 4 },
+    { name: 'Bank Transfer', icon: '🏦', color: '#14b8a6', isDefault: true, isArchived: false, order: 5 },
+    { name: 'Other', icon: '💳', color: '#6b7280', isDefault: true, isArchived: false, order: 6 },
   ];
 
   await db.paymentMethods.bulkPut(

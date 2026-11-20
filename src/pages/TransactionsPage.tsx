@@ -1,6 +1,7 @@
 // ============================================================
 // TransactionsPage - Transaction History, Search, Filters & Export
 // With Category Editing & Split Expense Tracking
+// Human-crafted, visually rich design with emojis & decorative timeline
 // ============================================================
 import React, { useState, useMemo } from 'react';
 import { useNavigate } from 'react-router-dom';
@@ -10,6 +11,7 @@ import { expenseRepo, incomeRepo } from '@/db/repositories';
 import { formatCurrency, toMinorUnits, DEFAULT_CURRENCY } from '@/utils/currency';
 import { formatDate } from '@/utils/date';
 import { downloadFile } from '@/utils/helpers';
+import { getCategoryEmoji, getPaymentMethodEmoji } from '@/utils/emojis';
 import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -19,8 +21,9 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from '
 import { ConfirmDialog } from '@/components/ui/confirm-dialog';
 import { useToast } from '@/components/ui/use-toast';
 import {
-  Search, Filter, ArrowUpRight, ArrowDownLeft, Trash2, Edit2,
-  Download, Plus, RefreshCw, X, Calendar, Layers, Tag, Users
+  Search, ArrowUpRight, ArrowDownLeft, Trash2, Edit2,
+  Download, Plus, X, Calendar, Users, TrendingDown,
+  TrendingUp, Wallet, Sparkles, Leaf, Receipt, Clock, Store
 } from 'lucide-react';
 import type { Expense, Income, ExpenseCategory, IncomeCategory, PaymentMethod, ExpenseClassification } from '@/types';
 
@@ -128,6 +131,52 @@ export default function TransactionsPage() {
     selectedCategory, selectedClassification, startDate, endDate,
     sortField, sortOrder
   ]);
+
+  // Summary Metrics of filtered data
+  const metrics = useMemo(() => {
+    let spent = 0;
+    let received = 0;
+    filteredTransactions.forEach(t => {
+      if (t.type === 'expense') spent += t.amount;
+      else received += t.amount;
+    });
+    return {
+      spent,
+      received,
+      net: received - spent,
+      count: filteredTransactions.length,
+    };
+  }, [filteredTransactions]);
+
+  // Group transactions by date for a human timeline feel
+  const groupedByDate = useMemo(() => {
+    const today = new Date().toISOString().split('T')[0];
+    const yesterday = new Date(Date.now() - 86400000).toISOString().split('T')[0];
+
+    const map = new Map<string, { label: string; subtotal: number; count: number; items: CombinedTransaction[] }>();
+
+    filteredTransactions.forEach(t => {
+      const dateKey = t.date;
+      if (!map.has(dateKey)) {
+        let label = formatDate(dateKey);
+        if (dateKey === today) label = 'Today';
+        else if (dateKey === yesterday) label = 'Yesterday';
+
+        map.set(dateKey, { label, subtotal: 0, count: 0, items: [] });
+      }
+
+      const group = map.get(dateKey)!;
+      group.items.push(t);
+      group.count += 1;
+      if (t.type === 'expense') {
+        group.subtotal -= t.amount;
+      } else {
+        group.subtotal += t.amount;
+      }
+    });
+
+    return Array.from(map.entries());
+  }, [filteredTransactions]);
 
   const handleOpenEdit = (t: CombinedTransaction) => {
     setEditingTransaction(t);
@@ -241,37 +290,82 @@ export default function TransactionsPage() {
   };
 
   return (
-    <div className="space-y-6">
-      {/* Top Header & Quick Buttons */}
+    <div className="space-y-6 pb-12">
+      {/* Top Header & Action Controls */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>
-          <h1 className="text-2xl font-bold tracking-tight">Transaction History</h1>
-          <p className="text-muted-foreground text-sm">
-            Search, filter, edit categories, and track regular, split, and savings transactions.
+          <div className="flex items-center gap-2">
+            <span className="text-2xl">🧾</span>
+            <h1 className="text-2xl font-bold tracking-tight text-foreground">Transaction Log</h1>
+          </div>
+          <p className="text-muted-foreground text-sm mt-0.5">
+            Your real-time financial ledger with categorized expenses, income, and split bills.
           </p>
         </div>
         <div className="flex items-center gap-2.5">
-          <Button variant="outline" size="sm" onClick={handleExportCSV} className="gap-1.5">
+          <Button variant="outline" size="sm" onClick={handleExportCSV} className="gap-1.5 shadow-xs">
             <Download className="w-4 h-4" /> Export CSV
           </Button>
-          <Button size="sm" onClick={() => navigate('/add-expense')} className="gap-1.5 shadow-sm">
+          <Button size="sm" onClick={() => navigate('/add-expense')} className="gap-1.5 bg-primary hover:bg-primary/90 text-primary-foreground shadow-sm">
             <Plus className="w-4 h-4" /> Add Expense
           </Button>
         </div>
       </div>
 
+      {/* Decorative Summary Pulse Banner */}
+      <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+        <div className="bg-card border border-border/80 rounded-2xl p-4 shadow-xs hover:border-border transition-all flex items-center justify-between">
+          <div>
+            <p className="text-xs font-medium text-muted-foreground uppercase tracking-wider">Total Outflow</p>
+            <p className="text-xl font-bold text-rose-600 dark:text-rose-400 mt-0.5">
+              -{formatCurrency(metrics.spent)}
+            </p>
+            <p className="text-[11px] text-muted-foreground mt-0.5">Filtered expenses</p>
+          </div>
+          <div className="w-11 h-11 rounded-2xl bg-rose-50 dark:bg-rose-500/10 text-rose-600 flex items-center justify-center text-lg">
+            💸
+          </div>
+        </div>
+
+        <div className="bg-card border border-border/80 rounded-2xl p-4 shadow-xs hover:border-border transition-all flex items-center justify-between">
+          <div>
+            <p className="text-xs font-medium text-muted-foreground uppercase tracking-wider">Total Inflow</p>
+            <p className="text-xl font-bold text-emerald-600 dark:text-emerald-400 mt-0.5">
+              +{formatCurrency(metrics.received)}
+            </p>
+            <p className="text-[11px] text-muted-foreground mt-0.5">Filtered income</p>
+          </div>
+          <div className="w-11 h-11 rounded-2xl bg-emerald-50 dark:bg-emerald-500/10 text-emerald-600 flex items-center justify-center text-lg">
+            💰
+          </div>
+        </div>
+
+        <div className="bg-card border border-border/80 rounded-2xl p-4 shadow-xs hover:border-border transition-all flex items-center justify-between">
+          <div>
+            <p className="text-xs font-medium text-muted-foreground uppercase tracking-wider">Net Position</p>
+            <p className={`text-xl font-bold mt-0.5 ${metrics.net >= 0 ? 'text-primary' : 'text-rose-600'}`}>
+              {metrics.net >= 0 ? '+' : ''}{formatCurrency(metrics.net)}
+            </p>
+            <p className="text-[11px] text-muted-foreground mt-0.5">{metrics.count} total records</p>
+          </div>
+          <div className="w-11 h-11 rounded-2xl bg-slate-100 dark:bg-slate-800 text-foreground flex items-center justify-center text-lg">
+            📊
+          </div>
+        </div>
+      </div>
+
       {/* Filter and Search Bar */}
-      <Card>
-        <CardContent className="pt-6 space-y-4">
+      <Card className="rounded-2xl border-border/80 shadow-xs">
+        <CardContent className="pt-5 space-y-4">
           <div className="flex flex-col md:flex-row gap-3">
             {/* Search Input */}
             <div className="relative flex-1">
-              <Search className="w-4 h-4 text-muted-foreground absolute left-3 top-3" />
+              <Search className="w-4 h-4 text-muted-foreground absolute left-3.5 top-3" />
               <Input
-                placeholder="Search description, merchant, or notes..."
+                placeholder="Search transactions, notes, merchants..."
                 value={searchQuery}
                 onChange={e => setSearchQuery(e.target.value)}
-                className="pl-9"
+                className="pl-9 bg-background/80 rounded-xl"
               />
               {searchQuery && (
                 <button
@@ -283,254 +377,333 @@ export default function TransactionsPage() {
               )}
             </div>
 
-            {/* Type Filter Buttons */}
-            <div className="flex rounded-lg border bg-muted/40 p-1">
+            {/* Type Filter Tabs */}
+            <div className="flex rounded-xl border border-border/80 bg-muted/40 p-1">
               <button
                 onClick={() => setActiveTab('all')}
-                className={`px-3 py-1 text-xs font-semibold rounded-md transition-colors ${
-                  activeTab === 'all' ? 'bg-background shadow-sm text-foreground' : 'text-muted-foreground'
+                className={`px-4 py-1.5 text-xs font-semibold rounded-lg transition-all ${
+                  activeTab === 'all' ? 'bg-background shadow-xs text-foreground' : 'text-muted-foreground hover:text-foreground'
                 }`}
               >
-                All
+                All Records
               </button>
               <button
                 onClick={() => setActiveTab('expense')}
-                className={`px-3 py-1 text-xs font-semibold rounded-md transition-colors ${
-                  activeTab === 'expense' ? 'bg-background shadow-sm text-rose-600 dark:text-rose-400' : 'text-muted-foreground'
+                className={`px-4 py-1.5 text-xs font-semibold rounded-lg transition-all ${
+                  activeTab === 'expense' ? 'bg-background shadow-xs text-rose-600 dark:text-rose-400 font-bold' : 'text-muted-foreground hover:text-foreground'
                 }`}
               >
-                Expenses
+                💸 Expenses
               </button>
               <button
                 onClick={() => setActiveTab('income')}
-                className={`px-3 py-1 text-xs font-semibold rounded-md transition-colors ${
-                  activeTab === 'income' ? 'bg-background shadow-sm text-emerald-600 dark:text-emerald-400' : 'text-muted-foreground'
+                className={`px-4 py-1.5 text-xs font-semibold rounded-lg transition-all ${
+                  activeTab === 'income' ? 'bg-background shadow-xs text-emerald-600 dark:text-emerald-400 font-bold' : 'text-muted-foreground hover:text-foreground'
                 }`}
               >
-                Income
+                💰 Income
               </button>
             </div>
           </div>
 
-          {/* Secondary Filters: Category, Needs/Wants, Dates */}
+          {/* Secondary Filters: Category with emojis, Needs/Wants, Dates */}
           <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 pt-1">
-            {/* Category Select */}
+            {/* Category Select with Emojis */}
             <div>
-              <label className="text-[11px] font-semibold text-muted-foreground uppercase">Category</label>
+              <label className="text-[11px] font-semibold text-muted-foreground uppercase tracking-wider">Category</label>
               <select
                 value={selectedCategory}
                 onChange={e => setSelectedCategory(e.target.value)}
-                className="w-full mt-1 px-2.5 py-1.5 text-xs bg-background rounded-md border border-input focus:outline-none focus:ring-1 focus:ring-primary"
+                className="w-full mt-1 px-3 py-2 text-xs bg-background rounded-xl border border-input focus:outline-none focus:ring-1 focus:ring-primary font-medium"
               >
-                <option value="all">All Categories</option>
+                <option value="all">📁 All Categories</option>
                 {expenseCategories.map(c => (
-                  <option key={c.id} value={c.id}>{c.name}</option>
+                  <option key={c.id} value={c.id}>
+                    {getCategoryEmoji(c)} {c.name}
+                  </option>
                 ))}
               </select>
             </div>
 
             {/* Classification (Needs / Wants) */}
             <div>
-              <label className="text-[11px] font-semibold text-muted-foreground uppercase">Classification</label>
+              <label className="text-[11px] font-semibold text-muted-foreground uppercase tracking-wider">Classification</label>
               <select
                 value={selectedClassification}
                 onChange={e => setSelectedClassification(e.target.value)}
-                className="w-full mt-1 px-2.5 py-1.5 text-xs bg-background rounded-md border border-input focus:outline-none focus:ring-1 focus:ring-primary"
+                className="w-full mt-1 px-3 py-2 text-xs bg-background rounded-xl border border-input focus:outline-none focus:ring-1 focus:ring-primary font-medium"
               >
-                <option value="all">All (Needs & Wants)</option>
-                <option value="necessary">Necessary (Needs)</option>
-                <option value="discretionary">Discretionary (Wants)</option>
+                <option value="all">⚖️ All Types</option>
+                <option value="necessary">🌿 Needs (Essential)</option>
+                <option value="discretionary">✨ Wants (Lifestyle)</option>
               </select>
             </div>
 
             {/* Start Date */}
             <div>
-              <label className="text-[11px] font-semibold text-muted-foreground uppercase">From Date</label>
+              <label className="text-[11px] font-semibold text-muted-foreground uppercase tracking-wider">From Date</label>
               <input
                 type="date"
                 value={startDate}
                 onChange={e => setStartDate(e.target.value)}
-                className="w-full mt-1 px-2.5 py-1.5 text-xs bg-background rounded-md border border-input focus:outline-none focus:ring-1 focus:ring-primary"
+                className="w-full mt-1 px-3 py-2 text-xs bg-background rounded-xl border border-input focus:outline-none focus:ring-1 focus:ring-primary"
               />
             </div>
 
             {/* End Date */}
             <div>
-              <label className="text-[11px] font-semibold text-muted-foreground uppercase">To Date</label>
+              <label className="text-[11px] font-semibold text-muted-foreground uppercase tracking-wider">To Date</label>
               <input
                 type="date"
                 value={endDate}
                 onChange={e => setEndDate(e.target.value)}
-                className="w-full mt-1 px-2.5 py-1.5 text-xs bg-background rounded-md border border-input focus:outline-none focus:ring-1 focus:ring-primary"
+                className="w-full mt-1 px-3 py-2 text-xs bg-background rounded-xl border border-input focus:outline-none focus:ring-1 focus:ring-primary"
               />
             </div>
           </div>
         </CardContent>
       </Card>
 
-      {/* Transactions List */}
-      <Card>
-        <CardHeader className="pb-3 flex flex-row items-center justify-between">
-          <CardTitle className="text-base font-semibold">
-            {filteredTransactions.length} Record{filteredTransactions.length === 1 ? '' : 's'} Found
-          </CardTitle>
+      {/* Transactions List & Human Date Grouping */}
+      <div className="space-y-4">
+        <div className="flex items-center justify-between px-1">
+          <p className="text-sm font-semibold text-foreground">
+            {filteredTransactions.length} Transaction{filteredTransactions.length === 1 ? '' : 's'}
+          </p>
           <div className="flex items-center gap-2 text-xs">
-            <span className="text-muted-foreground">Sort by:</span>
+            <span className="text-muted-foreground">Sort:</span>
             <button
               onClick={() => {
                 if (sortField === 'date') setSortOrder(sortOrder === 'desc' ? 'asc' : 'desc');
                 else { setSortField('date'); setSortOrder('desc'); }
               }}
-              className={`font-semibold ${sortField === 'date' ? 'text-primary' : 'text-muted-foreground'}`}
+              className={`font-semibold px-2 py-0.5 rounded-md ${sortField === 'date' ? 'bg-primary/10 text-primary' : 'text-muted-foreground hover:text-foreground'}`}
             >
               Date {sortField === 'date' && (sortOrder === 'desc' ? '↓' : '↑')}
             </button>
-            <span>•</span>
             <button
               onClick={() => {
                 if (sortField === 'amount') setSortOrder(sortOrder === 'desc' ? 'asc' : 'desc');
                 else { setSortField('amount'); setSortOrder('desc'); }
               }}
-              className={`font-semibold ${sortField === 'amount' ? 'text-primary' : 'text-muted-foreground'}`}
+              className={`font-semibold px-2 py-0.5 rounded-md ${sortField === 'amount' ? 'bg-primary/10 text-primary' : 'text-muted-foreground hover:text-foreground'}`}
             >
               Amount {sortField === 'amount' && (sortOrder === 'desc' ? '↓' : '↑')}
             </button>
           </div>
-        </CardHeader>
-        <CardContent>
-          {filteredTransactions.length === 0 ? (
-            <div className="py-16 text-center text-muted-foreground">
-              <Calendar className="w-12 h-12 mx-auto mb-3 opacity-30" />
-              <p className="text-base font-medium">No matching transactions</p>
-              <p className="text-xs mt-1">Try clearing filters or search query to see past transactions.</p>
-            </div>
-          ) : (
-            <div className="divide-y">
-              {filteredTransactions.map(t => {
-                const isExp = t.type === 'expense';
-                const cat = catMap.get(t.categoryId);
-                const pm = isExp && 'paymentMethodId' in t && t.paymentMethodId ? pmMap.get(t.paymentMethodId) : null;
-                const isSplit = t.tags?.includes('split-bill') || t.description.startsWith('[Split]');
-                const isGoalSavings = t.tags?.includes('goal-savings') || t.description.startsWith('[Goal Contribution]');
-                const isGoalWithdrawal = t.tags?.includes('goal-withdrawal') || t.description.startsWith('[Goal Withdrawal]');
+        </div>
 
-                return (
-                  <div
-                    key={t.id}
-                    className="py-3.5 flex flex-col sm:flex-row sm:items-center justify-between gap-3 hover:bg-muted/30 px-3 rounded-xl transition-colors group"
-                  >
-                    <div className="flex items-start gap-3">
-                      <div
-                        className={`w-10 h-10 rounded-full flex items-center justify-center shrink-0 mt-0.5 ${
-                          isExp ? 'bg-rose-500/10 text-rose-500' : 'bg-emerald-500/10 text-emerald-500'
-                        }`}
-                      >
-                        {isExp ? <ArrowUpRight className="w-5 h-5" /> : <ArrowDownLeft className="w-5 h-5" />}
-                      </div>
-                      <div className="space-y-1">
-                        <div className="flex flex-wrap items-center gap-2">
-                          <p className="text-sm font-semibold text-foreground">{t.description}</p>
+        {groupedByDate.length === 0 ? (
+          <Card className="rounded-2xl">
+            <CardContent className="py-16 text-center text-muted-foreground">
+              <div className="w-16 h-16 mx-auto mb-3 rounded-2xl bg-muted/60 flex items-center justify-center text-3xl">
+                🍃
+              </div>
+              <p className="text-base font-semibold text-foreground">No matching transactions</p>
+              <p className="text-xs text-muted-foreground mt-1 max-w-sm mx-auto">
+                No entries match your search or active filters. Try adjusting the date range or clearing filters.
+              </p>
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => {
+                  setSearchQuery('');
+                  setSelectedCategory('all');
+                  setSelectedClassification('all');
+                  setStartDate('');
+                  setEndDate('');
+                }}
+                className="mt-4 text-xs"
+              >
+                Reset All Filters
+              </Button>
+            </CardContent>
+          </Card>
+        ) : (
+          groupedByDate.map(([dateKey, group]) => (
+            <div key={dateKey} className="space-y-2">
+              {/* Day Header */}
+              <div className="flex items-center justify-between px-2 pt-2">
+                <div className="flex items-center gap-2">
+                  <span className="text-xs font-bold text-foreground tracking-wide">{group.label}</span>
+                  <span className="text-[11px] text-muted-foreground font-medium">
+                    · {group.count} {group.count === 1 ? 'item' : 'items'}
+                  </span>
+                </div>
+                <span className={`text-xs font-semibold ${group.subtotal >= 0 ? 'text-emerald-600 dark:text-emerald-400' : 'text-muted-foreground'}`}>
+                  {group.subtotal > 0 ? `+${formatCurrency(group.subtotal)}` : group.subtotal < 0 ? `-${formatCurrency(Math.abs(group.subtotal))}` : '₹0.00'}
+                </span>
+              </div>
 
-                          {/* Split Badge */}
-                          {isSplit && (
-                            <Badge className="bg-purple-500/15 text-purple-700 dark:text-purple-300 border border-purple-500/30 text-[10px] font-bold py-0 gap-1">
-                              <Users className="w-3 h-3" /> Split Bill
-                            </Badge>
-                          )}
+              {/* Transactions in this Day */}
+              <div className="bg-card rounded-2xl border border-border/80 shadow-xs divide-y divide-border/60 overflow-hidden">
+                {group.items.map(t => {
+                  const isExp = t.type === 'expense';
+                  const cat = catMap.get(t.categoryId);
+                  const pm = isExp && 'paymentMethodId' in t && t.paymentMethodId ? pmMap.get(t.paymentMethodId) : null;
+                  const catEmoji = cat ? getCategoryEmoji(cat) : (isExp ? '🏷️' : '💰');
+                  const pmName = isExp && pm ? pm.name : (t as any).paymentMethod || 'Bank Transfer';
+                  const pmEmoji = getPaymentMethodEmoji(pmName);
 
-                          {/* Goal Savings Badge */}
-                          {isGoalSavings && (
-                            <Badge className="bg-indigo-500/15 text-indigo-700 dark:text-indigo-300 border border-indigo-500/30 text-[10px] font-bold py-0">
-                              Goal Savings
-                            </Badge>
-                          )}
+                  const isSplit = t.tags?.includes('split-bill') || t.description.startsWith('[Split]');
+                  const isGoalSavings = t.tags?.includes('goal-savings') || t.description.startsWith('[Goal Contribution]');
+                  const isGoalWithdrawal = t.tags?.includes('goal-withdrawal') || t.description.startsWith('[Goal Withdrawal]');
 
-                          {/* Goal Withdrawal Badge */}
-                          {isGoalWithdrawal && (
-                            <Badge className="bg-emerald-500/15 text-emerald-700 dark:text-emerald-300 border border-emerald-500/30 text-[10px] font-bold py-0">
-                              Goal Withdrawal
-                            </Badge>
-                          )}
-
-                          {isExp && 'classification' in t && (
-                            <Badge
-                              variant="outline"
-                              className={`text-[10px] uppercase font-bold py-0 ${
-                                t.classification === 'necessary' ? 'border-blue-500/40 text-blue-600' : 'border-amber-500/40 text-amber-600'
-                              }`}
-                            >
-                              {t.classification === 'necessary' ? 'Need' : 'Want'}
-                            </Badge>
-                          )}
+                  return (
+                    <div
+                      key={t.id}
+                      className="p-3.5 sm:px-4 flex items-center justify-between gap-3 hover:bg-muted/30 transition-colors group"
+                    >
+                      {/* Left: Category Avatar & Details */}
+                      <div className="flex items-center gap-3.5 min-w-0">
+                        {/* 44x44 Squircle Emoji Container */}
+                        <div className="relative shrink-0">
+                          <div
+                            className="w-11 h-11 rounded-2xl flex items-center justify-center text-xl shadow-xs transition-transform group-hover:scale-105"
+                            style={{
+                              backgroundColor: cat?.color ? `${cat.color}18` : isExp ? '#fee2e2' : '#dcfce7',
+                              border: `1px solid ${cat?.color ? `${cat.color}35` : 'transparent'}`
+                            }}
+                          >
+                            <span>{catEmoji}</span>
+                          </div>
+                          {/* Flow indicator dot */}
+                          <span
+                            className={`absolute -bottom-0.5 -right-0.5 w-3.5 h-3.5 rounded-full border-2 border-background flex items-center justify-center text-[8px] font-bold ${
+                              isExp ? 'bg-rose-500 text-white' : 'bg-emerald-500 text-white'
+                            }`}
+                          >
+                            {isExp ? '↓' : '↑'}
+                          </span>
                         </div>
 
-                        <div className="flex flex-wrap items-center gap-x-2 gap-y-1 text-xs text-muted-foreground">
-                          <span>{formatDate(t.date)}</span>
-                          {t.time && <span>• {t.time}</span>}
-                          {cat && (
-                            <span className="flex items-center gap-1 font-medium text-foreground">
-                              <span className="w-2 h-2 rounded-full inline-block" style={{ backgroundColor: cat.color }} />
-                              {cat.name}
+                        {/* Description & Metadata */}
+                        <div className="min-w-0 space-y-1">
+                          <div className="flex flex-wrap items-center gap-1.5">
+                            <span className="text-sm font-semibold text-foreground truncate max-w-[200px] sm:max-w-md">
+                              {t.description}
                             </span>
-                          )}
-                          {isExp && 'merchant' in t && t.merchant && <span>• {t.merchant}</span>}
-                          {pm && <span className="bg-muted px-1.5 py-0.5 rounded text-[10px]">{pm.name}</span>}
-                          {!isExp && (t as any).paymentMethod && (
-                            <span className="bg-muted px-1.5 py-0.5 rounded text-[10px]">{(t as any).paymentMethod}</span>
+
+                            {/* Split Badge */}
+                            {isSplit && (
+                              <Badge className="bg-purple-500/15 text-purple-700 dark:text-purple-300 border border-purple-500/30 text-[10px] font-bold py-0 gap-1 rounded-md">
+                                <Users className="w-3 h-3" /> Split
+                              </Badge>
+                            )}
+
+                            {/* Goal Badges */}
+                            {isGoalSavings && (
+                              <Badge className="bg-indigo-500/15 text-indigo-700 dark:text-indigo-300 border border-indigo-500/30 text-[10px] font-bold py-0 rounded-md">
+                                🎯 Goal
+                              </Badge>
+                            )}
+                            {isGoalWithdrawal && (
+                              <Badge className="bg-emerald-500/15 text-emerald-700 dark:text-emerald-300 border border-emerald-500/30 text-[10px] font-bold py-0 rounded-md">
+                                ↩️ Returned
+                              </Badge>
+                            )}
+
+                            {/* Need / Want Pill */}
+                            {isExp && 'classification' in t && (
+                              <span
+                                className={`text-[10px] font-bold px-2 py-0.5 rounded-md flex items-center gap-1 ${
+                                  t.classification === 'necessary'
+                                    ? 'bg-blue-50 text-blue-700 dark:bg-blue-500/10 dark:text-blue-300 border border-blue-200/50'
+                                    : 'bg-amber-50 text-amber-700 dark:bg-amber-500/10 dark:text-amber-300 border border-amber-200/50'
+                                }`}
+                              >
+                                {t.classification === 'necessary' ? <Leaf className="w-2.5 h-2.5" /> : <Sparkles className="w-2.5 h-2.5" />}
+                                {t.classification === 'necessary' ? 'Need' : 'Want'}
+                              </span>
+                            )}
+                          </div>
+
+                          {/* Secondary info line with payment emoji, category & merchant */}
+                          <div className="flex flex-wrap items-center gap-x-2.5 gap-y-1 text-xs text-muted-foreground">
+                            {cat && (
+                              <span className="font-medium text-foreground flex items-center gap-1">
+                                <span>{catEmoji}</span> {cat.name}
+                              </span>
+                            )}
+                            <span className="flex items-center gap-1 bg-muted/60 px-2 py-0.5 rounded-md text-[11px] font-medium text-foreground">
+                              <span>{pmEmoji}</span> {pmName}
+                            </span>
+                            {isExp && 'merchant' in t && t.merchant && (
+                              <span className="flex items-center gap-1">
+                                <Store className="w-3 h-3 opacity-60" /> {t.merchant}
+                              </span>
+                            )}
+                            {t.time && (
+                              <span className="flex items-center gap-1 opacity-75 text-[11px]">
+                                <Clock className="w-2.5 h-2.5" /> {t.time}
+                              </span>
+                            )}
+                          </div>
+
+                          {t.notes && (
+                            <p className="text-xs text-muted-foreground/90 italic line-clamp-1">
+                              📝 {t.notes}
+                            </p>
                           )}
                         </div>
+                      </div>
 
-                        {t.notes && <p className="text-xs text-muted-foreground italic">{t.notes}</p>}
+                      {/* Right: Amount & Quick Actions */}
+                      <div className="flex items-center gap-3 shrink-0">
+                        <div className="text-right">
+                          <span className={`text-base font-bold tabular-nums tracking-tight ${
+                            isExp ? 'text-rose-600 dark:text-rose-400' : 'text-emerald-600 dark:text-emerald-400'
+                          }`}>
+                            {isExp ? '-' : '+'}{formatCurrency(t.amount)}
+                          </span>
+                        </div>
+
+                        {/* Action buttons */}
+                        <div className="flex items-center gap-1 opacity-60 group-hover:opacity-100 transition-opacity">
+                          <Button
+                            variant="ghost"
+                            size="sm"
+                            className="h-8 w-8 p-0 rounded-lg text-muted-foreground hover:text-foreground hover:bg-muted"
+                            onClick={() => handleOpenEdit(t)}
+                            title="Edit Category & Details"
+                          >
+                            <Edit2 className="w-3.5 h-3.5" />
+                          </Button>
+                          <Button
+                            variant="ghost"
+                            size="sm"
+                            className="h-8 w-8 p-0 rounded-lg text-muted-foreground hover:text-rose-600 hover:bg-rose-50 dark:hover:bg-rose-500/10"
+                            onClick={() => {
+                              setDeleteId(t.id);
+                              setDeleteType(t.type);
+                            }}
+                            title="Delete Transaction"
+                          >
+                            <Trash2 className="w-3.5 h-3.5" />
+                          </Button>
+                        </div>
                       </div>
                     </div>
-
-                    <div className="flex sm:flex-col items-center sm:items-end justify-between sm:justify-center gap-2 shrink-0">
-                      <span className={`text-base font-bold ${isExp ? 'text-rose-600 dark:text-rose-400' : 'text-emerald-600 dark:text-emerald-400'}`}>
-                        {isExp ? '-' : '+'}{formatCurrency(t.amount)}
-                      </span>
-                      <div className="flex items-center gap-1 opacity-80 group-hover:opacity-100 transition-opacity">
-                        <Button
-                          variant="ghost"
-                          size="sm"
-                          className="h-7 w-7 p-0 text-muted-foreground hover:text-foreground"
-                          onClick={() => handleOpenEdit(t)}
-                          title="Change Category & Details"
-                        >
-                          <Edit2 className="w-3.5 h-3.5" />
-                        </Button>
-                        <Button
-                          variant="ghost"
-                          size="sm"
-                          className="h-7 w-7 p-0 text-muted-foreground hover:text-rose-600"
-                          onClick={() => {
-                            setDeleteId(t.id);
-                            setDeleteType(t.type);
-                          }}
-                        >
-                          <Trash2 className="w-3.5 h-3.5" />
-                        </Button>
-                      </div>
-                    </div>
-                  </div>
-                );
-              })}
+                  );
+                })}
+              </div>
             </div>
-          )}
-        </CardContent>
-      </Card>
+          ))
+        )}
+      </div>
 
       {/* Edit Transaction Dialog */}
       <Dialog open={!!editingTransaction} onOpenChange={(open: boolean) => !open && setEditingTransaction(null)}>
-        <DialogContent>
+        <DialogContent className="sm:max-w-md rounded-2xl">
           <DialogHeader>
-            <DialogTitle>
-              Edit {editingTransaction?.type === 'expense' ? 'Expense' : 'Income'} Details & Category
+            <DialogTitle className="flex items-center gap-2">
+              <span>✏️</span> Edit {editingTransaction?.type === 'expense' ? 'Expense' : 'Income'}
             </DialogTitle>
           </DialogHeader>
 
           {editingTransaction && (
             <div className="space-y-4 py-2">
-              {/* Category Selection - Highlighted */}
+              {/* Category Selection with Emojis */}
               <div className="space-y-1.5">
                 <Label htmlFor="editCat" className="font-semibold text-primary">
                   Category (Change Category) *
@@ -539,11 +712,11 @@ export default function TransactionsPage() {
                   id="editCat"
                   value={editCategoryId}
                   onChange={e => setEditCategoryId(e.target.value)}
-                  className="w-full px-3 py-2 text-sm bg-background rounded-md border border-input focus:outline-none focus:ring-2 focus:ring-primary font-medium"
+                  className="w-full px-3 py-2 text-sm bg-background rounded-xl border border-input focus:outline-none focus:ring-2 focus:ring-primary font-medium"
                 >
                   {(editingTransaction.type === 'expense' ? expenseCategories : incomeCategories).map(c => (
                     <option key={c.id} value={c.id}>
-                      {c.name}
+                      {getCategoryEmoji(c)} {c.name}
                     </option>
                   ))}
                 </select>
@@ -556,6 +729,7 @@ export default function TransactionsPage() {
                   id="editDesc"
                   value={editDescription}
                   onChange={e => setEditDescription(e.target.value)}
+                  className="rounded-xl"
                 />
               </div>
 
@@ -568,10 +742,11 @@ export default function TransactionsPage() {
                   step="0.01"
                   value={editAmount}
                   onChange={e => setEditAmount(e.target.value)}
+                  className="rounded-xl font-bold"
                 />
               </div>
 
-              {/* Payment Method / Mode */}
+              {/* Payment Method / Mode with Emojis */}
               {editingTransaction.type === 'expense' ? (
                 <div className="space-y-1.5">
                   <Label htmlFor="editPm">Payment Method</Label>
@@ -579,10 +754,12 @@ export default function TransactionsPage() {
                     id="editPm"
                     value={editPaymentMethodId}
                     onChange={e => setEditPaymentMethodId(e.target.value)}
-                    className="w-full px-3 py-2 text-sm bg-background rounded-md border border-input focus:outline-none focus:ring-1 focus:ring-primary"
+                    className="w-full px-3 py-2 text-sm bg-background rounded-xl border border-input focus:outline-none focus:ring-1 focus:ring-primary font-medium"
                   >
                     {paymentMethods.map(p => (
-                      <option key={p.id} value={p.id}>{p.name}</option>
+                      <option key={p.id} value={p.id}>
+                        {getPaymentMethodEmoji(p.name)} {p.name}
+                      </option>
                     ))}
                   </select>
                 </div>
@@ -593,16 +770,16 @@ export default function TransactionsPage() {
                     id="editIncMode"
                     value={editIncomeMode}
                     onChange={e => setEditIncomeMode(e.target.value)}
-                    className="w-full px-3 py-2 text-sm bg-background rounded-md border border-input focus:outline-none focus:ring-1 focus:ring-primary"
+                    className="w-full px-3 py-2 text-sm bg-background rounded-xl border border-input focus:outline-none focus:ring-1 focus:ring-primary font-medium"
                   >
-                    <option value="Bank Transfer">Bank Transfer (NEFT/IMPS)</option>
-                    <option value="UPI">UPI</option>
-                    <option value="GPay">GPay</option>
-                    <option value="Cash">Cash</option>
-                    <option value="Cheque">Cheque</option>
-                    <option value="Credit Card">Credit Card</option>
-                    <option value="Direct Deposit">Direct Deposit</option>
-                    <option value="Other">Other</option>
+                    <option value="Bank Transfer">🏦 Bank Transfer (NEFT/IMPS)</option>
+                    <option value="UPI">📱 UPI</option>
+                    <option value="GPay">📱 GPay</option>
+                    <option value="Cash">💵 Cash</option>
+                    <option value="Cheque">📜 Cheque</option>
+                    <option value="Credit Card">💳 Credit Card</option>
+                    <option value="Direct Deposit">💼 Direct Deposit</option>
+                    <option value="Other">✨ Other</option>
                   </select>
                 </div>
               )}
@@ -615,20 +792,20 @@ export default function TransactionsPage() {
                     <button
                       type="button"
                       onClick={() => setEditClassification('necessary')}
-                      className={`p-2 rounded-lg border text-xs font-semibold ${
+                      className={`p-2.5 rounded-xl border text-xs font-semibold flex items-center justify-center gap-1.5 transition-all ${
                         editClassification === 'necessary' ? 'border-blue-500 bg-blue-500/10 text-blue-600' : 'border-border text-muted-foreground'
                       }`}
                     >
-                      Necessary (Need)
+                      <Leaf className="w-3.5 h-3.5" /> Necessary (Need)
                     </button>
                     <button
                       type="button"
                       onClick={() => setEditClassification('discretionary')}
-                      className={`p-2 rounded-lg border text-xs font-semibold ${
+                      className={`p-2.5 rounded-xl border text-xs font-semibold flex items-center justify-center gap-1.5 transition-all ${
                         editClassification === 'discretionary' ? 'border-amber-500 bg-amber-500/10 text-amber-600' : 'border-border text-muted-foreground'
                       }`}
                     >
-                      Discretionary (Want)
+                      <Sparkles className="w-3.5 h-3.5" /> Discretionary (Want)
                     </button>
                   </div>
                 </div>
@@ -642,6 +819,7 @@ export default function TransactionsPage() {
                   type="date"
                   value={editDate}
                   onChange={e => setEditDate(e.target.value)}
+                  className="rounded-xl"
                 />
               </div>
 
@@ -652,14 +830,15 @@ export default function TransactionsPage() {
                   id="editNotes"
                   value={editNotes}
                   onChange={e => setEditNotes(e.target.value)}
+                  className="rounded-xl"
                 />
               </div>
             </div>
           )}
 
           <DialogFooter>
-            <Button variant="outline" onClick={() => setEditingTransaction(null)}>Cancel</Button>
-            <Button onClick={handleSaveEdit}>Save Changes</Button>
+            <Button variant="outline" onClick={() => setEditingTransaction(null)} className="rounded-xl">Cancel</Button>
+            <Button onClick={handleSaveEdit} className="rounded-xl bg-primary text-primary-foreground">Save Changes</Button>
           </DialogFooter>
         </DialogContent>
       </Dialog>
