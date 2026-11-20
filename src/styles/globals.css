@@ -27,50 +27,50 @@
 }
 
 :root {
-  /* Apple Books "Focus" Cream & Warm Linen Palette */
-  --background: #f8f4ec;          /* Apple Books Focus warm paper cream */
-  --foreground: #2c2621;          /* Deep warm espresso / obsidian charcoal */
-  --card: #fffdf9;                /* Warm milk / soft alabaster card surface */
-  --card-foreground: #2c2621;
-  --primary: #1e5a38;             /* Heritage forest emerald */
+  /* Coinest Modern Sage & Pistachio-Lime Palette */
+  --background: #f4f7f4;          /* Soft modern sage-white canvas */
+  --foreground: #12261b;          /* Deep pine charcoal */
+  --card: #ffffff;                /* Pure clean white card */
+  --card-foreground: #12261b;
+  --primary: #153928;             /* Deep Coinest forest green */
   --primary-foreground: #ffffff;
-  --secondary: #f0e9dc;           /* Soft warm linen */
-  --secondary-foreground: #2c2621;
-  --muted: #f0e9dc;               /* Subtle parchment tint */
-  --muted-foreground: #766e65;    /* Warm cedar / taupe — rich contrast & readable */
-  --accent: #ebe3d3;
-  --accent-foreground: #2c2621;
-  --destructive: #b91c1c;         /* Vintage warm crimson */
+  --secondary: #eaf0ea;           /* Soft sage mint tint */
+  --secondary-foreground: #12261b;
+  --muted: #ebf1eb;               /* Pale sage surface */
+  --muted-foreground: #63756a;    /* High contrast sage slate */
+  --accent: #d8f5cb;              /* Pastel pistachio mint highlight */
+  --accent-foreground: #12261b;
+  --destructive: #ef4444;         /* Coral rose */
   --destructive-foreground: #ffffff;
-  --border: #e6ddce;              /* Delicate warm deckle paper border */
-  --input: #e6ddce;
-  --ring: #1e5a38;
-  --sidebar: #f3ede1;             /* Richer warm parchment for sidebar structure */
-  --sidebar-foreground: #2c2621;  /* High-contrast deep warm espresso */
-  --radius: 0.625rem;
+  --border: #e2ebe2;              /* Delicate clean border */
+  --input: #e2ebe2;
+  --ring: #153928;
+  --sidebar: #eaf0ea;             /* Coinest pale sage sidebar */
+  --sidebar-foreground: #183324;  /* Deep pine text */
+  --radius: 0.875rem;             /* 14px smooth modern corners */
 }
 
 .dark {
-  /* Apple Books Night / Roasted Espresso dark palette */
-  --background: #171513;          /* Deep roasted espresso bean */
-  --foreground: #f4eee4;          /* Warm cream text */
-  --card: #221f1b;                /* Warm dark card surface */
-  --card-foreground: #f4eee4;
-  --primary: #34d399;             /* Warm glowing emerald */
-  --primary-foreground: #022c22;
-  --secondary: #2a2521;
-  --secondary-foreground: #f4eee4;
-  --muted: #2a2521;
-  --muted-foreground: #9d9285;
-  --accent: #2a2521;
-  --accent-foreground: #f4eee4;
+  /* Coinest Dark Forest Executive Mode */
+  --background: #0d1712;          /* Deep obsidian forest */
+  --foreground: #eef5ee;          /* Crisp mint white */
+  --card: #13221a;                /* Deep forest card */
+  --card-foreground: #eef5ee;
+  --primary: #4ade80;             /* Vibrant mint green */
+  --primary-foreground: #091a10;
+  --secondary: #1a2e23;
+  --secondary-foreground: #eef5ee;
+  --muted: #1a2e23;
+  --muted-foreground: #8aa192;
+  --accent: #233d2f;
+  --accent-foreground: #eef5ee;
   --destructive: #f87171;
   --destructive-foreground: #ffffff;
-  --border: #38322c;
-  --input: #38322c;
-  --ring: #34d399;
-  --sidebar: #1c1916;             /* Slightly deeper warm espresso sidebar */
-  --sidebar-foreground: #e8e0d4;
+  --border: #223c2e;
+  --input: #223c2e;
+  --ring: #4ade80;
+  --sidebar: #0f1c15;             /* Deepest forest sidebar */
+  --sidebar-foreground: #d2e4d7;
 }
 
 /* Base styles */

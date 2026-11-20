@@ -57,11 +57,11 @@ export default function SplitsPage() {
 
   useGSAP(() => {
     const ctx = gsap.context(() => {
-      gsap.fromTo('.motion-header', { y: -12, opacity: 0 }, { y: 0, opacity: 1, duration: 0.45, ease: 'power2.out', clearProps: 'all' });
+      gsap.fromTo('.motion-header', { y: -8, opacity: 0 }, { y: 0, opacity: 1, duration: 0.28, ease: 'power2.out', clearProps: 'all' });
       gsap.fromTo(
         '.motion-card',
-        { y: 16, opacity: 0, scale: 0.98 },
-        { y: 0, opacity: 1, scale: 1, duration: 0.45, stagger: 0.06, ease: 'back.out(1.2)', delay: 0.08, clearProps: 'all' }
+        { y: 10, opacity: 0 },
+        { y: 0, opacity: 1, duration: 0.28, stagger: 0.03, ease: 'power2.out', delay: 0.05, clearProps: 'all' }
       );
     }, pageRef);
     return () => ctx.revert();

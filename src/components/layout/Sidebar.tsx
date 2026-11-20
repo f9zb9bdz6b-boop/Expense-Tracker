@@ -58,31 +58,36 @@ export function Sidebar() {
   });
 
   return (
-    <aside ref={sidebarRef} className="hidden lg:flex flex-col w-56 shrink-0 h-screen sticky top-0 border-r bg-sidebar select-none shadow-xs">
-      {/* Brand Header */}
-      <div className="flex items-center gap-2.5 px-5 py-4 border-b border-border">
+    <aside ref={sidebarRef} className="hidden lg:flex flex-col w-60 shrink-0 h-screen sticky top-0 border-r bg-sidebar select-none shadow-xs">
+      {/* Coinest Brand Header */}
+      <div className="flex items-center gap-3 px-6 py-5 border-b border-border/80">
         <div
           onMouseEnter={handleLogoHover}
-          className="flex h-8 w-8 items-center justify-center rounded-lg bg-primary text-primary-foreground text-xs font-bold tracking-tight shadow-sm cursor-pointer select-none"
+          className="flex h-9 w-9 items-center justify-center rounded-xl bg-primary text-primary-foreground text-xs font-bold tracking-tight shadow-xs cursor-pointer select-none"
         >
-          ET
+          <div className="grid grid-cols-2 gap-0.5">
+            <span className="w-1.5 h-1.5 rounded-xs bg-[#bcf3b0]" />
+            <span className="w-1.5 h-1.5 rounded-xs bg-white" />
+            <span className="w-1.5 h-1.5 rounded-xs bg-white" />
+            <span className="w-1.5 h-1.5 rounded-xs bg-[#bcf3b0]" />
+          </div>
         </div>
         <div>
-          <span className="text-sm font-semibold tracking-tight text-sidebar-foreground">Expense Tracker</span>
-          <p className="text-[10px] text-muted-foreground leading-none mt-0.5">Personal Finance</p>
+          <span className="text-base font-extrabold tracking-tight text-foreground uppercase">Expense Tracker</span>
+          <p className="text-[10px] text-muted-foreground leading-none font-medium mt-0.5">Personal Finance</p>
         </div>
       </div>
 
       {/* Navigation Groups */}
-      <nav className="flex-1 px-3 py-3 space-y-4 overflow-y-auto">
+      <nav className="flex-1 px-4 py-4 space-y-4 overflow-y-auto">
         {navGroups.map((group, gi) => (
           <div key={gi}>
             {group.label && (
-              <p className="px-2 mb-1.5 text-[10px] font-bold uppercase tracking-wider text-muted-foreground/80">
+              <p className="px-2.5 mb-1.5 text-[10px] font-bold uppercase tracking-wider text-muted-foreground/80">
                 {group.label}
               </p>
             )}
-            <div className="space-y-0.5">
+            <div className="space-y-1">
               {group.items.map((item) => (
                 <NavLink
                   key={item.to}
@@ -91,10 +96,10 @@ export function Sidebar() {
                   onClick={handleLinkPress}
                   className={({ isActive }) =>
                     cn(
-                      'flex items-center gap-2.5 px-2.5 py-1.5 rounded-md text-sm font-medium transition-all active:scale-95',
+                      'flex items-center gap-3 px-3 py-2 rounded-xl text-sm font-medium transition-all active:scale-95',
                       isActive
-                        ? 'bg-primary/15 text-primary font-semibold shadow-xs'
-                        : 'text-sidebar-foreground hover:bg-muted/70 hover:text-foreground'
+                        ? 'bg-[#bcf3b0] dark:bg-emerald-500/20 text-[#122b1e] dark:text-emerald-300 font-bold shadow-xs'
+                        : 'text-sidebar-foreground hover:bg-[#dfe8df] dark:hover:bg-muted/40 hover:text-foreground'
                     )
                   }
                 >
@@ -107,6 +112,23 @@ export function Sidebar() {
         ))}
       </nav>
 
+      {/* Bottom Vault Card (Coinest Dark Card Style) */}
+      <div className="px-3 py-2">
+        <div className="bg-[#12291d] dark:bg-[#152e20] text-white p-3 rounded-2xl space-y-1.5 border border-white/10 shadow-xs">
+          <div className="flex items-center justify-between">
+            <span className="text-xs font-bold text-white flex items-center gap-1.5">
+              <span>🛡️</span> Local Vault
+            </span>
+            <span className="text-[9px] bg-[#bcf3b0] text-[#12291d] font-bold px-1.5 py-0.5 rounded-full">
+              SECURE
+            </span>
+          </div>
+          <p className="text-[10px] text-white/70 leading-snug">
+            100% private on-device ledger.
+          </p>
+        </div>
+      </div>
+
       {/* Settings pinned at the very bottom */}
       <div className="p-3 border-t border-border mt-auto">
         <NavLink
@@ -114,10 +136,10 @@ export function Sidebar() {
           onClick={handleLinkPress}
           className={({ isActive }) =>
             cn(
-              'flex items-center gap-2.5 px-2.5 py-2 rounded-md text-sm font-medium transition-all w-full active:scale-95',
+              'flex items-center gap-3 px-3 py-2 rounded-xl text-sm font-medium transition-all w-full active:scale-95',
               isActive
-                ? 'bg-primary/15 text-primary font-semibold shadow-xs'
-                : 'text-sidebar-foreground hover:bg-muted/70 hover:text-foreground'
+                ? 'bg-[#bcf3b0] dark:bg-emerald-500/20 text-[#122b1e] dark:text-emerald-300 font-bold shadow-xs'
+                : 'text-sidebar-foreground hover:bg-[#dfe8df] dark:hover:bg-muted/40 hover:text-foreground'
             )
           }
         >

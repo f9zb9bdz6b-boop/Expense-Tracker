@@ -43,19 +43,27 @@ export function Header() {
   });
 
   return (
-    <header className="sticky top-0 z-30 flex h-12 items-center justify-between border-b bg-background/90 backdrop-blur-sm px-4 lg:px-6">
-      {/* On mobile show title; on desktop show today's date */}
-      <span className="text-sm text-muted-foreground">
-        <span className="lg:hidden font-medium text-foreground">{title}</span>
-        <span className="hidden lg:inline">{dateStr}</span>
-      </span>
-      <div className="flex items-center gap-0.5">
+    <header className="sticky top-0 z-30 flex h-14 items-center justify-between border-b border-border/80 bg-background/95 backdrop-blur-xs px-4 lg:px-6">
+      {/* Page Title & Breadcrumb */}
+      <div className="flex items-center gap-3">
+        <h1 className="text-lg font-bold tracking-tight text-foreground">{title}</h1>
+        <span className="hidden sm:inline text-xs text-muted-foreground font-medium border-l border-border pl-3">
+          {dateStr}
+        </span>
+      </div>
+
+      {/* Right controls: Theme toggle & vault status */}
+      <div className="flex items-center gap-2">
+        <div className="hidden sm:flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-muted/60 border border-border/60 text-xs font-semibold text-muted-foreground">
+          <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse" />
+          <span>Local Vault Synced</span>
+        </div>
         <Button
           variant="ghost"
           size="icon"
           onClick={cycleTheme}
           aria-label={`Theme: ${theme}`}
-          className="h-8 w-8"
+          className="h-8 w-8 rounded-xl text-muted-foreground hover:text-foreground hover:bg-muted"
         >
           <ThemeIcon className="h-4 w-4" />
         </Button>

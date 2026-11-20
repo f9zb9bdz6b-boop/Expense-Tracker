@@ -144,17 +144,17 @@ export default function TransactionsPage() {
 
   useGSAP(() => {
     const ctx = gsap.context(() => {
-      gsap.fromTo('.motion-header', { y: -12, opacity: 0 }, { y: 0, opacity: 1, duration: 0.45, ease: 'power2.out', clearProps: 'all' });
+      gsap.fromTo('.motion-header', { y: -8, opacity: 0 }, { y: 0, opacity: 1, duration: 0.28, ease: 'power2.out', clearProps: 'all' });
       gsap.fromTo(
         '.motion-pulse-card',
-        { y: 16, opacity: 0, scale: 0.98 },
-        { y: 0, opacity: 1, scale: 1, duration: 0.5, stagger: 0.06, ease: 'back.out(1.2)', clearProps: 'all', delay: 0.05 }
+        { y: 10, opacity: 0 },
+        { y: 0, opacity: 1, duration: 0.3, stagger: 0.03, ease: 'power2.out', clearProps: 'all', delay: 0.04 }
       );
-      gsap.fromTo('.motion-controls', { y: 12, opacity: 0 }, { y: 0, opacity: 1, duration: 0.4, ease: 'power2.out', delay: 0.1, clearProps: 'all' });
+      gsap.fromTo('.motion-controls', { y: 8, opacity: 0 }, { y: 0, opacity: 1, duration: 0.28, ease: 'power2.out', delay: 0.06, clearProps: 'all' });
       gsap.fromTo(
         '.motion-row',
-        { x: -10, opacity: 0 },
-        { x: 0, opacity: 1, duration: 0.35, stagger: 0.03, ease: 'power2.out', delay: 0.15, clearProps: 'all' }
+        { y: 6, opacity: 0 },
+        { y: 0, opacity: 1, duration: 0.25, stagger: 0.02, ease: 'power2.out', delay: 0.08, clearProps: 'all' }
       );
     }, pageRef);
     return () => ctx.revert();
@@ -359,39 +359,54 @@ export default function TransactionsPage() {
       <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
         <div className="motion-pulse-card bg-card border border-border/80 rounded-2xl p-4 shadow-xs hover:border-border transition-all flex items-center justify-between">
           <div>
-            <p className="text-xs font-medium text-muted-foreground uppercase tracking-wider">Total Outflow</p>
-            <p className="text-xl font-bold text-rose-600 dark:text-rose-400 mt-0.5">
+            <div className="flex items-center gap-2">
+              <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">Total Outflow</p>
+              <span className="bg-[#fee2e2] text-[#b91c1c] text-[10px] font-bold px-2 py-0.5 rounded-full">
+                ↓ Outflow
+              </span>
+            </div>
+            <p className="text-xl font-bold text-rose-600 dark:text-rose-400 mt-1">
               -{formatCurrency(metrics.spent)}
             </p>
             <p className="text-[11px] text-muted-foreground mt-0.5">Filtered expenses</p>
           </div>
-          <div className="w-11 h-11 rounded-2xl bg-rose-50 dark:bg-rose-500/10 text-rose-600 flex items-center justify-center text-lg">
+          <div className="w-10 h-10 rounded-xl bg-rose-50 dark:bg-rose-500/10 text-rose-600 flex items-center justify-center text-lg">
             💸
           </div>
         </div>
 
         <div className="motion-pulse-card bg-card border border-border/80 rounded-2xl p-4 shadow-xs hover:border-border transition-all flex items-center justify-between">
           <div>
-            <p className="text-xs font-medium text-muted-foreground uppercase tracking-wider">Total Inflow</p>
-            <p className="text-xl font-bold text-emerald-600 dark:text-emerald-400 mt-0.5">
+            <div className="flex items-center gap-2">
+              <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">Total Inflow</p>
+              <span className="bg-[#d7f7ce] text-[#15803d] text-[10px] font-bold px-2 py-0.5 rounded-full">
+                ↑ Inflow
+              </span>
+            </div>
+            <p className="text-xl font-bold text-emerald-600 dark:text-emerald-400 mt-1">
               +{formatCurrency(metrics.received)}
             </p>
             <p className="text-[11px] text-muted-foreground mt-0.5">Filtered income</p>
           </div>
-          <div className="w-11 h-11 rounded-2xl bg-emerald-50 dark:bg-emerald-500/10 text-emerald-600 flex items-center justify-center text-lg">
+          <div className="w-10 h-10 rounded-xl bg-emerald-50 dark:bg-emerald-500/10 text-emerald-600 flex items-center justify-center text-lg">
             💰
           </div>
         </div>
 
         <div className="motion-pulse-card bg-card border border-border/80 rounded-2xl p-4 shadow-xs hover:border-border transition-all flex items-center justify-between">
           <div>
-            <p className="text-xs font-medium text-muted-foreground uppercase tracking-wider">Net Position</p>
-            <p className={`text-xl font-bold mt-0.5 ${metrics.net >= 0 ? 'text-primary' : 'text-rose-600'}`}>
+            <div className="flex items-center gap-2">
+              <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">Net Position</p>
+              <span className="bg-[#edf4ed] text-[#153928] text-[10px] font-bold px-2 py-0.5 rounded-full">
+                ⚖️ Net
+              </span>
+            </div>
+            <p className={`text-xl font-bold mt-1 ${metrics.net >= 0 ? 'text-primary' : 'text-rose-600'}`}>
               {metrics.net >= 0 ? '+' : ''}{formatCurrency(metrics.net)}
             </p>
             <p className="text-[11px] text-muted-foreground mt-0.5">{metrics.count} total records</p>
           </div>
-          <div className="w-11 h-11 rounded-2xl bg-slate-100 dark:bg-slate-800 text-foreground flex items-center justify-center text-lg">
+          <div className="w-10 h-10 rounded-xl bg-slate-100 dark:bg-slate-800 text-foreground flex items-center justify-center text-lg">
             📊
           </div>
         </div>

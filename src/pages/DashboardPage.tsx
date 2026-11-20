@@ -120,17 +120,17 @@ export default function DashboardPage() {
   }, []);
 
   // ============================================================
-  // GSAP ENTRANCE & CONTINUOUS ANIMATIONS
+  // GSAP ENTRANCE & SNAP TRANSITIONS (Hardware-Accelerated, Zero-Lag)
   // ============================================================
   useGSAP(() => {
     if (isLoading || !summary) return;
 
     const ctx = gsap.context(() => {
-      // MOTION ELEMENT 1: Live Rolling Number Ticker
+      // 1. Live Rolling Number Ticker (Snappy 350ms, GPU composite)
       gsap.to(balanceTween.current, {
         val: netBalance,
-        duration: 1.1,
-        ease: 'power3.out',
+        duration: 0.35,
+        ease: 'power2.out',
         onUpdate: () => {
           if (balanceValRef.current) {
             balanceValRef.current.textContent = formatCurrency(Math.round(balanceTween.current.val));
@@ -138,66 +138,40 @@ export default function DashboardPage() {
         },
       });
 
-      // MOTION ELEMENT 2: Hero Mesh Card Entrance
+      // 2. Hero Card Entrance
       gsap.fromTo('.hero-mesh-card',
-        { y: 20, opacity: 0, scale: 0.98 },
-        { y: 0, opacity: 1, scale: 1, duration: 0.6, ease: 'back.out(1.2)', clearProps: 'all' }
+        { y: 12, opacity: 0 },
+        { y: 0, opacity: 1, duration: 0.3, ease: 'power2.out', clearProps: 'all' }
       );
 
-      // MOTION ELEMENT 3: Continuous Ambient Glow Orb Float
-      gsap.to('.ambient-glow-orb', {
-        y: -14,
-        x: 10,
-        scale: 1.15,
-        duration: 4.5,
-        repeat: -1,
-        yoyo: true,
-        ease: 'sine.inOut',
-      });
-
-      // MOTION ELEMENT 4: Staggered Entrance of 4 KPI Metric Cards
+      // 3. Staggered Entrance of 4 KPI Metric Cards
       gsap.fromTo('.kpi-stat-card',
-        { y: 16, opacity: 0 },
-        { y: 0, opacity: 1, duration: 0.45, stagger: 0.06, ease: 'power2.out', delay: 0.1, clearProps: 'all' }
+        { y: 12, opacity: 0 },
+        { y: 0, opacity: 1, duration: 0.3, stagger: 0.04, ease: 'power2.out', delay: 0.05, clearProps: 'all' }
       );
 
-      // MOTION ELEMENT 5: Pulse Breathing of Health Badge
-      gsap.to('.health-pulse-pill', {
-        y: -2.5,
-        duration: 1.8,
-        repeat: -1,
-        yoyo: true,
-        ease: 'sine.inOut',
-      });
-
-      // MOTION ELEMENT 6: Category Spending Staggered Rows Entrance
+      // 4. Category Spending Staggered Rows Entrance
       gsap.fromTo('.category-row-item',
-        { x: -12, opacity: 0 },
-        { x: 0, opacity: 1, duration: 0.4, stagger: 0.04, ease: 'power2.out', delay: 0.15, clearProps: 'all' }
+        { x: -8, opacity: 0 },
+        { x: 0, opacity: 1, duration: 0.25, stagger: 0.03, ease: 'power2.out', delay: 0.1, clearProps: 'all' }
       );
 
-      // MOTION ELEMENT 7: Dynamic Progress Bars Fill Expansion
+      // 5. Dynamic Progress Bars Fill Expansion
       gsap.fromTo('.animated-meter-bar',
         { scaleX: 0, transformOrigin: 'left' },
-        { scaleX: 1, duration: 0.8, stagger: 0.06, ease: 'power2.out', delay: 0.2, clearProps: 'transformOrigin' }
+        { scaleX: 1, duration: 0.5, stagger: 0.05, ease: 'power2.out', delay: 0.15, clearProps: 'transformOrigin' }
       );
 
-      // MOTION ELEMENT 8: Recent Activity Transaction Ledger Cascade
+      // 6. Recent Activity Transaction Ledger Cascade
       gsap.fromTo('.recent-tx-row',
-        { y: 12, opacity: 0 },
-        { y: 0, opacity: 1, duration: 0.35, stagger: 0.04, ease: 'power2.out', delay: 0.15, clearProps: 'all' }
+        { y: 8, opacity: 0 },
+        { y: 0, opacity: 1, duration: 0.25, stagger: 0.03, ease: 'power2.out', delay: 0.1, clearProps: 'all' }
       );
 
-      // MOTION ELEMENT 9: Quick Action Buttons Stagger
-      gsap.fromTo('.hero-action-btn',
-        { scale: 0.92, opacity: 0 },
-        { scale: 1, opacity: 1, duration: 0.4, stagger: 0.06, ease: 'back.out(1.5)', delay: 0.2, clearProps: 'all' }
-      );
-
-      // MOTION ELEMENT 10: Budget & Goals Card Slide-In
+      // 7. Budget & Goals Card Slide-In
       gsap.fromTo('.widget-card',
-        { y: 16, opacity: 0 },
-        { y: 0, opacity: 1, duration: 0.45, stagger: 0.08, ease: 'power2.out', delay: 0.2, clearProps: 'all' }
+        { y: 12, opacity: 0 },
+        { y: 0, opacity: 1, duration: 0.3, stagger: 0.05, ease: 'power2.out', delay: 0.12, clearProps: 'all' }
       );
     }, dashboardRef);
 
@@ -234,34 +208,26 @@ export default function DashboardPage() {
   return (
     <div ref={dashboardRef} className="space-y-6 pb-12">
       {/* ============================================================
-          TOP HERO CARD: Executive Roasted Espresso & Forest Emerald with Ambient Glow
+          TOP HERO CARD: Coinest Deep Forest with Pistachio Highlights
           ============================================================ */}
-      <div className="hero-mesh-card relative overflow-hidden rounded-3xl bg-gradient-to-br from-[#1a1714] via-[#231f1c] to-[#152e20] text-white p-6 sm:p-8 shadow-xl border border-emerald-500/25">
-        {/* Background Ambient Floating Orb (Motion Element 3) */}
-        <div
-          className="ambient-glow-orb absolute -top-24 -right-24 w-80 h-80 rounded-full bg-emerald-500/20 blur-3xl pointer-events-none"
-        />
-        <div
-          className="absolute -bottom-20 -left-20 w-72 h-72 rounded-full bg-teal-500/15 blur-3xl pointer-events-none"
-        />
-
+      <div className="hero-mesh-card relative overflow-hidden rounded-3xl bg-gradient-to-br from-[#12291d] via-[#163826] to-[#0e2217] text-white p-6 sm:p-7 shadow-sm border border-[#1d422e]">
         <div className="relative z-10 flex flex-col md:flex-row md:items-center justify-between gap-6">
           {/* Left Column: Date, Health Badge, Net Balance Ticker */}
           <div className="space-y-3">
-            <div className="flex items-center gap-3">
-              <span className="text-xs font-semibold text-emerald-400/90 tracking-wider uppercase">
+            <div className="flex items-center gap-2.5">
+              <span className="text-xs font-semibold text-[#bcf3b0] tracking-wider uppercase">
                 {todayDateStr}
               </span>
-              <span className="w-1 h-1 rounded-full bg-emerald-400/50" />
-              {/* Floating Health Pulse Pill (Motion Element 5) */}
-              <div className="health-pulse-pill inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full bg-emerald-500/15 border border-emerald-400/30 text-emerald-300 text-[11px] font-semibold backdrop-blur-xs">
-                <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse" />
+              <span className="w-1 h-1 rounded-full bg-white/40" />
+              {/* Health Pulse Pill */}
+              <div className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full bg-white/10 border border-white/15 text-[#bcf3b0] text-[11px] font-semibold">
+                <span className="w-1.5 h-1.5 rounded-full bg-[#bcf3b0] animate-pulse" />
                 <span>{netBalance >= 0 ? 'Healthy Cash Flow' : 'Deficit Alert'}</span>
               </div>
             </div>
 
             <div>
-              <p className="text-xs font-medium text-slate-400 uppercase tracking-wider">
+              <p className="text-xs font-medium text-white/70 uppercase tracking-wider">
                 Total Net Balance
               </p>
               <div className="flex items-baseline gap-2 mt-1">
@@ -272,26 +238,26 @@ export default function DashboardPage() {
                 >
                   {formatCurrency(netBalance)}
                 </span>
-                <span className="text-xs text-emerald-400 font-semibold bg-emerald-500/10 border border-emerald-500/20 px-2 py-0.5 rounded-md">
+                <span className="text-xs text-[#bcf3b0] font-bold bg-[#bcf3b0]/15 border border-[#bcf3b0]/30 px-2 py-0.5 rounded-md">
                   INR
                 </span>
               </div>
             </div>
 
-            <p className="text-xs text-slate-300/80 max-w-md flex items-center gap-1.5">
-              <ShieldCheck className="w-3.5 h-3.5 text-emerald-400 shrink-0" />
+            <p className="text-xs text-white/70 max-w-md flex items-center gap-1.5">
+              <ShieldCheck className="w-3.5 h-3.5 text-[#bcf3b0] shrink-0" />
               <span>100% Private local vault · Real-time Dexie ledger</span>
             </p>
           </div>
 
-          {/* Right Column: Interactive Quick Action Buttons (Motion Element 4 & 9) */}
+          {/* Right Column: Interactive Quick Action Buttons */}
           <div className="flex flex-wrap sm:flex-nowrap items-center gap-3 shrink-0">
             <button
               onClick={e => {
                 handleButtonPress(e);
                 navigate('/add-expense');
               }}
-              className="hero-action-btn flex items-center justify-center gap-2 bg-emerald-500 hover:bg-emerald-400 text-slate-950 font-bold px-5 py-3 rounded-2xl shadow-lg shadow-emerald-500/25 transition-all text-sm cursor-pointer select-none"
+              className="hero-action-btn flex items-center justify-center gap-2 bg-[#bcf3b0] hover:bg-[#aaf09d] text-[#122b1e] font-bold px-5 py-2.5 rounded-xl shadow-xs transition-transform active:scale-95 text-sm cursor-pointer select-none"
             >
               <PlusCircle className="w-4 h-4" /> Add Expense
             </button>
@@ -300,9 +266,9 @@ export default function DashboardPage() {
                 handleButtonPress(e);
                 navigate('/income');
               }}
-              className="hero-action-btn flex items-center justify-center gap-2 bg-white/10 hover:bg-white/15 text-white border border-white/20 font-semibold px-4 py-3 rounded-2xl backdrop-blur-md transition-all text-sm cursor-pointer select-none"
+              className="hero-action-btn flex items-center justify-center gap-2 bg-white/10 hover:bg-white/15 text-white border border-white/20 font-semibold px-4 py-2.5 rounded-xl transition-transform active:scale-95 text-sm cursor-pointer select-none"
             >
-              <ArrowDownLeft className="w-4 h-4 text-emerald-400" /> Log Income
+              <ArrowDownLeft className="w-4 h-4 text-[#bcf3b0]" /> Log Income
             </button>
           </div>
         </div>
@@ -336,7 +302,7 @@ export default function DashboardPage() {
       </div>
 
       {/* ============================================================
-          KPI METRIC CARDS GRID (Motion Elements 4 & 10)
+          KPI METRIC CARDS GRID (Coinest Clean White with Pill Badges)
           ============================================================ */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
         {/* Card 1: Inflow */}
@@ -349,9 +315,9 @@ export default function DashboardPage() {
             <span className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">
               Cash Inflow
             </span>
-            <div className="w-9 h-9 rounded-xl bg-emerald-50 dark:bg-emerald-500/10 text-emerald-600 flex items-center justify-center text-base">
-              💰
-            </div>
+            <span className="inline-flex items-center gap-1 bg-[#d7f7ce] text-[#15803d] text-[11px] font-bold px-2.5 py-0.5 rounded-full">
+              ↑ Inflow
+            </span>
           </div>
           <div className="mt-3">
             <div className="text-2xl font-bold tracking-tight text-emerald-600 dark:text-emerald-400 tabular-nums">
@@ -374,9 +340,9 @@ export default function DashboardPage() {
             <span className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">
               Total Outflow
             </span>
-            <div className="w-9 h-9 rounded-xl bg-rose-50 dark:bg-rose-500/10 text-rose-600 flex items-center justify-center text-base">
-              💸
-            </div>
+            <span className="inline-flex items-center gap-1 bg-[#fee2e2] text-[#b91c1c] text-[11px] font-bold px-2.5 py-0.5 rounded-full">
+              ↓ Outflow
+            </span>
           </div>
           <div className="mt-3">
             <div className="text-2xl font-bold tracking-tight text-rose-600 dark:text-rose-400 tabular-nums">
@@ -398,9 +364,9 @@ export default function DashboardPage() {
             <span className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">
               Savings Velocity
             </span>
-            <div className="w-9 h-9 rounded-xl bg-indigo-50 dark:bg-indigo-500/10 text-indigo-600 flex items-center justify-center text-base">
-              📈
-            </div>
+            <span className="inline-flex items-center gap-1 bg-[#d7f7ce] text-[#15803d] text-[11px] font-bold px-2.5 py-0.5 rounded-full">
+              ↑ Savings
+            </span>
           </div>
           <div className="mt-3">
             <div className="text-2xl font-bold tracking-tight text-foreground tabular-nums">
@@ -426,9 +392,9 @@ export default function DashboardPage() {
             <span className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">
               Needs vs Wants
             </span>
-            <div className="w-9 h-9 rounded-xl bg-amber-50 dark:bg-amber-500/10 text-amber-600 flex items-center justify-center text-base">
-              ⚖️
-            </div>
+            <span className="inline-flex items-center gap-1 bg-[#d7f7ce] text-[#15803d] text-[11px] font-bold px-2.5 py-0.5 rounded-full">
+              ⚖️ Balance
+            </span>
           </div>
           <div className="mt-2.5">
             <div className="flex justify-between items-baseline">
@@ -440,14 +406,14 @@ export default function DashboardPage() {
               </span>
             </div>
             {/* Split Progress Meter Bar - Always prominently visible */}
-            <div className="w-full bg-slate-100 dark:bg-slate-800 rounded-full h-3 mt-2 flex overflow-hidden border border-slate-200/80 dark:border-slate-700/80 p-0.5">
+            <div className="w-full bg-[#edf4ed] dark:bg-slate-800 rounded-full h-3 mt-2 flex overflow-hidden border border-[#dce8dc] dark:border-slate-700/80 p-0.5">
               <div
-                className="h-full bg-emerald-500 rounded-l-full transition-all duration-700"
+                className="h-full bg-emerald-500 rounded-l-full transition-all duration-500"
                 style={{ width: `${needsPercent}%` }}
                 title={`Needs: ${needsPercent}%`}
               />
               <div
-                className="h-full bg-amber-500 rounded-r-full transition-all duration-700"
+                className="h-full bg-amber-500 rounded-r-full transition-all duration-500"
                 style={{ width: `${wantsPercent}%` }}
                 title={`Wants: ${wantsPercent}%`}
               />
