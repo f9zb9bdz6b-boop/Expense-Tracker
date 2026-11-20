@@ -1,11 +1,14 @@
-import React from 'react';
+import React, { useRef } from 'react';
 import { NavLink } from 'react-router-dom';
+import gsap from 'gsap';
+import { useGSAP } from '@gsap/react';
 import {
   LayoutDashboard, ArrowUpDown, PlusCircle, TrendingUp, Tag,
   Wallet, CalendarDays, BarChart3, Target,
   Settings, RefreshCw, Users2,
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
+import { animateSpringPress, animateAvatarBounce } from '@/utils/motion';
 
 interface NavItem {
   to: string;
@@ -43,11 +46,38 @@ const navGroups: { label?: string; items: NavItem[] }[] = [
 ];
 
 export function Sidebar() {
+  const sidebarRef = useRef<HTMLElement>(null);
+  const { contextSafe } = useGSAP({ scope: sidebarRef });
+
+  const handleLinkPress = contextSafe((e: React.MouseEvent<HTMLElement>) => {
+    animateSpringPress(e.currentTarget);
+  });
+
+  const handleLogoHover = contextSafe((e: React.MouseEvent<HTMLElement>) => {
+    animateAvatarBounce(e.currentTarget);
+  });
+
+  useGSAP(() => {
+    const ctx = gsap.context(() => {
+      gsap.from('.motion-nav-item', {
+        x: -10,
+        opacity: 0,
+        stagger: 0.025,
+        duration: 0.35,
+        ease: 'power2.out',
+      });
+    }, sidebarRef);
+    return () => ctx.revert();
+  }, []);
+
   return (
-    <aside className="hidden lg:flex flex-col w-56 shrink-0 h-screen sticky top-0 border-r bg-sidebar select-none">
+    <aside ref={sidebarRef} className="hidden lg:flex flex-col w-56 shrink-0 h-screen sticky top-0 border-r bg-sidebar select-none">
       {/* Brand Header */}
       <div className="flex items-center gap-2.5 px-5 py-4 border-b">
-        <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-primary text-primary-foreground text-xs font-bold tracking-tight shadow-sm">
+        <div
+          onMouseEnter={handleLogoHover}
+          className="flex h-8 w-8 items-center justify-center rounded-lg bg-primary text-primary-foreground text-xs font-bold tracking-tight shadow-sm cursor-pointer select-none"
+        >
           ET
         </div>
         <div>
@@ -71,9 +101,10 @@ export function Sidebar() {
                   key={item.to}
                   to={item.to}
                   end={item.end}
+                  onClick={handleLinkPress}
                   className={({ isActive }) =>
                     cn(
-                      'flex items-center gap-2.5 px-2.5 py-1.5 rounded-md text-sm font-medium transition-all',
+                      'motion-nav-item flex items-center gap-2.5 px-2.5 py-1.5 rounded-md text-sm font-medium transition-all active:scale-95',
                       isActive
                         ? 'bg-primary/10 text-primary font-semibold shadow-xs'
                         : 'text-sidebar-foreground hover:bg-muted hover:text-foreground'
@@ -93,9 +124,10 @@ export function Sidebar() {
       <div className="p-3 border-t mt-auto">
         <NavLink
           to="/settings"
+          onClick={handleLinkPress}
           className={({ isActive }) =>
             cn(
-              'flex items-center gap-2.5 px-2.5 py-2 rounded-md text-sm font-medium transition-all w-full',
+              'motion-nav-item flex items-center gap-2.5 px-2.5 py-2 rounded-md text-sm font-medium transition-all w-full active:scale-95',
               isActive
                 ? 'bg-primary/10 text-primary font-semibold'
                 : 'text-sidebar-foreground hover:bg-muted hover:text-foreground'

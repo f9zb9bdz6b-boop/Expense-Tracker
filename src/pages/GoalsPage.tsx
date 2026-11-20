@@ -1,12 +1,15 @@
 // ============================================================
 // GoalsPage - Financial Goals & Savings Progress Tracking
 // ============================================================
-import React, { useState } from 'react';
+import React, { useState, useRef } from 'react';
 import { useLiveQuery } from 'dexie-react-hooks';
+import gsap from 'gsap';
+import { useGSAP } from '@gsap/react';
 import { db } from '@/db/database';
 import { goalRepo } from '@/db/repositories';
 import { formatCurrency, toMinorUnits, DEFAULT_CURRENCY } from '@/utils/currency';
 import { formatDate, getCurrentDate } from '@/utils/date';
+import { animateSpringPress } from '@/utils/motion';
 import { Card, CardHeader, CardTitle, CardDescription, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -73,6 +76,37 @@ export default function GoalsPage() {
 
   const goals = useLiveQuery(() => db.financialGoals.toArray()) ?? [];
   const contributions = useLiveQuery(() => db.savingsContributions.toArray()) ?? [];
+
+  const pageRef = useRef<HTMLDivElement>(null);
+  const { contextSafe } = useGSAP({ scope: pageRef });
+
+  const handleBtnPress = contextSafe((e: React.MouseEvent<HTMLElement>) => {
+    animateSpringPress(e.currentTarget);
+  });
+
+  useGSAP(() => {
+    const ctx = gsap.context(() => {
+      gsap.from('.motion-header', { y: -16, opacity: 0, duration: 0.5, ease: 'power3.out' });
+      gsap.from('.motion-goal-card', {
+        y: 20,
+        opacity: 0,
+        duration: 0.45,
+        stagger: 0.08,
+        ease: 'power2.out',
+        delay: 0.1,
+        clearProps: 'transform,opacity',
+      });
+      gsap.from('.motion-meter', {
+        scaleX: 0,
+        transformOrigin: 'left',
+        duration: 0.85,
+        stagger: 0.08,
+        ease: 'power2.out',
+        delay: 0.25,
+      });
+    }, pageRef);
+    return () => ctx.revert();
+  }, [goals.length, contributions.length]);
 
   const handleCreateGoal = async () => {
     const targetNum = parseFloat(targetAmount);
@@ -205,16 +239,22 @@ export default function GoalsPage() {
   };
 
   return (
-    <div className="space-y-6 max-w-5xl mx-auto">
+    <div ref={pageRef} className="space-y-6 max-w-5xl mx-auto pb-12">
       {/* Header */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+      <div className="motion-header flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>
           <h1 className="text-2xl font-bold tracking-tight">Financial Goals & Savings</h1>
           <p className="text-muted-foreground text-sm">
             Set savings targets, track source of contributions, withdraw funds when needed, and sync with transactions.
           </p>
         </div>
-        <Button onClick={() => setIsAddGoalOpen(true)} className="gap-2 shadow-sm">
+        <Button
+          onClick={e => {
+            handleBtnPress(e);
+            setIsAddGoalOpen(true);
+          }}
+          className="gap-2 shadow-sm cursor-pointer select-none"
+        >
           <Plus className="w-4 h-4" /> New Goal
         </Button>
       </div>
@@ -242,7 +282,7 @@ export default function GoalsPage() {
             const isExpanded = expandedGoalId === g.id;
 
             return (
-              <Card key={g.id} className="hover:shadow-md transition-shadow">
+              <Card key={g.id} className="motion-goal-card hover:shadow-md transition-shadow">
                 <CardHeader className="pb-3 flex flex-row items-start justify-between">
                   <div>
                     <div className="flex items-center gap-2">

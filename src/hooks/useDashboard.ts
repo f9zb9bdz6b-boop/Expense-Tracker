@@ -73,12 +73,22 @@ export function useDashboard(): { summary: DashboardSummary | null; isLoading: b
     const currentWeekSpending = weekExpenses.reduce((s: number, e: Expense) => s + e.amount, 0);
     const todaySpending = todayExpenses.reduce((s: number, e: Expense) => s + e.amount, 0);
 
-    const necessaryExpenses = monthExpenses
+    const monthNecessary = monthExpenses
       .filter((e: Expense) => e.classification === 'necessary')
       .reduce((s: number, e: Expense) => s + e.amount, 0);
-    const discretionaryExpenses = monthExpenses
+    const monthDiscretionary = monthExpenses
       .filter((e: Expense) => e.classification === 'discretionary')
       .reduce((s: number, e: Expense) => s + e.amount, 0);
+
+    const allNecessary = allExpenses
+      .filter((e: Expense) => e.classification === 'necessary')
+      .reduce((s: number, e: Expense) => s + e.amount, 0);
+    const allDiscretionary = allExpenses
+      .filter((e: Expense) => e.classification === 'discretionary')
+      .reduce((s: number, e: Expense) => s + e.amount, 0);
+
+    const necessaryExpenses = (monthNecessary > 0 || monthDiscretionary > 0) ? monthNecessary : allNecessary;
+    const discretionaryExpenses = (monthNecessary > 0 || monthDiscretionary > 0) ? monthDiscretionary : allDiscretionary;
 
     // Build category map
     const catMap = new Map<string, ExpenseCategory>(categories.map((c: ExpenseCategory) => [c.id, c]));

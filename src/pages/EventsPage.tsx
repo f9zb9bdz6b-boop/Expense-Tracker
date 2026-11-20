@@ -1,12 +1,15 @@
 // ============================================================
 // EventsPage - Special Expenses & Events Module (Trips, Parties, Weddings)
 // ============================================================
-import React, { useState } from 'react';
+import React, { useState, useRef } from 'react';
 import { useLiveQuery } from 'dexie-react-hooks';
+import gsap from 'gsap';
+import { useGSAP } from '@gsap/react';
 import { db } from '@/db/database';
 import { eventRepo, expenseRepo } from '@/db/repositories';
 import { formatCurrency, toMinorUnits, DEFAULT_CURRENCY } from '@/utils/currency';
 import { formatDate, getCurrentDate } from '@/utils/date';
+import { animateSpringPress } from '@/utils/motion';
 import { Card, CardHeader, CardTitle, CardDescription, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -54,6 +57,37 @@ export default function EventsPage() {
   const allExpenses = useLiveQuery(() => db.expenses.where('eventId').above('').toArray()) ?? [];
   const categories = useLiveQuery(() => db.expenseCategories.where('isArchived').equals(0).sortBy('order')) ?? [];
   const paymentMethods = useLiveQuery(() => db.paymentMethods.where('isArchived').equals(0).sortBy('order')) ?? [];
+
+  const pageRef = useRef<HTMLDivElement>(null);
+  const { contextSafe } = useGSAP({ scope: pageRef });
+
+  const handleBtnPress = contextSafe((e: React.MouseEvent<HTMLElement>) => {
+    animateSpringPress(e.currentTarget);
+  });
+
+  useGSAP(() => {
+    const ctx = gsap.context(() => {
+      gsap.from('.motion-header', { y: -16, opacity: 0, duration: 0.5, ease: 'power3.out' });
+      gsap.from('.motion-event-card', {
+        y: 20,
+        opacity: 0,
+        duration: 0.45,
+        stagger: 0.08,
+        ease: 'power2.out',
+        delay: 0.1,
+        clearProps: 'transform,opacity',
+      });
+      gsap.from('.motion-meter', {
+        scaleX: 0,
+        transformOrigin: 'left',
+        duration: 0.85,
+        stagger: 0.08,
+        ease: 'power2.out',
+        delay: 0.25,
+      });
+    }, pageRef);
+    return () => ctx.revert();
+  }, [events.length, allExpenses.length]);
 
   const handleOpenAdd = () => {
     setEditingId(null);
@@ -167,16 +201,22 @@ export default function EventsPage() {
   };
 
   return (
-    <div className="space-y-6 max-w-5xl mx-auto">
+    <div ref={pageRef} className="space-y-6 max-w-5xl mx-auto pb-12">
       {/* Top Header */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+      <div className="motion-header flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>
           <h1 className="text-2xl font-bold tracking-tight">Special Expenses & Events</h1>
           <p className="text-muted-foreground text-sm">
             Isolate vacations, weddings, renovation projects and parties from day-to-day spending. Add expenses directly.
           </p>
         </div>
-        <Button onClick={handleOpenAdd} className="gap-2 shadow-sm">
+        <Button
+          onClick={e => {
+            handleBtnPress(e);
+            handleOpenAdd();
+          }}
+          className="gap-2 shadow-sm cursor-pointer select-none"
+        >
           <Plus className="w-4 h-4" /> New Event
         </Button>
       </div>
@@ -204,7 +244,7 @@ export default function EventsPage() {
             const isExpanded = expandedEventId === ev.id;
 
             return (
-              <Card key={ev.id} className="overflow-hidden border-l-4" style={{ borderLeftColor: ev.color }}>
+              <Card key={ev.id} className="motion-event-card overflow-hidden border-l-4" style={{ borderLeftColor: ev.color }}>
                 <CardHeader className="pb-3 flex flex-row items-start justify-between">
                   <div className="space-y-1">
                     <div className="flex items-center gap-2">

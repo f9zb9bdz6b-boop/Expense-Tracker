@@ -1,13 +1,16 @@
 // ============================================================
 // SettingsPage - Preferences, Currency, Backup & Restore
 // ============================================================
-import React, { useState } from 'react';
+import React, { useState, useRef } from 'react';
+import gsap from 'gsap';
+import { useGSAP } from '@gsap/react';
 import { useSettings } from '@/contexts/SettingsContext';
 import { useTheme } from '@/contexts/ThemeContext';
 import { backupRepo } from '@/db/repositories';
 import { db } from '@/db/database';
 import { SUPPORTED_CURRENCIES } from '@/utils/currency';
 import { downloadFile } from '@/utils/helpers';
+import { animateSpringPress } from '@/utils/motion';
 import { Card, CardHeader, CardTitle, CardDescription, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -99,10 +102,33 @@ export default function SettingsPage() {
     }
   };
 
+  const pageRef = useRef<HTMLDivElement>(null);
+  const { contextSafe } = useGSAP({ scope: pageRef });
+
+  const handleBtnPress = contextSafe((e: React.MouseEvent<HTMLElement>) => {
+    animateSpringPress(e.currentTarget);
+  });
+
+  useGSAP(() => {
+    const ctx = gsap.context(() => {
+      gsap.from('.motion-header', { y: -16, opacity: 0, duration: 0.5, ease: 'power3.out' });
+      gsap.from('.motion-card', {
+        y: 20,
+        opacity: 0,
+        duration: 0.45,
+        stagger: 0.08,
+        ease: 'power2.out',
+        delay: 0.1,
+        clearProps: 'transform,opacity',
+      });
+    }, pageRef);
+    return () => ctx.revert();
+  }, []);
+
   return (
-    <div className="space-y-6 max-w-4xl mx-auto">
+    <div ref={pageRef} className="space-y-6 max-w-4xl mx-auto pb-12">
       {/* Header */}
-      <div>
+      <div className="motion-header">
         <h1 className="text-2xl font-bold tracking-tight">Settings & Preferences</h1>
         <p className="text-muted-foreground text-sm">
           Customize currency, themes, offline local storage, data backup and restore.
@@ -110,7 +136,7 @@ export default function SettingsPage() {
       </div>
 
       {/* General Preferences */}
-      <Card>
+      <Card className="motion-card">
         <CardHeader>
           <CardTitle className="text-base font-semibold">General Preferences</CardTitle>
           <CardDescription className="text-xs">Select your currency and appearance</CardDescription>

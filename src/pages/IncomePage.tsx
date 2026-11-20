@@ -1,16 +1,19 @@
 // ============================================================
 // IncomePage - Income Tracking, Sources & Summaries
 // ============================================================
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
 import { useLiveQuery } from 'dexie-react-hooks';
+import gsap from 'gsap';
+import { useGSAP } from '@gsap/react';
 import { db } from '@/db/database';
 import { incomeRepo, incomeCategoryRepo } from '@/db/repositories';
 import { toMinorUnits, formatCurrency, DEFAULT_CURRENCY } from '@/utils/currency';
 import { getCurrentDate, getCurrentTime, formatDate } from '@/utils/date';
 import { getCategoryEmoji, getPaymentMethodEmoji } from '@/utils/emojis';
+import { animateSpringPress } from '@/utils/motion';
 import { Card, CardHeader, CardTitle, CardDescription, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -62,6 +65,23 @@ export default function IncomePage() {
       color: cat?.color || '#22c55e',
     };
   });
+
+  const pageRef = useRef<HTMLDivElement>(null);
+  const { contextSafe } = useGSAP({ scope: pageRef });
+
+  const handleBtnPress = contextSafe((e: React.MouseEvent<HTMLElement>) => {
+    animateSpringPress(e.currentTarget);
+  });
+
+  useGSAP(() => {
+    const ctx = gsap.context(() => {
+      gsap.from('.motion-header', { y: -16, opacity: 0, duration: 0.5, ease: 'power3.out' });
+      gsap.from('.motion-hero-card', { y: 20, opacity: 0, scale: 0.98, duration: 0.55, ease: 'back.out(1.2)' });
+      gsap.from('.motion-card', { y: 20, opacity: 0, duration: 0.5, stagger: 0.08, ease: 'power2.out', delay: 0.1 });
+      gsap.from('.motion-row', { x: -12, opacity: 0, duration: 0.35, stagger: 0.04, ease: 'power2.out', delay: 0.25, clearProps: 'transform,opacity' });
+    }, pageRef);
+    return () => ctx.revert();
+  }, [incomeList.length]);
 
   const {
     register,
@@ -147,27 +167,25 @@ export default function IncomePage() {
   };
 
   return (
-    <div className="space-y-6 max-w-5xl mx-auto">
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-        <div className="flex items-center justify-between">
-          <div>
-            <h1 className="text-xl font-semibold tracking-tight">Income</h1>
-            <p className="text-muted-foreground text-sm mt-0.5">
-              Track salaries, freelance, investments and other inflows.
-            </p>
-          </div>
-          <div className="text-right">
-            <p className="text-xs text-muted-foreground">Total inflows</p>
-            <p className="text-xl font-semibold text-primary">
-              {formatCurrency(totalIncome)}
-            </p>
-          </div>
+    <div ref={pageRef} className="space-y-6 max-w-5xl mx-auto pb-12">
+      <div className="motion-header flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+        <div>
+          <h1 className="text-xl font-bold tracking-tight">Income & Inflows</h1>
+          <p className="text-muted-foreground text-sm mt-0.5">
+            Track salaries, freelance, investments and other cash inflows.
+          </p>
+        </div>
+        <div className="motion-hero-card bg-card border border-border/80 rounded-2xl px-5 py-3 shadow-xs text-right">
+          <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">Total Received</p>
+          <p className="text-2xl font-extrabold text-emerald-600 dark:text-emerald-400 tabular-nums">
+            +{formatCurrency(totalIncome)}
+          </p>
         </div>
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
         {/* Form Card: Record Inflow */}
-        <Card className="lg:col-span-1 shadow-sm">
+        <Card className="motion-card lg:col-span-1 shadow-xs rounded-2xl border-border/80">
           <CardHeader>
             <CardTitle className="text-base font-semibold flex items-center gap-2">
               <TrendingUp className="w-4 h-4 text-emerald-500" /> Record Income
@@ -322,7 +340,7 @@ export default function IncomePage() {
                   {incomeList.map(item => {
                     const cat = catMap.get(item.categoryId);
                     return (
-                      <div key={item.id} className="py-3 flex items-center justify-between hover:bg-muted/30 px-2 rounded-xl group transition-colors">
+                      <div key={item.id} className="motion-row py-3 flex items-center justify-between hover:bg-muted/30 px-2 rounded-xl group transition-colors">
                         <div className="flex items-center gap-3">
                           <div className="w-10 h-10 rounded-xl bg-emerald-50 dark:bg-emerald-500/10 text-emerald-600 flex items-center justify-center shrink-0 text-lg shadow-xs">
                             <span>{cat ? getCategoryEmoji(cat) : '💰'}</span>

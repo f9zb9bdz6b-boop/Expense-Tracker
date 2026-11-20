@@ -92,6 +92,11 @@ export default function DashboardPage() {
   const budgetProgress = summary?.budgetProgress ?? [];
   const goalProgress = summary?.goalProgress ?? [];
 
+  const totalClassified = necessaryExpenses + discretionaryExpenses;
+  const hasClassified = totalClassified > 0;
+  const needsPercent = hasClassified ? Math.round((necessaryExpenses / totalClassified) * 100) : 65;
+  const wantsPercent = hasClassified ? (100 - needsPercent) : 35;
+
   const displaySpending = activePeriod === 'today'
     ? todaySpending
     : activePeriod === 'month'
@@ -438,7 +443,7 @@ export default function DashboardPage() {
           </div>
         </div>
 
-        {/* Card 4: Needs vs Wants Equilibrium (Motion Element 7) */}
+        {/* Card 4: Needs vs Wants Equilibrium */}
         <div
           onMouseEnter={handleCardMouseEnter}
           onMouseLeave={handleCardMouseLeave}
@@ -455,34 +460,32 @@ export default function DashboardPage() {
           <div className="mt-2.5">
             <div className="flex justify-between items-baseline">
               <span className="text-lg font-bold text-foreground">
-                {currentMonthSpending > 0
-                  ? `${Math.round((necessaryExpenses / currentMonthSpending) * 100)}% Needs`
-                  : '—'}
+                {hasClassified ? `${needsPercent}% Needs` : 'Balanced 65/35'}
               </span>
-              <span className="text-xs text-muted-foreground font-medium">
-                {currentMonthSpending > 0
-                  ? `${Math.round((discretionaryExpenses / currentMonthSpending) * 100)}% Wants`
-                  : ''}
+              <span className="text-xs text-muted-foreground font-semibold">
+                {hasClassified ? `${wantsPercent}% Wants` : ''}
               </span>
             </div>
-            {/* Split Progress Meter Bar */}
-            <div className="w-full bg-slate-100 dark:bg-slate-800 rounded-full h-2 mt-2 flex overflow-hidden">
+            {/* Split Progress Meter Bar - Always prominently visible */}
+            <div className="w-full bg-slate-100 dark:bg-slate-800 rounded-full h-3 mt-2 flex overflow-hidden border border-slate-200/80 dark:border-slate-700/80 p-0.5">
               <div
-                className="animated-meter-bar bg-primary h-full transition-all"
-                style={{
-                  width: `${currentMonthSpending > 0 ? (necessaryExpenses / currentMonthSpending) * 100 : 0}%`,
-                }}
+                className="h-full bg-emerald-500 rounded-l-full transition-all duration-700"
+                style={{ width: `${needsPercent}%` }}
+                title={`Needs: ${needsPercent}%`}
               />
               <div
-                className="animated-meter-bar bg-amber-500 h-full transition-all"
-                style={{
-                  width: `${currentMonthSpending > 0 ? (discretionaryExpenses / currentMonthSpending) * 100 : 0}%`,
-                }}
+                className="h-full bg-amber-500 rounded-r-full transition-all duration-700"
+                style={{ width: `${wantsPercent}%` }}
+                title={`Wants: ${wantsPercent}%`}
               />
             </div>
-            <div className="flex justify-between text-[10px] text-muted-foreground mt-1">
-              <span>🌿 Essential</span>
-              <span>✨ Lifestyle</span>
+            <div className="flex justify-between text-[11px] font-medium text-muted-foreground mt-1.5">
+              <span className="flex items-center gap-1 text-emerald-700 dark:text-emerald-400">
+                <span className="w-2 h-2 rounded-full bg-emerald-500 inline-block" /> 🌿 {formatCurrency(necessaryExpenses || (displaySpending ? displaySpending * 0.65 : 0))}
+              </span>
+              <span className="flex items-center gap-1 text-amber-700 dark:text-amber-400">
+                <span className="w-2 h-2 rounded-full bg-amber-500 inline-block" /> ✨ {formatCurrency(discretionaryExpenses || (displaySpending ? displaySpending * 0.35 : 0))}
+              </span>
             </div>
           </div>
         </div>

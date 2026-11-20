@@ -1,12 +1,15 @@
 // ============================================================
 // CategoriesPage - Customizable Expense & Income Categories with Emojis
 // ============================================================
-import React, { useState } from 'react';
+import React, { useState, useRef } from 'react';
 import { useLiveQuery } from 'dexie-react-hooks';
+import gsap from 'gsap';
+import { useGSAP } from '@gsap/react';
 import { db } from '@/db/database';
 import { expenseCategoryRepo, incomeCategoryRepo } from '@/db/repositories';
 import { formatCurrency } from '@/utils/currency';
 import { getCategoryEmoji, POPULAR_CATEGORY_EMOJIS } from '@/utils/emojis';
+import { animateSpringPress, animateHoverLift } from '@/utils/motion';
 import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -60,6 +63,31 @@ export default function CategoriesPage() {
       count: cur.count + 1,
     });
   }
+
+  const pageRef = useRef<HTMLDivElement>(null);
+  const { contextSafe } = useGSAP({ scope: pageRef });
+
+  const handleBtnPress = contextSafe((e: React.MouseEvent<HTMLElement>) => {
+    animateSpringPress(e.currentTarget);
+  });
+
+  useGSAP(() => {
+    const ctx = gsap.context(() => {
+      gsap.from('.motion-header', { y: -16, opacity: 0, duration: 0.5, ease: 'power3.out' });
+      gsap.from('.motion-controls', { y: 12, opacity: 0, duration: 0.4, ease: 'power2.out', delay: 0.1 });
+      gsap.from('.motion-cat-card', {
+        y: 20,
+        opacity: 0,
+        scale: 0.96,
+        duration: 0.45,
+        stagger: 0.035,
+        ease: 'power2.out',
+        delay: 0.15,
+        clearProps: 'transform,opacity',
+      });
+    }, pageRef);
+    return () => ctx.revert();
+  }, [activeTab, expenseCategories.length, incomeCategories.length]);
 
   const handleOpenAdd = () => {
     setEditingId(null);
@@ -155,22 +183,28 @@ export default function CategoriesPage() {
   const currentSpendingMap = activeTab === 'expense' ? expenseSpendingMap : incomeSpendingMap;
 
   return (
-    <div className="space-y-6 max-w-5xl mx-auto">
+    <div ref={pageRef} className="space-y-6 max-w-5xl mx-auto pb-12">
       {/* Top Header */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+      <div className="motion-header flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>
-          <h1 className="text-2xl font-bold tracking-tight text-foreground">Categories</h1>
+          <h1 className="text-2xl font-bold tracking-tight text-foreground">Categories & Tags</h1>
           <p className="text-muted-foreground text-sm mt-0.5">
             Organize expenses and income with expressive emojis and tracking.
           </p>
         </div>
-        <Button onClick={handleOpenAdd} className="gap-2 shadow-xs">
+        <Button
+          onClick={e => {
+            handleBtnPress(e);
+            handleOpenAdd();
+          }}
+          className="gap-2 shadow-xs cursor-pointer select-none"
+        >
           <Plus className="w-4 h-4" /> Add Category
         </Button>
       </div>
 
       {/* Tabs */}
-      <div className="flex border-b border-border space-x-6">
+      <div className="motion-controls flex border-b border-border space-x-6">
         <button
           onClick={() => setActiveTab('expense')}
           className={`pb-3 text-sm font-semibold border-b-2 transition-colors flex items-center gap-2 ${
@@ -206,7 +240,7 @@ export default function CategoriesPage() {
           const emoji = getCategoryEmoji(cat);
 
           return (
-            <Card key={cat.id} className="hover:shadow-md transition-all group overflow-hidden border border-border">
+            <Card key={cat.id} className="motion-cat-card hover:shadow-md transition-all group overflow-hidden border border-border">
               <CardContent className="p-4 flex items-center justify-between gap-3">
                 <div className="flex items-center gap-3 min-w-0">
                   {/* Category Emoji Avatar */}

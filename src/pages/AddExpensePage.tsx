@@ -1,16 +1,19 @@
 // ============================================================
 // AddExpensePage - Record and Manage Every Expense
 // ============================================================
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import { useForm, Controller } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
 import { useLiveQuery } from 'dexie-react-hooks';
+import gsap from 'gsap';
+import { useGSAP } from '@gsap/react';
 import { db } from '@/db/database';
 import { expenseRepo, merchantRepo, expenseCategoryRepo } from '@/db/repositories';
 import { toMinorUnits, DEFAULT_CURRENCY } from '@/utils/currency';
 import { getCurrentDate, getCurrentTime } from '@/utils/date';
+import { animateSpringPress } from '@/utils/motion';
 import { Card, CardHeader, CardTitle, CardDescription, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -58,6 +61,24 @@ export default function AddExpensePage() {
   const categories = useLiveQuery(() => db.expenseCategories.orderBy('order').toArray()) ?? [];
   const paymentMethods = useLiveQuery(() => db.paymentMethods.orderBy('order').toArray()) ?? [];
   const events = useLiveQuery(() => db.events.where('status').anyOf('planned', 'active').toArray()) ?? [];
+
+  const pageRef = useRef<HTMLDivElement>(null);
+  const { contextSafe } = useGSAP({ scope: pageRef });
+
+  const handlePress = contextSafe((e: React.MouseEvent<HTMLElement>) => {
+    animateSpringPress(e.currentTarget);
+  });
+
+  useGSAP(() => {
+    const ctx = gsap.context(() => {
+      gsap.from('.motion-header', { y: -16, opacity: 0, duration: 0.45, ease: 'power3.out' });
+      gsap.from('.motion-hero-amount', { y: 20, opacity: 0, scale: 0.98, duration: 0.5, ease: 'back.out(1.2)' });
+      gsap.from('.motion-card', { y: 20, opacity: 0, duration: 0.45, stagger: 0.08, ease: 'power2.out', delay: 0.1 });
+      gsap.from('.motion-category-btn', { scale: 0.9, opacity: 0, duration: 0.35, stagger: 0.02, ease: 'back.out(1.5)', delay: 0.2 });
+      gsap.from('.motion-payment-btn', { scale: 0.9, opacity: 0, duration: 0.35, stagger: 0.03, ease: 'back.out(1.5)', delay: 0.25 });
+    }, pageRef);
+    return () => ctx.revert();
+  }, []);
 
   const {
     register,
@@ -191,8 +212,8 @@ export default function AddExpensePage() {
   };
 
   return (
-    <div className="max-w-2xl mx-auto space-y-6">
-      <div className="flex items-center gap-2">
+    <div ref={pageRef} className="max-w-2xl mx-auto space-y-6 pb-12">
+      <div className="motion-header flex items-center gap-2">
         <Button variant="ghost" size="sm" onClick={() => navigate(-1)} className="gap-1 text-muted-foreground">
           <ArrowLeft className="w-4 h-4" /> Back
         </Button>
@@ -203,7 +224,7 @@ export default function AddExpensePage() {
         <input type="hidden" {...register('categoryId')} />
         <input type="hidden" {...register('paymentMethodId')} />
         {/* Main Card: Amount & Description */}
-        <Card>
+        <Card className="motion-hero-amount">
           <CardContent className="pt-6 space-y-4">
             {/* Amount Input */}
             <div className="space-y-1.5 text-center sm:text-left">
@@ -278,8 +299,11 @@ export default function AddExpensePage() {
                   <button
                     key={cat.id}
                     type="button"
-                    onClick={() => setValue('categoryId', cat.id, { shouldValidate: true, shouldDirty: true })}
-                    className={`flex items-center gap-2.5 p-2.5 rounded-xl border text-left text-xs font-medium transition-all ${
+                    onClick={e => {
+                      handlePress(e);
+                      setValue('categoryId', cat.id, { shouldValidate: true, shouldDirty: true });
+                    }}
+                    className={`motion-category-btn flex items-center gap-2.5 p-2.5 rounded-xl border text-left text-xs font-medium transition-all ${
                       isSelected
                         ? 'border-primary bg-primary/10 text-primary font-semibold ring-1 ring-primary shadow-xs'
                         : 'border-border/80 hover:bg-muted text-foreground'
@@ -310,8 +334,11 @@ export default function AddExpensePage() {
                     <button
                       key={pm.id}
                       type="button"
-                      onClick={() => setValue('paymentMethodId', pm.id, { shouldValidate: true, shouldDirty: true })}
-                      className={`flex items-center gap-1.5 px-3 py-2 rounded-lg border text-xs font-medium transition-all ${
+                      onClick={e => {
+                        handlePress(e);
+                        setValue('paymentMethodId', pm.id, { shouldValidate: true, shouldDirty: true });
+                      }}
+                      className={`motion-payment-btn flex items-center gap-1.5 px-3 py-2 rounded-lg border text-xs font-medium transition-all ${
                         isSelected
                           ? 'border-primary bg-primary text-primary-foreground font-semibold shadow-xs'
                           : 'border-border/80 hover:bg-muted text-foreground'

@@ -1,12 +1,15 @@
 // ============================================================
 // RecurringPage - Subscriptions & Recurring Transactions
 // ============================================================
-import React, { useState } from 'react';
+import React, { useState, useRef } from 'react';
 import { useLiveQuery } from 'dexie-react-hooks';
+import gsap from 'gsap';
+import { useGSAP } from '@gsap/react';
 import { db } from '@/db/database';
 import { recurringRepo } from '@/db/repositories';
 import { formatCurrency, toMinorUnits, DEFAULT_CURRENCY } from '@/utils/currency';
 import { formatDate, getCurrentDate } from '@/utils/date';
+import { animateSpringPress, animateHoverLift } from '@/utils/motion';
 import { Card, CardHeader, CardTitle, CardDescription, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -38,6 +41,25 @@ export default function RecurringPage() {
   const recurringList = useLiveQuery(() => db.recurringTransactions.toArray()) ?? [];
   const categories = useLiveQuery(() => db.expenseCategories.toArray()) ?? [];
   const catMap = new Map(categories.map(c => [c.id, c]));
+
+  const pageRef = useRef<HTMLDivElement>(null);
+  const { contextSafe } = useGSAP({ scope: pageRef });
+
+  const handleBtnPress = contextSafe((e: React.MouseEvent<HTMLElement>) => {
+    animateSpringPress(e.currentTarget);
+  });
+
+  const handleCardHover = contextSafe((e: React.MouseEvent<HTMLElement>, isEntering: boolean) => {
+    animateHoverLift(e.currentTarget, isEntering);
+  });
+
+  useGSAP(() => {
+    const ctx = gsap.context(() => {
+      gsap.from('.motion-header', { y: -16, opacity: 0, duration: 0.5, ease: 'power3.out' });
+      gsap.from('.motion-card', { y: 22, opacity: 0, scale: 0.96, duration: 0.45, stagger: 0.08, ease: 'back.out(1.3)', delay: 0.1 });
+    }, pageRef);
+    return () => ctx.revert();
+  }, [recurringList.length]);
 
   const handleOpenAdd = () => {
     setDescription('');
@@ -101,29 +123,41 @@ export default function RecurringPage() {
   };
 
   return (
-    <div className="space-y-6 max-w-5xl mx-auto">
+    <div ref={pageRef} className="space-y-6 max-w-5xl mx-auto pb-12">
       {/* Header */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+      <div className="motion-header flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>
           <h1 className="text-2xl font-bold tracking-tight">Recurring Bills & Subscriptions</h1>
           <p className="text-muted-foreground text-sm">
             Monitor repeating commitments like Netflix, Rent, Broadband, and recurring income.
           </p>
         </div>
-        <Button onClick={handleOpenAdd} className="gap-2 shadow-sm">
+        <Button
+          onClick={(e) => {
+            handleBtnPress(e);
+            handleOpenAdd();
+          }}
+          className="gap-2 shadow-sm transition-transform cursor-pointer"
+        >
           <Plus className="w-4 h-4" /> Add Recurring
         </Button>
       </div>
 
       {recurringList.length === 0 ? (
-        <Card className="py-16 text-center">
+        <Card className="motion-card py-16 text-center">
           <CardContent className="space-y-3">
             <Repeat className="w-12 h-12 mx-auto text-muted-foreground opacity-30" />
             <h3 className="text-base font-semibold">No Recurring Transactions Set</h3>
             <p className="text-xs text-muted-foreground max-w-md mx-auto">
               Never miss a renewal. Add your monthly rent, gym membership, or streaming subscriptions.
             </p>
-            <Button onClick={handleOpenAdd} className="mt-2">
+            <Button
+              onClick={(e) => {
+                handleBtnPress(e);
+                handleOpenAdd();
+              }}
+              className="mt-2 transition-transform"
+            >
               Add Recurring Bill
             </Button>
           </CardContent>
@@ -133,7 +167,12 @@ export default function RecurringPage() {
           {recurringList.map(item => {
             const cat = catMap.get(item.categoryId);
             return (
-              <Card key={item.id} className="hover:shadow-md transition-shadow">
+              <Card
+                key={item.id}
+                onMouseEnter={(e) => handleCardHover(e, true)}
+                onMouseLeave={(e) => handleCardHover(e, false)}
+                className="motion-card hover:shadow-md transition-all duration-200"
+              >
                 <CardHeader className="pb-3 flex flex-row items-start justify-between">
                   <div className="space-y-1">
                     <div className="flex items-center gap-2">
@@ -154,16 +193,22 @@ export default function RecurringPage() {
                     <Button
                       variant="ghost"
                       size="sm"
-                      className="h-8 w-8 p-0 text-muted-foreground hover:text-foreground"
-                      onClick={() => handleToggleStatus(item)}
+                      className="h-8 w-8 p-0 text-muted-foreground hover:text-foreground transition-transform active:scale-90"
+                      onClick={(e) => {
+                        handleBtnPress(e);
+                        handleToggleStatus(item);
+                      }}
                     >
                       {item.isActive ? <Pause className="w-3.5 h-3.5" /> : <Play className="w-3.5 h-3.5 text-emerald-500" />}
                     </Button>
                     <Button
                       variant="ghost"
                       size="sm"
-                      className="h-8 w-8 p-0 text-muted-foreground hover:text-rose-600"
-                      onClick={() => setDeleteId(item.id)}
+                      className="h-8 w-8 p-0 text-muted-foreground hover:text-rose-600 transition-transform active:scale-90"
+                      onClick={(e) => {
+                        handleBtnPress(e);
+                        setDeleteId(item.id);
+                      }}
                     >
                       <Trash2 className="w-3.5 h-3.5" />
                     </Button>

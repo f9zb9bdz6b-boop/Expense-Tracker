@@ -1,11 +1,14 @@
 // ============================================================
 // SplitsPage - Expense Splitting & Settlement Tracking
 // ============================================================
-import React, { useState } from 'react';
+import React, { useState, useRef } from 'react';
 import { useLiveQuery } from 'dexie-react-hooks';
+import gsap from 'gsap';
+import { useGSAP } from '@gsap/react';
 import { db } from '@/db/database';
 import { splitRepo, expenseRepo } from '@/db/repositories';
 import { formatCurrency, toMinorUnits, DEFAULT_CURRENCY } from '@/utils/currency';
+import { animateSpringPress, animateHoverLift } from '@/utils/motion';
 import { Card, CardHeader, CardTitle, CardDescription, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -40,6 +43,25 @@ export default function SplitsPage() {
 
   const splits = useLiveQuery(() => db.expenseSplits.toArray()) ?? [];
   const allParticipants = useLiveQuery(() => db.splitParticipants.toArray()) ?? [];
+
+  const pageRef = useRef<HTMLDivElement>(null);
+  const { contextSafe } = useGSAP({ scope: pageRef });
+
+  const handleBtnPress = contextSafe((e: React.MouseEvent<HTMLElement>) => {
+    animateSpringPress(e.currentTarget);
+  });
+
+  const handleCardHover = contextSafe((e: React.MouseEvent<HTMLElement>, isEntering: boolean) => {
+    animateHoverLift(e.currentTarget, isEntering);
+  });
+
+  useGSAP(() => {
+    const ctx = gsap.context(() => {
+      gsap.from('.motion-header', { y: -16, opacity: 0, duration: 0.5, ease: 'power3.out' });
+      gsap.from('.motion-card', { y: 22, opacity: 0, scale: 0.96, duration: 0.45, stagger: 0.08, ease: 'back.out(1.3)', delay: 0.1 });
+    }, pageRef);
+    return () => ctx.revert();
+  }, [splits.length]);
 
   const handleAddParticipant = () => {
     setParticipants([...participants, { name: '', share: '' }]);
@@ -150,29 +172,41 @@ export default function SplitsPage() {
   };
 
   return (
-    <div className="space-y-6 max-w-5xl mx-auto">
+    <div ref={pageRef} className="space-y-6 max-w-5xl mx-auto pb-12">
       {/* Header */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+      <div className="motion-header flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>
           <h1 className="text-2xl font-bold tracking-tight">Expense Splitting</h1>
           <p className="text-muted-foreground text-sm">
             Divide group bills, dinner tabs, or shared rent with roommates and track settlements.
           </p>
         </div>
-        <Button onClick={() => setIsDialogOpen(true)} className="gap-2 shadow-sm">
+        <Button
+          onClick={(e) => {
+            handleBtnPress(e);
+            setIsDialogOpen(true);
+          }}
+          className="gap-2 shadow-sm transition-transform cursor-pointer"
+        >
           <Plus className="w-4 h-4" /> New Split
         </Button>
       </div>
 
       {splits.length === 0 ? (
-        <Card className="py-16 text-center">
+        <Card className="motion-card py-16 text-center">
           <CardContent className="space-y-3">
             <Users className="w-12 h-12 mx-auto text-muted-foreground opacity-30" />
             <h3 className="text-base font-semibold">No Expense Splits</h3>
             <p className="text-xs text-muted-foreground max-w-md mx-auto">
               Split shared restaurant bills or vacation apartments easily without awkward calculation.
             </p>
-            <Button onClick={() => setIsDialogOpen(true)} className="mt-2">
+            <Button
+              onClick={(e) => {
+                handleBtnPress(e);
+                setIsDialogOpen(true);
+              }}
+              className="mt-2 transition-transform"
+            >
               Split a Bill
             </Button>
           </CardContent>
@@ -185,7 +219,12 @@ export default function SplitsPage() {
             const isAllSettled = participantsForSplit.length > 0 && settledCount === participantsForSplit.length;
 
             return (
-              <Card key={split.id} className="hover:shadow-md transition-shadow">
+              <Card
+                key={split.id}
+                onMouseEnter={(e) => handleCardHover(e, true)}
+                onMouseLeave={(e) => handleCardHover(e, false)}
+                className="motion-card hover:shadow-md transition-all duration-200"
+              >
                 <CardHeader className="pb-3 flex flex-row items-start justify-between">
                   <div>
                     <CardTitle className="text-base font-semibold">{split.description}</CardTitle>
@@ -196,8 +235,11 @@ export default function SplitsPage() {
                   <Button
                     variant="ghost"
                     size="sm"
-                    className="h-8 w-8 p-0 text-muted-foreground hover:text-rose-600"
-                    onClick={() => setDeleteId(split.id)}
+                    className="h-8 w-8 p-0 text-muted-foreground hover:text-rose-600 transition-transform active:scale-90"
+                    onClick={(e) => {
+                      handleBtnPress(e);
+                      setDeleteId(split.id);
+                    }}
                   >
                     <Trash2 className="w-3.5 h-3.5" />
                   </Button>
@@ -218,8 +260,11 @@ export default function SplitsPage() {
                         <div className="flex items-center gap-2">
                           <span className="font-semibold">{formatCurrency(p.shareAmount)}</span>
                           <button
-                            onClick={() => handleToggleSettle(p.id, p.isSettled)}
-                            className={`px-2 py-0.5 rounded text-[10px] font-semibold transition-colors ${
+                            onClick={(e) => {
+                              handleBtnPress(e);
+                              handleToggleSettle(p.id, p.isSettled);
+                            }}
+                            className={`px-2 py-0.5 rounded text-[10px] font-semibold transition-all duration-150 active:scale-95 cursor-pointer ${
                               p.isSettled
                                 ? 'bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border border-emerald-500/20'
                                 : 'bg-amber-500/10 text-amber-600 dark:text-amber-400 border border-amber-500/20 hover:bg-amber-500/20'

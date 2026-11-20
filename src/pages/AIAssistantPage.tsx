@@ -3,8 +3,11 @@
 // ============================================================
 import React, { useState, useRef, useEffect } from 'react';
 import { useLiveQuery } from 'dexie-react-hooks';
+import gsap from 'gsap';
+import { useGSAP } from '@gsap/react';
 import { db } from '@/db/database';
 import { answerFinancialQuestion, generateSmartInsights, calculateFinancialHealth } from '@/utils/ai-engine';
+import { animateSpringPress } from '@/utils/motion';
 import { Card, CardHeader, CardTitle, CardDescription, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -82,10 +85,26 @@ export default function AIAssistantPage() {
     }, 400);
   };
 
+  const pageRef = useRef<HTMLDivElement>(null);
+  const { contextSafe } = useGSAP({ scope: pageRef });
+
+  const handleBtnPress = contextSafe((e: React.MouseEvent<HTMLElement>) => {
+    animateSpringPress(e.currentTarget);
+  });
+
+  useGSAP(() => {
+    const ctx = gsap.context(() => {
+      gsap.from('.motion-header', { y: -16, opacity: 0, duration: 0.5, ease: 'power3.out' });
+      gsap.from('.motion-card', { y: 20, opacity: 0, duration: 0.5, stagger: 0.1, ease: 'power2.out', delay: 0.1 });
+      gsap.from('.motion-chip', { scale: 0.9, opacity: 0, duration: 0.35, stagger: 0.05, ease: 'back.out(1.5)', delay: 0.25 });
+    }, pageRef);
+    return () => ctx.revert();
+  }, []);
+
   return (
-    <div className="space-y-6 max-w-6xl mx-auto">
+    <div ref={pageRef} className="space-y-6 max-w-6xl mx-auto pb-12">
       {/* Header */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+      <div className="motion-header flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>
           <h1 className="text-2xl font-bold tracking-tight flex items-center gap-2">
             AI Financial Assistant <Sparkles className="w-5 h-5 text-indigo-500" />

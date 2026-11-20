@@ -1,11 +1,14 @@
 // ============================================================
 // AnalyticsPage - Visual Spending Patterns, Comparisons & Highlights
 // ============================================================
-import React, { useState, useMemo } from 'react';
+import React, { useState, useMemo, useRef } from 'react';
 import { useLiveQuery } from 'dexie-react-hooks';
+import gsap from 'gsap';
+import { useGSAP } from '@gsap/react';
 import { db } from '@/db/database';
 import { formatCurrency, DEFAULT_CURRENCY } from '@/utils/currency';
 import { formatDate, getDateRange, formatRelativeDate } from '@/utils/date';
+import { animateSpringPress } from '@/utils/motion';
 import { Card, CardHeader, CardTitle, CardDescription, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
@@ -112,17 +115,43 @@ export default function AnalyticsPage() {
     };
   }, [filteredExpenses, totalSpent]);
 
+  const pageRef = useRef<HTMLDivElement>(null);
+
+  useGSAP(() => {
+    const ctx = gsap.context(() => {
+      gsap.from('.motion-header', { y: -16, opacity: 0, duration: 0.5, ease: 'power3.out' });
+      gsap.from('.motion-controls', { y: 12, opacity: 0, duration: 0.4, ease: 'power2.out', delay: 0.1 });
+      gsap.from('.motion-pulse-card', {
+        y: 20,
+        opacity: 0,
+        duration: 0.45,
+        stagger: 0.08,
+        ease: 'power2.out',
+        delay: 0.15,
+      });
+      gsap.from('.motion-card', {
+        y: 24,
+        opacity: 0,
+        duration: 0.55,
+        stagger: 0.1,
+        ease: 'power3.out',
+        delay: 0.25,
+      });
+    }, pageRef);
+    return () => ctx.revert();
+  }, [timeRange, filteredExpenses.length]);
+
   return (
-    <div className="space-y-6 max-w-6xl mx-auto">
+    <div ref={pageRef} className="space-y-6 max-w-6xl mx-auto pb-12">
       {/* Header & Controls */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+      <div className="motion-header flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>
           <h1 className="text-2xl font-bold tracking-tight">Spending Analytics</h1>
           <p className="text-muted-foreground text-sm">
             Understand trends, discretionary behavior, and opportunities to save.
           </p>
         </div>
-        <div className="flex rounded-lg border bg-muted/40 p-1">
+        <div className="motion-controls flex rounded-lg border bg-muted/40 p-1">
           <button
             onClick={() => setTimeRange('30days')}
             className={`px-3 py-1 text-xs font-semibold rounded-md transition-colors ${
@@ -153,7 +182,7 @@ export default function AnalyticsPage() {
       {/* Highlights Metric Cards */}
       {highlights && (
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-          <Card>
+          <Card className="motion-pulse-card">
             <CardContent className="pt-5">
               <div className="flex items-center justify-between">
                 <span className="text-xs text-muted-foreground font-medium">Period Spending</span>
@@ -164,7 +193,7 @@ export default function AnalyticsPage() {
             </CardContent>
           </Card>
 
-          <Card>
+          <Card className="motion-pulse-card">
             <CardContent className="pt-5">
               <div className="flex items-center justify-between">
                 <span className="text-xs text-muted-foreground font-medium">Largest Single Expense</span>
@@ -177,7 +206,7 @@ export default function AnalyticsPage() {
             </CardContent>
           </Card>
 
-          <Card>
+          <Card className="motion-pulse-card">
             <CardContent className="pt-5">
               <div className="flex items-center justify-between">
                 <span className="text-xs text-muted-foreground font-medium">Peak Spending Day</span>
@@ -190,7 +219,7 @@ export default function AnalyticsPage() {
             </CardContent>
           </Card>
 
-          <Card>
+          <Card className="motion-pulse-card">
             <CardContent className="pt-5">
               <div className="flex items-center justify-between">
                 <span className="text-xs text-muted-foreground font-medium">Discretionary Ratio</span>

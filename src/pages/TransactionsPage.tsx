@@ -3,15 +3,18 @@
 // With Category Editing & Split Expense Tracking
 // Human-crafted, visually rich design with emojis & decorative timeline
 // ============================================================
-import React, { useState, useMemo } from 'react';
+import React, { useState, useMemo, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useLiveQuery } from 'dexie-react-hooks';
+import gsap from 'gsap';
+import { useGSAP } from '@gsap/react';
 import { db } from '@/db/database';
 import { expenseRepo, incomeRepo } from '@/db/repositories';
 import { formatCurrency, toMinorUnits, DEFAULT_CURRENCY } from '@/utils/currency';
 import { formatDate } from '@/utils/date';
 import { downloadFile } from '@/utils/helpers';
 import { getCategoryEmoji, getPaymentMethodEmoji } from '@/utils/emojis';
+import { animateSpringPress, animateHoverLift } from '@/utils/motion';
 import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -43,6 +46,13 @@ export default function TransactionsPage() {
   const [endDate, setEndDate] = useState('');
   const [sortField, setSortField] = useState<'date' | 'amount'>('date');
   const [sortOrder, setSortOrder] = useState<'desc' | 'asc'>('desc');
+
+  const pageRef = useRef<HTMLDivElement>(null);
+  const { contextSafe } = useGSAP({ scope: pageRef });
+
+  const handleBtnClick = contextSafe((e: React.MouseEvent<HTMLElement>) => {
+    animateSpringPress(e.currentTarget);
+  });
 
   // Deletion modal state
   const [deleteId, setDeleteId] = useState<string | null>(null);
@@ -131,6 +141,31 @@ export default function TransactionsPage() {
     selectedCategory, selectedClassification, startDate, endDate,
     sortField, sortOrder
   ]);
+
+  useGSAP(() => {
+    const ctx = gsap.context(() => {
+      gsap.from('.motion-header', { y: -16, opacity: 0, duration: 0.5, ease: 'power3.out' });
+      gsap.from('.motion-pulse-card', {
+        y: 20,
+        opacity: 0,
+        scale: 0.97,
+        duration: 0.55,
+        stagger: 0.08,
+        ease: 'back.out(1.3)',
+      });
+      gsap.from('.motion-controls', { y: 16, opacity: 0, duration: 0.45, ease: 'power2.out', delay: 0.15 });
+      gsap.from('.motion-row', {
+        x: -12,
+        opacity: 0,
+        duration: 0.4,
+        stagger: 0.04,
+        ease: 'power2.out',
+        delay: 0.25,
+        clearProps: 'transform,opacity',
+      });
+    }, pageRef);
+    return () => ctx.revert();
+  }, [filteredTransactions.length, activeTab]);
 
   // Summary Metrics of filtered data
   const metrics = useMemo(() => {
@@ -290,9 +325,9 @@ export default function TransactionsPage() {
   };
 
   return (
-    <div className="space-y-6 pb-12">
+    <div ref={pageRef} className="space-y-6 pb-12">
       {/* Top Header & Action Controls */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+      <div className="motion-header flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>
           <div className="flex items-center gap-2">
             <span className="text-2xl">🧾</span>
@@ -303,10 +338,25 @@ export default function TransactionsPage() {
           </p>
         </div>
         <div className="flex items-center gap-2.5">
-          <Button variant="outline" size="sm" onClick={handleExportCSV} className="gap-1.5 shadow-xs">
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={e => {
+              handleBtnClick(e);
+              handleExportCSV();
+            }}
+            className="gap-1.5 shadow-xs cursor-pointer select-none"
+          >
             <Download className="w-4 h-4" /> Export CSV
           </Button>
-          <Button size="sm" onClick={() => navigate('/add-expense')} className="gap-1.5 bg-primary hover:bg-primary/90 text-primary-foreground shadow-sm">
+          <Button
+            size="sm"
+            onClick={e => {
+              handleBtnClick(e);
+              navigate('/add-expense');
+            }}
+            className="gap-1.5 bg-primary hover:bg-primary/90 text-primary-foreground shadow-sm cursor-pointer select-none"
+          >
             <Plus className="w-4 h-4" /> Add Expense
           </Button>
         </div>
@@ -314,7 +364,7 @@ export default function TransactionsPage() {
 
       {/* Decorative Summary Pulse Banner */}
       <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
-        <div className="bg-card border border-border/80 rounded-2xl p-4 shadow-xs hover:border-border transition-all flex items-center justify-between">
+        <div className="motion-pulse-card bg-card border border-border/80 rounded-2xl p-4 shadow-xs hover:border-border transition-all flex items-center justify-between">
           <div>
             <p className="text-xs font-medium text-muted-foreground uppercase tracking-wider">Total Outflow</p>
             <p className="text-xl font-bold text-rose-600 dark:text-rose-400 mt-0.5">
@@ -327,7 +377,7 @@ export default function TransactionsPage() {
           </div>
         </div>
 
-        <div className="bg-card border border-border/80 rounded-2xl p-4 shadow-xs hover:border-border transition-all flex items-center justify-between">
+        <div className="motion-pulse-card bg-card border border-border/80 rounded-2xl p-4 shadow-xs hover:border-border transition-all flex items-center justify-between">
           <div>
             <p className="text-xs font-medium text-muted-foreground uppercase tracking-wider">Total Inflow</p>
             <p className="text-xl font-bold text-emerald-600 dark:text-emerald-400 mt-0.5">
@@ -340,7 +390,7 @@ export default function TransactionsPage() {
           </div>
         </div>
 
-        <div className="bg-card border border-border/80 rounded-2xl p-4 shadow-xs hover:border-border transition-all flex items-center justify-between">
+        <div className="motion-pulse-card bg-card border border-border/80 rounded-2xl p-4 shadow-xs hover:border-border transition-all flex items-center justify-between">
           <div>
             <p className="text-xs font-medium text-muted-foreground uppercase tracking-wider">Net Position</p>
             <p className={`text-xl font-bold mt-0.5 ${metrics.net >= 0 ? 'text-primary' : 'text-rose-600'}`}>
@@ -355,7 +405,7 @@ export default function TransactionsPage() {
       </div>
 
       {/* Filter and Search Bar */}
-      <Card className="rounded-2xl border-border/80 shadow-xs">
+      <Card className="motion-controls rounded-2xl border-border/80 shadow-xs">
         <CardContent className="pt-5 space-y-4">
           <div className="flex flex-col md:flex-row gap-3">
             {/* Search Input */}
@@ -552,7 +602,7 @@ export default function TransactionsPage() {
                   return (
                     <div
                       key={t.id}
-                      className="p-3.5 sm:px-4 flex items-center justify-between gap-3 hover:bg-muted/30 transition-colors group"
+                      className="motion-row p-3.5 sm:px-4 flex items-center justify-between gap-3 hover:bg-muted/30 transition-colors group"
                     >
                       {/* Left: Category Avatar & Details */}
                       <div className="flex items-center gap-3.5 min-w-0">

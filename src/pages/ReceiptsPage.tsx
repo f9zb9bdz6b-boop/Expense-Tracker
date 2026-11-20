@@ -1,14 +1,17 @@
 // ============================================================
 // ReceiptsPage - Receipt Scanning, OCR & Bill Attachments
 // ============================================================
-import React, { useState } from 'react';
+import React, { useState, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useLiveQuery } from 'dexie-react-hooks';
+import gsap from 'gsap';
+import { useGSAP } from '@gsap/react';
 import { db } from '@/db/database';
 import { receiptRepo, expenseRepo } from '@/db/repositories';
 import { readFileAsDataURL, compressImage } from '@/utils/helpers';
 import { formatCurrency, DEFAULT_CURRENCY, toMinorUnits } from '@/utils/currency';
 import { getCurrentDate, getCurrentTime, formatDate } from '@/utils/date';
+import { animateSpringPress, animateHoverLift } from '@/utils/motion';
 import { Card, CardHeader, CardTitle, CardDescription, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -33,6 +36,26 @@ export default function ReceiptsPage() {
   const [deleteId, setDeleteId] = useState<string | null>(null);
 
   const receipts = useLiveQuery(() => db.receipts.toArray()) ?? [];
+
+  const pageRef = useRef<HTMLDivElement>(null);
+  const { contextSafe } = useGSAP({ scope: pageRef });
+
+  const handleBtnPress = contextSafe((e: React.MouseEvent<HTMLElement>) => {
+    animateSpringPress(e.currentTarget);
+  });
+
+  const handleCardHover = contextSafe((e: React.MouseEvent<HTMLElement>, isEntering: boolean) => {
+    animateHoverLift(e.currentTarget, isEntering);
+  });
+
+  useGSAP(() => {
+    const ctx = gsap.context(() => {
+      gsap.from('.motion-header', { y: -16, opacity: 0, duration: 0.5, ease: 'power3.out' });
+      gsap.from('.motion-upload-card', { y: 20, opacity: 0, scale: 0.98, duration: 0.5, ease: 'back.out(1.2)', delay: 0.1 });
+      gsap.from('.motion-receipt-card', { y: 20, opacity: 0, scale: 0.96, duration: 0.45, stagger: 0.08, ease: 'back.out(1.3)', delay: 0.2 });
+    }, pageRef);
+    return () => ctx.revert();
+  }, [receipts.length]);
 
   const handleFileUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
@@ -131,9 +154,9 @@ export default function ReceiptsPage() {
   };
 
   return (
-    <div className="space-y-6 max-w-5xl mx-auto">
+    <div ref={pageRef} className="space-y-6 max-w-5xl mx-auto pb-12">
       {/* Header */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+      <div className="motion-header flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>
           <h1 className="text-2xl font-bold tracking-tight">Receipt Scanner & OCR</h1>
           <p className="text-muted-foreground text-sm">
@@ -151,9 +174,12 @@ export default function ReceiptsPage() {
             className="hidden"
           />
           <Button
-            onClick={() => document.getElementById('receiptInput')?.click()}
+            onClick={(e) => {
+              handleBtnPress(e);
+              document.getElementById('receiptInput')?.click();
+            }}
             disabled={isScanning}
-            className="gap-2 shadow-sm"
+            className="gap-2 shadow-sm transition-transform cursor-pointer"
           >
             <Camera className="w-4 h-4" />
             {isScanning ? 'Scanning...' : 'Scan / Upload Receipt'}
@@ -162,9 +188,13 @@ export default function ReceiptsPage() {
       </div>
 
       {/* Upload Zone Card */}
-      <Card className="border-dashed border-2 bg-muted/20 hover:bg-muted/30 transition-colors">
+      <Card
+        onMouseEnter={(e) => handleCardHover(e, true)}
+        onMouseLeave={(e) => handleCardHover(e, false)}
+        className="motion-upload-card border-dashed border-2 bg-muted/20 hover:bg-muted/30 transition-colors cursor-pointer"
+      >
         <CardContent className="py-10 text-center space-y-3">
-          <div className="w-12 h-12 rounded-full bg-primary/10 text-primary flex items-center justify-center mx-auto">
+          <div className="w-12 h-12 rounded-full bg-primary/10 text-primary flex items-center justify-center mx-auto transition-transform hover:scale-110">
             <ScanLine className="w-6 h-6" />
           </div>
           <div>
@@ -176,9 +206,12 @@ export default function ReceiptsPage() {
           <Button
             variant="outline"
             size="sm"
-            onClick={() => document.getElementById('receiptInput')?.click()}
+            onClick={(e) => {
+              handleBtnPress(e);
+              document.getElementById('receiptInput')?.click();
+            }}
             disabled={isScanning}
-            className="mt-2"
+            className="mt-2 transition-transform"
           >
             Select Receipt Image
           </Button>
@@ -194,19 +227,27 @@ export default function ReceiptsPage() {
         ) : (
           <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4">
             {receipts.map(rec => (
-              <Card key={rec.id} className="overflow-hidden group hover:shadow-md transition-shadow">
+              <Card
+                key={rec.id}
+                onMouseEnter={(e) => handleCardHover(e, true)}
+                onMouseLeave={(e) => handleCardHover(e, false)}
+                className="motion-receipt-card overflow-hidden group hover:shadow-md transition-all duration-200"
+              >
                 <div className="h-44 bg-muted relative overflow-hidden flex items-center justify-center">
                   <img
                     src={rec.imageData}
                     alt={rec.fileName}
-                    className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-200"
+                    className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300 ease-out"
                   />
                   <div className="absolute top-2 right-2">
                     <Button
                       variant="destructive"
                       size="sm"
-                      className="h-7 w-7 p-0 opacity-80 hover:opacity-100"
-                      onClick={() => setDeleteId(rec.id)}
+                      className="h-7 w-7 p-0 opacity-80 hover:opacity-100 transition-transform active:scale-90"
+                      onClick={(e) => {
+                        handleBtnPress(e);
+                        setDeleteId(rec.id);
+                      }}
                     >
                       <Trash2 className="w-3.5 h-3.5" />
                     </Button>
