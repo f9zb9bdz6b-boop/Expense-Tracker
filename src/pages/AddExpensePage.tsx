@@ -200,7 +200,7 @@ export default function AddExpensePage() {
         <input type="hidden" {...register('categoryId')} />
         <input type="hidden" {...register('paymentMethodId')} />
         {/* Main Card: Amount & Description */}
-        <Card className="border-primary/20 shadow-sm">
+        <Card>
           <CardContent className="pt-6 space-y-4">
             {/* Amount Input */}
             <div className="space-y-1.5 text-center sm:text-left">
@@ -218,7 +218,7 @@ export default function AddExpensePage() {
                   placeholder="0.00"
                   autoFocus
                   {...register('amount')}
-                  className="w-full pl-12 pr-4 py-3 text-3xl font-extrabold bg-muted/40 rounded-xl border border-input focus:outline-none focus:ring-2 focus:ring-primary text-foreground"
+                  className="w-full pl-12 pr-4 py-3 text-3xl font-semibold bg-background rounded-lg border border-input focus:outline-none focus:ring-1 focus:ring-primary text-foreground"
                 />
               </div>
               {errors.amount && <p className="text-xs text-rose-500 font-medium">{errors.amount.message}</p>}
@@ -275,9 +275,9 @@ export default function AddExpensePage() {
                     key={cat.id}
                     type="button"
                     onClick={() => setValue('categoryId', cat.id, { shouldValidate: true, shouldDirty: true })}
-                    className={`flex items-center gap-2 p-2.5 rounded-xl border text-left text-xs font-medium transition-all ${
+                    className={`flex items-center gap-2 p-2.5 rounded border text-left text-xs font-medium transition-all ${
                       isSelected
-                        ? 'border-primary bg-primary/10 shadow-sm ring-1 ring-primary text-foreground font-semibold'
+                        ? 'border-primary bg-primary/8 text-foreground font-semibold'
                         : 'border-border/60 hover:bg-muted/50 text-muted-foreground'
                     }`}
                   >
@@ -309,9 +309,9 @@ export default function AddExpensePage() {
                       key={pm.id}
                       type="button"
                       onClick={() => setValue('paymentMethodId', pm.id, { shouldValidate: true, shouldDirty: true })}
-                      className={`px-3 py-1.5 rounded-lg border text-xs font-medium transition-all ${
+                      className={`px-3 py-1.5 rounded border text-xs font-medium transition-all ${
                         isSelected
-                          ? 'border-primary bg-primary text-primary-foreground font-semibold shadow-sm'
+                          ? 'border-primary bg-primary text-primary-foreground'
                           : 'border-border hover:bg-muted text-foreground'
                       }`}
                     >
@@ -329,9 +329,9 @@ export default function AddExpensePage() {
                 <button
                   type="button"
                   onClick={() => setValue('classification', 'necessary')}
-                  className={`p-3 rounded-xl border text-center transition-all ${
+                  className={`p-3 rounded border text-center transition-all ${
                     classification === 'necessary'
-                      ? 'border-blue-500 bg-blue-500/10 text-blue-700 dark:text-blue-300 font-bold ring-1 ring-blue-500'
+                      ? 'border-primary bg-primary/8 text-primary font-semibold'
                       : 'border-border text-muted-foreground hover:bg-muted'
                   }`}
                 >
@@ -341,9 +341,9 @@ export default function AddExpensePage() {
                 <button
                   type="button"
                   onClick={() => setValue('classification', 'discretionary')}
-                  className={`p-3 rounded-xl border text-center transition-all ${
+                  className={`p-3 rounded border text-center transition-all ${
                     classification === 'discretionary'
-                      ? 'border-amber-500 bg-amber-500/10 text-amber-700 dark:text-amber-300 font-bold ring-1 ring-amber-500'
+                      ? 'border-amber-500 bg-amber-500/8 text-amber-700 dark:text-amber-400 font-semibold'
                       : 'border-border text-muted-foreground hover:bg-muted'
                   }`}
                 >

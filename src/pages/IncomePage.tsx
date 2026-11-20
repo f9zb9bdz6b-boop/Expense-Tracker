@@ -148,17 +148,16 @@ export default function IncomePage() {
   return (
     <div className="space-y-6 max-w-5xl mx-auto">
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-        <div>
-          <h1 className="text-2xl font-bold tracking-tight">Income Management</h1>
-          <p className="text-muted-foreground text-sm">
-            Track salaries, freelance contracts, investments, allowances and other inflows.
-          </p>
-        </div>
-        <div className="px-4 py-2.5 bg-emerald-500/10 border border-emerald-500/20 rounded-xl flex items-center gap-3">
-          <Wallet className="w-5 h-5 text-emerald-500" />
+        <div className="flex items-center justify-between">
           <div>
-            <p className="text-xs text-muted-foreground font-medium">Total Inflows</p>
-            <p className="text-lg font-extrabold text-emerald-600 dark:text-emerald-400">
+            <h1 className="text-xl font-semibold tracking-tight">Income</h1>
+            <p className="text-muted-foreground text-sm mt-0.5">
+              Track salaries, freelance, investments and other inflows.
+            </p>
+          </div>
+          <div className="text-right">
+            <p className="text-xs text-muted-foreground">Total inflows</p>
+            <p className="text-xl font-semibold text-primary">
               {formatCurrency(totalIncome)}
             </p>
           </div>

@@ -1,5 +1,5 @@
 // ============================================================
-// DashboardPage - Comprehensive Home Dashboard with Real Data
+// DashboardPage - Human-first redesign (warm, editorial)
 // ============================================================
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
@@ -9,15 +9,16 @@ import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Progress } from '@/components/ui/progress';
 import { formatCurrency, formatCurrencyCompact } from '@/utils/currency';
-import { formatDate, formatRelativeDate } from '@/utils/date';
+import { formatDate } from '@/utils/date';
 import {
-  TrendingUp, TrendingDown, Wallet, ArrowUpRight, ArrowDownLeft,
-  PlusCircle, Target, AlertTriangle, ArrowRight, CheckCircle2,
-  PieChart as PieChartIcon, Calendar, Zap, Sparkles
+  TrendingUp, TrendingDown, Wallet,
+  ArrowUpRight, ArrowDownLeft,
+  PlusCircle, Target, ArrowRight,
+  PieChart as PieChartIcon,
 } from 'lucide-react';
 import {
   PieChart, Pie, Cell, ResponsiveContainer, Tooltip as RechartsTooltip,
-  BarChart, Bar, XAxis, YAxis, Tooltip
+  BarChart, Bar, XAxis, YAxis, Tooltip,
 } from 'recharts';
 
 export default function DashboardPage() {
@@ -27,13 +28,13 @@ export default function DashboardPage() {
 
   if (isLoading || !summary) {
     return (
-      <div className="space-y-6 animate-pulse">
-        <div className="h-28 bg-muted rounded-xl"></div>
-        <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
-          <div className="h-32 bg-muted rounded-xl"></div>
-          <div className="h-32 bg-muted rounded-xl"></div>
-          <div className="h-32 bg-muted rounded-xl"></div>
-          <div className="h-32 bg-muted rounded-xl"></div>
+      <div className="space-y-5 animate-pulse">
+        <div className="h-20 bg-muted rounded-lg" />
+        <div className="grid grid-cols-2 lg:grid-cols-4 gap-3">
+          <div className="h-28 bg-muted rounded-lg" />
+          <div className="h-28 bg-muted rounded-lg" />
+          <div className="h-28 bg-muted rounded-lg" />
+          <div className="h-28 bg-muted rounded-lg" />
         </div>
       </div>
     );
@@ -43,163 +44,174 @@ export default function DashboardPage() {
     totalIncome, totalExpenses, netBalance,
     currentMonthSpending, currentMonthIncome, todaySpending,
     necessaryExpenses, discretionaryExpenses,
-    topCategories, recentTransactions, budgetProgress, goalProgress
+    topCategories, recentTransactions, budgetProgress, goalProgress,
   } = summary;
 
-  const displaySpending = activePeriod === 'today' ? todaySpending : activePeriod === 'month' ? currentMonthSpending : totalExpenses;
+  const displaySpending = activePeriod === 'today'
+    ? todaySpending
+    : activePeriod === 'month'
+    ? currentMonthSpending
+    : totalExpenses;
   const displayIncome = activePeriod === 'month' ? currentMonthIncome : totalIncome;
 
   const classificationData = [
-    { name: 'Necessary (Needs)', value: necessaryExpenses, color: '#3b82f6' },
-    { name: 'Discretionary (Wants)', value: discretionaryExpenses, color: '#f59e0b' },
-  ].filter(d => d.value > 0);
+    { name: 'Needs', value: necessaryExpenses, color: '#16a34a' },
+    { name: 'Wants', value: discretionaryExpenses, color: '#d97706' },
+  ].filter((d) => d.value > 0);
+
+  // Today's date in readable form
+  const today = new Date();
+  const dateLabel = today.toLocaleDateString('en-IN', {
+    weekday: 'long',
+    day: 'numeric',
+    month: 'long',
+    year: 'numeric',
+  });
 
   return (
-    <div className="space-y-6">
-      {/* Top Banner / Welcome & Quick Actions */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 bg-gradient-to-r from-primary/10 via-primary/5 to-transparent p-6 rounded-2xl border border-primary/20">
-        <div>
-          <h1 className="text-2xl font-bold tracking-tight text-foreground flex items-center gap-2">
-            Welcome Back <Sparkles className="w-5 h-5 text-amber-500" />
-          </h1>
-          <p className="text-muted-foreground text-sm mt-1">
-            Here is your financial health overview and spending summary for this month.
-          </p>
-        </div>
-        <div className="flex flex-wrap items-center gap-2.5">
-          <Button onClick={() => navigate('/add-expense')} className="gap-2 shadow-sm">
-            <PlusCircle className="w-4 h-4" /> Add Expense
-          </Button>
-          <Button variant="outline" onClick={() => navigate('/income')} className="gap-2 bg-card">
-            <ArrowDownLeft className="w-4 h-4 text-emerald-500" /> Add Income
-          </Button>
-          <Button variant="ghost" onClick={() => navigate('/ai-assistant')} className="gap-2 text-indigo-500 hover:text-indigo-600">
-            <Zap className="w-4 h-4" /> Ask AI
-          </Button>
+    <div className="space-y-5">
+      {/* Header: Date + Balance + Quick links */}
+      <div className="pt-1">
+        <p className="text-xs text-muted-foreground mb-0.5">{dateLabel}</p>
+        <div className="flex flex-col sm:flex-row sm:items-end sm:justify-between gap-3">
+          <div>
+            <p className="text-xs text-muted-foreground mb-0.5">Net balance</p>
+            <span className={`text-4xl font-semibold tracking-tight ${netBalance >= 0 ? 'text-foreground' : 'text-rose-600 dark:text-rose-400'}`}>
+              {formatCurrency(netBalance)}
+            </span>
+          </div>
+          <div className="flex items-center gap-2 pb-1">
+            <Button size="sm" onClick={() => navigate('/add-expense')} className="gap-1.5 h-8 text-xs px-3">
+              <PlusCircle className="w-3.5 h-3.5" /> Add expense
+            </Button>
+            <Button size="sm" variant="outline" onClick={() => navigate('/income')} className="gap-1.5 h-8 text-xs px-3">
+              <ArrowDownLeft className="w-3.5 h-3.5" /> Log income
+            </Button>
+          </div>
         </div>
       </div>
 
-      {/* Main Stats Cards */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-        {/* Total / Period Income */}
-        <Card className="hover:shadow-md transition-shadow">
-          <CardHeader className="flex flex-row items-center justify-between pb-2">
-            <CardTitle className="text-sm font-medium text-muted-foreground">Total Income</CardTitle>
-            <div className="w-8 h-8 rounded-full bg-emerald-500/10 text-emerald-500 flex items-center justify-center">
-              <TrendingUp className="w-4 h-4" />
-            </div>
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold text-emerald-600 dark:text-emerald-400">
+      <hr className="border-border" />
+
+      {/* Period toggle */}
+      <div className="flex gap-1">
+        {(['month', 'today', 'all'] as const).map((p) => (
+          <button
+            key={p}
+            onClick={() => setActivePeriod(p)}
+            className={`px-3 py-1 rounded text-xs font-medium transition-colors ${
+              activePeriod === p
+                ? 'bg-foreground text-background'
+                : 'text-muted-foreground hover:text-foreground'
+            }`}
+          >
+            {p === 'month' ? 'This month' : p === 'today' ? 'Today' : 'All time'}
+          </button>
+        ))}
+      </div>
+
+      {/* Stat cards */}
+      <div className="grid grid-cols-2 lg:grid-cols-4 gap-3">
+        {/* Income */}
+        <Card>
+          <CardContent className="pt-4 pb-3">
+            <p className="text-xs text-muted-foreground mb-1">Income</p>
+            <div className="text-xl font-semibold text-foreground">
               {formatCurrency(displayIncome)}
             </div>
-            <p className="text-xs text-muted-foreground mt-1 flex items-center gap-1">
-              <span className="text-emerald-500 font-medium">This month:</span> {formatCurrency(currentMonthIncome)}
-            </p>
+            {activePeriod !== 'month' && (
+              <p className="text-[11px] text-muted-foreground mt-0.5">
+                Month: {formatCurrency(currentMonthIncome)}
+              </p>
+            )}
           </CardContent>
         </Card>
 
-        {/* Total / Period Spending */}
-        <Card className="hover:shadow-md transition-shadow">
-          <CardHeader className="flex flex-row items-center justify-between pb-2">
-            <CardTitle className="text-sm font-medium text-muted-foreground">Total Expenses</CardTitle>
-            <div className="w-8 h-8 rounded-full bg-rose-500/10 text-rose-500 flex items-center justify-center">
-              <TrendingDown className="w-4 h-4" />
-            </div>
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold text-rose-600 dark:text-rose-400">
+        {/* Expenses */}
+        <Card>
+          <CardContent className="pt-4 pb-3">
+            <p className="text-xs text-muted-foreground mb-1">Spent</p>
+            <div className="text-xl font-semibold text-rose-600 dark:text-rose-400">
               {formatCurrency(displaySpending)}
             </div>
-            <p className="text-xs text-muted-foreground mt-1 flex items-center gap-1">
-              <span className="text-rose-500 font-medium">Today:</span> {formatCurrency(todaySpending)}
+            {activePeriod !== 'today' && (
+              <p className="text-[11px] text-muted-foreground mt-0.5">
+                Today: {formatCurrency(todaySpending)}
+              </p>
+            )}
+          </CardContent>
+        </Card>
+
+        {/* Net this month */}
+        <Card>
+          <CardContent className="pt-4 pb-3">
+            <p className="text-xs text-muted-foreground mb-1">Month net</p>
+            <div className={`text-xl font-semibold ${currentMonthIncome - currentMonthSpending >= 0 ? 'text-primary' : 'text-rose-600 dark:text-rose-400'}`}>
+              {formatCurrency(currentMonthIncome - currentMonthSpending)}
+            </div>
+            <p className="text-[11px] text-muted-foreground mt-0.5">
+              {currentMonthIncome - currentMonthSpending >= 0 ? 'Surplus' : 'Deficit'}
             </p>
           </CardContent>
         </Card>
 
-        {/* Net Balance */}
-        <Card className="hover:shadow-md transition-shadow">
-          <CardHeader className="flex flex-row items-center justify-between pb-2">
-            <CardTitle className="text-sm font-medium text-muted-foreground">Net Balance</CardTitle>
-            <div className="w-8 h-8 rounded-full bg-blue-500/10 text-blue-500 flex items-center justify-center">
-              <Wallet className="w-4 h-4" />
+        {/* Needs vs Wants */}
+        <Card>
+          <CardContent className="pt-4 pb-3">
+            <p className="text-xs text-muted-foreground mb-1">Needs vs Wants</p>
+            <div className="text-xl font-semibold text-foreground">
+              {currentMonthSpending > 0
+                ? `${Math.round((necessaryExpenses / currentMonthSpending) * 100)}%`
+                : '—'}
             </div>
-          </CardHeader>
-          <CardContent>
-            <div className={`text-2xl font-bold ${netBalance >= 0 ? 'text-blue-600 dark:text-blue-400' : 'text-rose-600 dark:text-rose-400'}`}>
-              {formatCurrency(netBalance)}
-            </div>
-            <p className="text-xs text-muted-foreground mt-1">
-              {netBalance >= 0 ? 'Total Savings Surplus' : 'Net Deficit (Expenses > Income)'}
-            </p>
-          </CardContent>
-        </Card>
-
-        {/* Essential vs Discretionary Ratio */}
-        <Card className="hover:shadow-md transition-shadow">
-          <CardHeader className="flex flex-row items-center justify-between pb-2">
-            <CardTitle className="text-sm font-medium text-muted-foreground">Needs vs Wants</CardTitle>
-            <div className="w-8 h-8 rounded-full bg-amber-500/10 text-amber-500 flex items-center justify-center">
-              <PieChartIcon className="w-4 h-4" />
-            </div>
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold text-foreground">
-              {currentMonthSpending > 0 ? `${Math.round((necessaryExpenses / currentMonthSpending) * 100)}% Needs` : '100% Needs'}
-            </div>
-            <div className="w-full bg-muted rounded-full h-2 mt-2 flex overflow-hidden">
+            <div className="w-full bg-muted rounded-full h-1.5 mt-2 flex overflow-hidden">
               <div
-                className="bg-blue-500 h-full"
-                style={{ width: `${currentMonthSpending > 0 ? (necessaryExpenses / currentMonthSpending) * 100 : 50}%` }}
+                className="bg-primary h-full transition-all"
+                style={{ width: `${currentMonthSpending > 0 ? (necessaryExpenses / currentMonthSpending) * 100 : 0}%` }}
               />
               <div
-                className="bg-amber-500 h-full"
-                style={{ width: `${currentMonthSpending > 0 ? (discretionaryExpenses / currentMonthSpending) * 100 : 50}%` }}
+                className="bg-amber-500 h-full transition-all"
+                style={{ width: `${currentMonthSpending > 0 ? (discretionaryExpenses / currentMonthSpending) * 100 : 0}%` }}
               />
             </div>
-            <div className="flex justify-between text-[11px] text-muted-foreground mt-1">
-              <span className="flex items-center gap-1"><span className="w-2 h-2 rounded-full bg-blue-500 inline-block"></span> Needs</span>
-              <span className="flex items-center gap-1"><span className="w-2 h-2 rounded-full bg-amber-500 inline-block"></span> Wants</span>
+            <div className="flex justify-between text-[10px] text-muted-foreground mt-1">
+              <span>Needs</span><span>Wants</span>
             </div>
           </CardContent>
         </Card>
       </div>
 
-      {/* Middle Section: Top Categories Chart & Budgets Progress */}
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-        {/* Top Spending Categories Donut */}
+      {/* Charts + Budgets */}
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-5">
+        {/* Top categories donut */}
         <Card className="lg:col-span-2">
-          <CardHeader className="flex flex-row items-center justify-between">
-            <div>
-              <CardTitle className="text-base font-semibold">Top Spending Categories</CardTitle>
-              <p className="text-xs text-muted-foreground">Monthly expense distribution by category</p>
-            </div>
-            <Button variant="ghost" size="sm" onClick={() => navigate('/analytics')} className="gap-1 text-xs">
-              View Analytics <ArrowRight className="w-3.5 h-3.5" />
+          <CardHeader className="flex flex-row items-center justify-between pb-2">
+            <CardTitle>Top Spending Categories</CardTitle>
+            <Button variant="ghost" size="sm" onClick={() => navigate('/analytics')} className="gap-1 text-xs h-7">
+              Analytics <ArrowRight className="w-3 h-3" />
             </Button>
           </CardHeader>
           <CardContent>
             {topCategories.length === 0 ? (
-              <div className="h-64 flex flex-col items-center justify-center text-center p-6 text-muted-foreground">
-                <PieChartIcon className="w-12 h-12 stroke-[1.5] mb-2 opacity-40" />
-                <p className="text-sm font-medium">No expenses recorded for this month</p>
-                <p className="text-xs mt-1">Add an expense to view visual spending distribution</p>
-                <Button size="sm" onClick={() => navigate('/add-expense')} className="mt-4">
+              <div className="h-48 flex flex-col items-center justify-center text-center text-muted-foreground">
+                <PieChartIcon className="w-10 h-10 stroke-[1.5] mb-2 opacity-30" />
+                <p className="text-sm">No expenses this month.</p>
+                <Button size="sm" variant="outline" onClick={() => navigate('/add-expense')} className="mt-3">
                   Add First Expense
                 </Button>
               </div>
             ) : (
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-6 items-center">
-                <div className="h-56">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-5 items-center">
+                <div className="h-48">
                   <ResponsiveContainer width="100%" height="100%">
                     <PieChart>
                       <Pie
                         data={topCategories}
                         cx="50%"
                         cy="50%"
-                        innerRadius={55}
-                        outerRadius={85}
-                        paddingAngle={4}
+                        innerRadius={50}
+                        outerRadius={80}
+                        paddingAngle={3}
                         dataKey="amount"
                       >
                         {topCategories.map((entry, index) => (
@@ -212,16 +224,16 @@ export default function DashboardPage() {
                     </PieChart>
                   </ResponsiveContainer>
                 </div>
-                <div className="space-y-3">
-                  {topCategories.map(cat => (
+                <div className="space-y-2.5">
+                  {topCategories.map((cat) => (
                     <div key={cat.categoryId} className="flex items-center justify-between text-sm">
-                      <div className="flex items-center gap-2.5">
-                        <span className="w-3 h-3 rounded-full shrink-0" style={{ backgroundColor: cat.categoryColor }} />
-                        <span className="font-medium text-foreground truncate max-w-[140px]">{cat.categoryName}</span>
+                      <div className="flex items-center gap-2">
+                        <span className="w-2.5 h-2.5 rounded-full shrink-0" style={{ backgroundColor: cat.categoryColor }} />
+                        <span className="text-foreground truncate max-w-[130px]">{cat.categoryName}</span>
                       </div>
                       <div className="text-right">
-                        <div className="font-semibold">{formatCurrency(cat.amount)}</div>
-                        <div className="text-xs text-muted-foreground">{cat.percentage.toFixed(1)}%</div>
+                        <div className="font-medium">{formatCurrency(cat.amount)}</div>
+                        <div className="text-[11px] text-muted-foreground">{cat.percentage.toFixed(1)}%</div>
                       </div>
                     </div>
                   ))}
@@ -231,43 +243,35 @@ export default function DashboardPage() {
           </CardContent>
         </Card>
 
-        {/* Budgets Tracker Card */}
+        {/* Active Budgets */}
         <Card>
-          <CardHeader className="flex flex-row items-center justify-between">
-            <div>
-              <CardTitle className="text-base font-semibold">Active Budgets</CardTitle>
-              <p className="text-xs text-muted-foreground">Monthly spending limits</p>
-            </div>
-            <Button variant="ghost" size="sm" onClick={() => navigate('/budgets')} className="gap-1 text-xs">
-              Manage <ArrowRight className="w-3.5 h-3.5" />
+          <CardHeader className="flex flex-row items-center justify-between pb-2">
+            <CardTitle>Budgets</CardTitle>
+            <Button variant="ghost" size="sm" onClick={() => navigate('/budgets')} className="gap-1 text-xs h-7">
+              Manage <ArrowRight className="w-3 h-3" />
             </Button>
           </CardHeader>
-          <CardContent className="space-y-4">
+          <CardContent className="space-y-3">
             {budgetProgress.length === 0 ? (
-              <div className="text-center py-8 text-muted-foreground">
-                <Target className="w-10 h-10 mx-auto mb-2 opacity-40" />
-                <p className="text-sm font-medium">No budgets defined yet</p>
-                <p className="text-xs mt-1">Set monthly limits to keep spending on track</p>
-                <Button size="sm" variant="outline" onClick={() => navigate('/budgets')} className="mt-3">
+              <div className="text-center py-6 text-muted-foreground">
+                <p className="text-sm">No budgets set.</p>
+                <Button size="sm" variant="outline" onClick={() => navigate('/budgets')} className="mt-2">
                   Create Budget
                 </Button>
               </div>
             ) : (
-              budgetProgress.map(b => (
-                <div key={b.budgetId} className="space-y-1.5 p-3 rounded-lg border bg-card/50">
+              budgetProgress.map((b) => (
+                <div key={b.budgetId} className="space-y-1.5">
                   <div className="flex justify-between items-center text-sm">
-                    <span className="font-medium">{b.budgetName}</span>
-                    <Badge
-                      variant={b.status === 'exceeded' ? 'destructive' : b.status === 'danger' ? 'destructive' : b.status === 'warning' ? 'secondary' : 'default'}
-                      className="text-[10px] px-2 py-0.5"
-                    >
-                      {b.status === 'exceeded' ? 'Exceeded' : `${Math.round(b.percentage)}%`}
-                    </Badge>
+                    <span className="text-foreground">{b.budgetName}</span>
+                    <span className={`text-xs font-medium ${b.status === 'exceeded' ? 'text-rose-600' : b.status === 'danger' ? 'text-orange-500' : 'text-muted-foreground'}`}>
+                      {b.status === 'exceeded' ? 'Over limit' : `${Math.round(b.percentage)}%`}
+                    </span>
                   </div>
-                  <Progress value={Math.min(100, b.percentage)} className="h-2" />
-                  <div className="flex justify-between text-xs text-muted-foreground pt-0.5">
+                  <Progress value={Math.min(100, b.percentage)} className="h-1.5" />
+                  <div className="flex justify-between text-[11px] text-muted-foreground">
                     <span>{formatCurrency(b.spent)}</span>
-                    <span>Limit: {formatCurrency(b.budgetAmount)}</span>
+                    <span>{formatCurrency(b.budgetAmount)}</span>
                   </div>
                 </div>
               ))
@@ -276,53 +280,55 @@ export default function DashboardPage() {
         </Card>
       </div>
 
-      {/* Bottom Section: Recent Transactions & Financial Goals */}
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+      {/* Recent Transactions + Goals */}
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-5">
         {/* Recent Transactions */}
         <Card className="lg:col-span-2">
-          <CardHeader className="flex flex-row items-center justify-between">
-            <div>
-              <CardTitle className="text-base font-semibold">Recent Transactions</CardTitle>
-              <p className="text-xs text-muted-foreground">Latest financial activities</p>
-            </div>
-            <Button variant="ghost" size="sm" onClick={() => navigate('/transactions')} className="gap-1 text-xs">
-              View All <ArrowRight className="w-3.5 h-3.5" />
+          <CardHeader className="flex flex-row items-center justify-between pb-2">
+            <CardTitle>Recent Transactions</CardTitle>
+            <Button variant="ghost" size="sm" onClick={() => navigate('/transactions')} className="gap-1 text-xs h-7">
+              View all <ArrowRight className="w-3 h-3" />
             </Button>
           </CardHeader>
           <CardContent>
             {recentTransactions.length === 0 ? (
-              <div className="py-10 text-center text-muted-foreground">
-                <p className="text-sm">No transactions found.</p>
+              <div className="py-8 text-center text-muted-foreground">
+                <p className="text-sm">No transactions yet.</p>
                 <Button size="sm" onClick={() => navigate('/add-expense')} className="mt-3">
                   Record Expense
                 </Button>
               </div>
             ) : (
-              <div className="divide-y">
-                {recentTransactions.map(item => {
+              <div className="divide-y divide-border">
+                {recentTransactions.map((item) => {
                   const isExpense = 'classification' in item;
                   return (
-                    <div key={item.id} className="py-3 flex items-center justify-between hover:bg-muted/30 px-2 rounded-lg transition-colors">
-                      <div className="flex items-center gap-3">
-                        <div className={`w-9 h-9 rounded-full flex items-center justify-center shrink-0 ${isExpense ? 'bg-rose-500/10 text-rose-500' : 'bg-emerald-500/10 text-emerald-500'}`}>
-                          {isExpense ? <ArrowUpRight className="w-5 h-5" /> : <ArrowDownLeft className="w-5 h-5" />}
+                    <div
+                      key={item.id}
+                      className="py-2.5 flex items-center justify-between gap-3"
+                    >
+                      <div className="flex items-center gap-3 min-w-0">
+                        <div className={`w-7 h-7 rounded flex items-center justify-center shrink-0 ${isExpense ? 'bg-rose-50 text-rose-500 dark:bg-rose-500/10' : 'bg-green-50 text-green-600 dark:bg-green-500/10'}`}>
+                          {isExpense
+                            ? <ArrowUpRight className="w-3.5 h-3.5" />
+                            : <ArrowDownLeft className="w-3.5 h-3.5" />}
                         </div>
-                        <div>
-                          <p className="text-sm font-medium text-foreground">{item.description || (isExpense ? 'Expense' : 'Income')}</p>
-                          <p className="text-xs text-muted-foreground flex items-center gap-1.5">
-                            <span>{formatDate(item.date)}</span>
-                            {isExpense && item.merchant && <span>• {item.merchant}</span>}
+                        <div className="min-w-0">
+                          <p className="text-sm text-foreground truncate">
+                            {item.description || (isExpense ? 'Expense' : 'Income')}
+                          </p>
+                          <p className="text-[11px] text-muted-foreground">
+                            {formatDate(item.date)}
+                            {isExpense && item.merchant && ` · ${item.merchant}`}
                           </p>
                         </div>
                       </div>
-                      <div className="text-right">
-                        <p className={`text-sm font-semibold ${isExpense ? 'text-rose-600 dark:text-rose-400' : 'text-emerald-600 dark:text-emerald-400'}`}>
-                          {isExpense ? '-' : '+'}{formatCurrency(item.amount)}
+                      <div className="text-right shrink-0">
+                        <p className={`text-sm font-medium ${isExpense ? 'text-rose-600 dark:text-rose-400' : 'text-primary'}`}>
+                          {isExpense ? '−' : '+'}{formatCurrency(item.amount)}
                         </p>
                         {isExpense && (
-                          <Badge variant="outline" className="text-[10px] capitalize">
-                            {item.classification}
-                          </Badge>
+                          <p className="text-[10px] text-muted-foreground capitalize">{(item as any).classification}</p>
                         )}
                       </div>
                     </div>
@@ -333,38 +339,34 @@ export default function DashboardPage() {
           </CardContent>
         </Card>
 
-        {/* Financial Goals Snapshot */}
+        {/* Goals Snapshot */}
         <Card>
-          <CardHeader className="flex flex-row items-center justify-between">
-            <div>
-              <CardTitle className="text-base font-semibold">Financial Goals</CardTitle>
-              <p className="text-xs text-muted-foreground">Savings & targets</p>
-            </div>
-            <Button variant="ghost" size="sm" onClick={() => navigate('/goals')} className="gap-1 text-xs">
-              View All <ArrowRight className="w-3.5 h-3.5" />
+          <CardHeader className="flex flex-row items-center justify-between pb-2">
+            <CardTitle>Goals</CardTitle>
+            <Button variant="ghost" size="sm" onClick={() => navigate('/goals')} className="gap-1 text-xs h-7">
+              View all <ArrowRight className="w-3 h-3" />
             </Button>
           </CardHeader>
           <CardContent className="space-y-4">
             {goalProgress.length === 0 ? (
-              <div className="text-center py-8 text-muted-foreground">
-                <Target className="w-10 h-10 mx-auto mb-2 opacity-40" />
-                <p className="text-sm font-medium">No savings goals yet</p>
-                <p className="text-xs mt-1">Plan for vacations, emergency fund, or gadgets</p>
-                <Button size="sm" variant="outline" onClick={() => navigate('/goals')} className="mt-3">
+              <div className="text-center py-6 text-muted-foreground">
+                <Target className="w-8 h-8 mx-auto mb-2 opacity-30" />
+                <p className="text-sm">No savings goals yet.</p>
+                <Button size="sm" variant="outline" onClick={() => navigate('/goals')} className="mt-2">
                   Set a Goal
                 </Button>
               </div>
             ) : (
-              goalProgress.map(g => (
-                <div key={g.goalId} className="p-3 rounded-lg border bg-card/50 space-y-2">
+              goalProgress.map((g) => (
+                <div key={g.goalId} className="space-y-1.5">
                   <div className="flex justify-between items-center text-sm">
-                    <span className="font-medium text-foreground">{g.goalName}</span>
-                    <span className="text-xs font-semibold text-primary">{Math.round(g.percentage)}%</span>
+                    <span className="text-foreground">{g.goalName}</span>
+                    <span className="text-xs font-medium text-primary">{Math.round(g.percentage)}%</span>
                   </div>
-                  <Progress value={Math.min(100, g.percentage)} className="h-2" />
-                  <div className="flex justify-between text-xs text-muted-foreground">
-                    <span>Saved: {formatCurrency(g.currentAmount)}</span>
-                    <span>Target: {formatCurrency(g.targetAmount)}</span>
+                  <Progress value={Math.min(100, g.percentage)} className="h-1.5" />
+                  <div className="flex justify-between text-[11px] text-muted-foreground">
+                    <span>{formatCurrency(g.currentAmount)}</span>
+                    <span>{formatCurrency(g.targetAmount)}</span>
                   </div>
                 </div>
               ))

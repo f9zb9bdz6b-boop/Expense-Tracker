@@ -26,7 +26,7 @@ export function MobileNav() {
             end={tab.end}
             className={({ isActive }) =>
               cn(
-                'flex flex-col items-center gap-0.5 px-3 py-1.5 rounded-lg text-xs font-medium transition-colors min-w-[56px]',
+                'flex flex-col items-center gap-0.5 px-3 py-1.5 text-xs font-medium transition-colors min-w-[56px]',
                 isActive ? 'text-primary' : 'text-muted-foreground hover:text-foreground'
               )
             }
@@ -36,13 +36,13 @@ export function MobileNav() {
           </NavLink>
         ))}
 
-        {/* Central Add button */}
+        {/* Central Add button — simpler, no ring */}
         <button
           onClick={() => navigate('/add-expense')}
-          className="flex flex-col items-center justify-center h-14 w-14 rounded-full bg-primary text-primary-foreground shadow-lg hover:bg-primary/90 transition-colors -mt-6 ring-4 ring-background"
+          className="flex items-center justify-center h-12 w-12 rounded-full bg-primary text-primary-foreground shadow-md hover:bg-primary/90 transition-colors -mt-5"
           aria-label="Add Expense"
         >
-          <Plus className="h-6 w-6" />
+          <Plus className="h-5 w-5" />
         </button>
 
         {/* Last 2 tabs */}
@@ -53,7 +53,7 @@ export function MobileNav() {
             end={tab.end}
             className={({ isActive }) =>
               cn(
-                'flex flex-col items-center gap-0.5 px-3 py-1.5 rounded-lg text-xs font-medium transition-colors min-w-[56px]',
+                'flex flex-col items-center gap-0.5 px-3 py-1.5 text-xs font-medium transition-colors min-w-[56px]',
                 isActive ? 'text-primary' : 'text-muted-foreground hover:text-foreground'
               )
             }
