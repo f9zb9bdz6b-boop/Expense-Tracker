@@ -356,7 +356,7 @@ export default function TransactionsPage() {
 
       {/* Decorative Summary Pulse Banner */}
       <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
-        <div className="motion-pulse-card bg-card border border-border/80 rounded-2xl p-4 shadow-xs hover:border-border transition-all flex items-center justify-between">
+        <div className="motion-pulse-card bg-card border border-border/80 rounded-2xl p-4 shadow-xs hover:border-border transition-[box-shadow,border-color] duration-200 flex items-center justify-between">
           <div>
             <div className="flex items-center gap-2">
               <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">Total Outflow</p>
@@ -364,7 +364,7 @@ export default function TransactionsPage() {
                 ↓ Outflow
               </span>
             </div>
-            <p className="text-xl font-bold text-rose-600 dark:text-rose-400 mt-1">
+            <p className="text-xl font-bold text-rose-600 dark:text-rose-400 mt-1 tabular-nums">
               -{formatCurrency(metrics.spent)}
             </p>
           </div>
@@ -373,7 +373,7 @@ export default function TransactionsPage() {
           </div>
         </div>
 
-        <div className="motion-pulse-card bg-card border border-border/80 rounded-2xl p-4 shadow-xs hover:border-border transition-all flex items-center justify-between">
+        <div className="motion-pulse-card bg-card border border-border/80 rounded-2xl p-4 shadow-xs hover:border-border transition-[box-shadow,border-color] duration-200 flex items-center justify-between">
           <div>
             <div className="flex items-center gap-2">
               <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">Total Inflow</p>
@@ -381,7 +381,7 @@ export default function TransactionsPage() {
                 ↑ Inflow
               </span>
             </div>
-            <p className="text-xl font-bold text-emerald-600 dark:text-emerald-400 mt-1">
+            <p className="text-xl font-bold text-emerald-600 dark:text-emerald-400 mt-1 tabular-nums">
               +{formatCurrency(metrics.received)}
             </p>
           </div>
@@ -390,7 +390,7 @@ export default function TransactionsPage() {
           </div>
         </div>
 
-        <div className="motion-pulse-card bg-card border border-border/80 rounded-2xl p-4 shadow-xs hover:border-border transition-all flex items-center justify-between">
+        <div className="motion-pulse-card bg-card border border-border/80 rounded-2xl p-4 shadow-xs hover:border-border transition-[box-shadow,border-color] duration-200 flex items-center justify-between">
           <div>
             <div className="flex items-center gap-2">
               <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">Net Position</p>
@@ -398,7 +398,7 @@ export default function TransactionsPage() {
                 ⚖️ Net
               </span>
             </div>
-            <p className={`text-xl font-bold mt-1 ${metrics.net >= 0 ? 'text-primary' : 'text-rose-600'}`}>
+            <p className={`text-xl font-bold mt-1 tabular-nums ${metrics.net >= 0 ? 'text-primary' : 'text-rose-600'}`}>
               {metrics.net >= 0 ? '+' : ''}{formatCurrency(metrics.net)}
             </p>
           </div>
@@ -710,6 +710,14 @@ export default function TransactionsPage() {
                           }`}>
                             {isExp ? '-' : '+'}{formatCurrency(t.amount)}
                           </span>
+                          {isExp && 'originalCurrency' in t && (t as any).originalCurrency && (t as any).originalAmount && (t as any).originalCurrency !== (t.currency || 'INR') && (
+                            <p className="text-[10px] text-muted-foreground font-semibold flex items-center justify-end gap-1">
+                              <span>💱</span>
+                              <span>
+                                {(t as any).originalCurrency} {((t as any).originalAmount / 100).toFixed(2)}
+                              </span>
+                            </p>
+                          )}
                         </div>
 
                         {/* Action buttons */}

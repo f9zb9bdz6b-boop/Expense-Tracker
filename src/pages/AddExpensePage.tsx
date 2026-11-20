@@ -11,7 +11,9 @@ import gsap from 'gsap';
 import { useGSAP } from '@gsap/react';
 import { db } from '@/db/database';
 import { expenseRepo, merchantRepo, expenseCategoryRepo } from '@/db/repositories';
-import { toMinorUnits, DEFAULT_CURRENCY } from '@/utils/currency';
+import { toMinorUnits, DEFAULT_CURRENCY, SUPPORTED_CURRENCIES } from '@/utils/currency';
+import { useSettings } from '@/contexts/SettingsContext';
+import { fetchLiveExchangeRates, getExchangeRate, FALLBACK_RATES } from '@/utils/exchangeRates';
 import { getCurrentDate, getCurrentTime } from '@/utils/date';
 import { animateSpringPress } from '@/utils/motion';
 import { Card, CardHeader, CardTitle, CardDescription, CardContent } from '@/components/ui/card';
@@ -51,12 +53,29 @@ export default function AddExpensePage() {
   const [searchParams] = useSearchParams();
   const urlEventId = searchParams.get('eventId') || '';
   const { toast } = useToast();
+  const { settings } = useSettings();
+  const masterCurrency = settings?.currency || DEFAULT_CURRENCY;
+  const [selectedCurrencyCode, setSelectedCurrencyCode] = useState(masterCurrency.code);
+  const [fxRates, setFxRates] = useState<Record<string, number>>(FALLBACK_RATES);
   const [tags, setTags] = useState<string[]>([]);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [showNewCatDialog, setShowNewCatDialog] = useState(false);
   const [newCatName, setNewCatName] = useState('');
   const [newCatEmoji, setNewCatEmoji] = useState('🍔');
   const [newCatColor, setNewCatColor] = useState('#10b981');
+
+  // Load live currency rates on mount
+  useEffect(() => {
+    fetchLiveExchangeRates().then(data => {
+      setFxRates(data.rates);
+    });
+  }, []);
+
+  useEffect(() => {
+    if (masterCurrency?.code && selectedCurrencyCode === DEFAULT_CURRENCY.code) {
+      setSelectedCurrencyCode(masterCurrency.code);
+    }
+  }, [masterCurrency]);
 
   // Load Categories, Payment Methods, and Active Events reactively
   const categories = useLiveQuery(() => db.expenseCategories.orderBy('order').toArray()) ?? [];
@@ -169,15 +188,39 @@ export default function AddExpensePage() {
     }
   };
 
+  const activeCurrencyConfig = SUPPORTED_CURRENCIES.find(c => c.code === selectedCurrencyCode) || masterCurrency;
+  const isForeign = selectedCurrencyCode !== masterCurrency.code;
+  const exchangeRate = isForeign ? getExchangeRate(selectedCurrencyCode, masterCurrency.code, fxRates) : 1.0;
+  const enteredAmountVal = watch('amount');
+  const enteredAmountNum = parseFloat(enteredAmountVal || '0');
+  const convertedMasterAmount = enteredAmountNum * exchangeRate;
+
   const onSubmit = async (data: ExpenseFormValues) => {
     setIsSubmitting(true);
     try {
-      const minorUnits = toMinorUnits(data.amount);
       const finalCategoryId = data.categoryId || selectedCategoryId || categories[0]?.id;
       const finalPaymentMethodId = data.paymentMethodId || selectedPaymentMethodId || paymentMethods[0]?.id;
+
+      let masterMinorUnits: number;
+      let originalMinorUnits: number | undefined;
+
+      if (isForeign) {
+        originalMinorUnits = toMinorUnits(data.amount, activeCurrencyConfig.decimalPlaces);
+        masterMinorUnits = toMinorUnits(convertedMasterAmount, masterCurrency.decimalPlaces);
+      } else {
+        masterMinorUnits = toMinorUnits(data.amount, masterCurrency.decimalPlaces);
+      }
+
+      const notesContent = isForeign
+        ? `${data.notes ? data.notes.trim() + ' | ' : ''}Foreign expense: ${activeCurrencyConfig.symbol}${data.amount} ${selectedCurrencyCode} @ ${exchangeRate.toFixed(4)}`
+        : (data.notes?.trim() || '');
+
       await expenseRepo.create({
-        amount: minorUnits,
-        currency: DEFAULT_CURRENCY.code,
+        amount: masterMinorUnits,
+        currency: masterCurrency.code,
+        originalAmount: isForeign ? originalMinorUnits : undefined,
+        originalCurrency: isForeign ? selectedCurrencyCode : undefined,
+        exchangeRate: isForeign ? exchangeRate : undefined,
         categoryId: finalCategoryId,
         paymentMethodId: finalPaymentMethodId,
         date: data.date,
@@ -185,19 +228,22 @@ export default function AddExpensePage() {
         description: data.description.trim(),
         merchant: data.merchant?.trim() || '',
         classification: data.classification,
+        detailedClassification: data.classification === 'necessary' ? 'needs' : 'wants',
         eventId: data.eventId || undefined,
-        notes: data.notes?.trim() || '',
+        notes: notesContent,
         tags,
         isRecurring: false,
       });
 
       if (data.merchant?.trim() && finalCategoryId) {
-        await merchantRepo.upsert(data.merchant.trim(), minorUnits, finalCategoryId);
+        await merchantRepo.upsert(data.merchant.trim(), masterMinorUnits, finalCategoryId);
       }
 
       toast({
         title: 'Expense Recorded!',
-        description: `Successfully added ${DEFAULT_CURRENCY.symbol}${data.amount} for "${data.description}".`,
+        description: isForeign
+          ? `Added ${activeCurrencyConfig.symbol}${data.amount} ${selectedCurrencyCode} (≈ ${masterCurrency.symbol}${convertedMasterAmount.toFixed(2)} ${masterCurrency.code}) for "${data.description}".`
+          : `Successfully added ${masterCurrency.symbol}${data.amount} for "${data.description}".`,
       });
 
       navigate('/transactions');
@@ -222,7 +268,7 @@ export default function AddExpensePage() {
           <h1 className="text-xl font-bold tracking-tight">Record Expense</h1>
           <InfoHint
             title="Fast Expense Entry"
-            description="Log an expense with quick tags, split classification (Needs vs Wants), and payment method."
+            description="Log an expense with multi-currency support, live FX sync, tags, and Needs vs Wants classification."
           />
         </div>
       </div>
@@ -233,14 +279,34 @@ export default function AddExpensePage() {
         {/* Main Card: Amount & Description */}
         <Card className="motion-hero-amount">
           <CardContent className="pt-6 space-y-4">
-            {/* Amount Input */}
-            <div className="space-y-1.5 text-center sm:text-left">
-              <Label htmlFor="amount" className="text-xs uppercase tracking-wider text-muted-foreground font-semibold">
-                Amount ({DEFAULT_CURRENCY.symbol})
-              </Label>
+            {/* Amount & Currency Selection */}
+            <div className="space-y-2">
+              <div className="flex items-center justify-between">
+                <Label htmlFor="amount" className="text-xs uppercase tracking-wider text-muted-foreground font-semibold flex items-center gap-1.5">
+                  Amount
+                  <InfoHint text="Switch to any foreign currency; it will automatically convert and sync to your master currency at current live exchange rates." />
+                </Label>
+
+                {/* Currency Selector */}
+                <div className="flex items-center gap-1.5">
+                  <span className="text-[11px] text-muted-foreground font-medium">Currency:</span>
+                  <select
+                    value={selectedCurrencyCode}
+                    onChange={(e) => setSelectedCurrencyCode(e.target.value)}
+                    className="text-xs font-bold bg-muted/80 text-foreground border border-border rounded-lg px-2.5 py-1 focus:outline-none focus:ring-1 focus:ring-primary cursor-pointer hover:bg-muted"
+                  >
+                    {SUPPORTED_CURRENCIES.map(c => (
+                      <option key={c.code} value={c.code}>
+                        {c.code} ({c.symbol})
+                      </option>
+                    ))}
+                  </select>
+                </div>
+              </div>
+
               <div className="relative flex items-center">
                 <span className="absolute left-4 text-3xl font-bold text-muted-foreground pointer-events-none">
-                  {DEFAULT_CURRENCY.symbol}
+                  {activeCurrencyConfig.symbol}
                 </span>
                 <input
                   id="amount"
@@ -253,6 +319,33 @@ export default function AddExpensePage() {
                 />
               </div>
               {errors.amount && <p className="text-xs text-rose-500 font-medium">{errors.amount.message}</p>}
+
+              {/* Real-Time Live FX Sync Banner when Foreign Currency is Chosen */}
+              {isForeign && (
+                <div className="p-3 rounded-xl bg-emerald-500/10 border border-emerald-500/30 text-xs space-y-1 animate-in fade-in-0 duration-200">
+                  <div className="flex items-center justify-between flex-wrap gap-2">
+                    <div className="flex items-center gap-2">
+                      <span className="text-sm">💱</span>
+                      <span className="font-semibold text-foreground">
+                        1 {selectedCurrencyCode} = {exchangeRate.toFixed(4)} {masterCurrency.code}
+                      </span>
+                      <span className="text-[10px] bg-[#7cf046] text-[#082b14] font-extrabold px-1.5 py-0.5 rounded-full">
+                        LIVE FX SYNC
+                      </span>
+                    </div>
+                    <div className="font-bold text-emerald-700 dark:text-emerald-300">
+                      {enteredAmountNum > 0 ? (
+                        <span>≈ {masterCurrency.symbol}{convertedMasterAmount.toFixed(2)} {masterCurrency.code} in master ledger</span>
+                      ) : (
+                        <span>Synced to master {masterCurrency.code} ledger</span>
+                      )}
+                    </div>
+                  </div>
+                  <p className="text-[10px] text-muted-foreground">
+                    All charts, active budgets, and net balance will automatically track this amount in your primary {masterCurrency.code} currency.
+                  </p>
+                </div>
+              )}
             </div>
 
             {/* Description */}

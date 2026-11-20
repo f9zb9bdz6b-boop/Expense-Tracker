@@ -127,25 +127,13 @@ export default function DashboardPage() {
     if (isLoading || !summary) return;
 
     const ctx = gsap.context(() => {
-      // 1. Live Rolling Number Ticker (Smooth glide)
-      gsap.to(balanceTween.current, {
-        val: netBalance,
-        duration: 0.55,
-        ease: 'power3.out',
-        onUpdate: () => {
-          if (balanceValRef.current) {
-            balanceValRef.current.textContent = formatCurrency(Math.round(balanceTween.current.val));
-          }
-        },
-      });
-
-      // 2. Hero Card Entrance (Smooth cinematic rise)
+      // 1. Hero Card Entrance (Smooth cinematic rise)
       gsap.fromTo('.hero-mesh-card',
         { y: 28, opacity: 0 },
         { y: 0, opacity: 1, duration: 0.85, ease: 'power3.out', clearProps: 'all' }
       );
 
-      // 3. Staggered Entrance of 4 KPI Metric Cards
+      // 2. Staggered Entrance of 4 KPI Metric Cards
       gsap.fromTo('.kpi-stat-card',
         { y: 26, opacity: 0 },
         { y: 0, opacity: 1, duration: 0.82, stagger: 0.08, ease: 'power3.out', delay: 0.08, clearProps: 'all' }
@@ -309,7 +297,7 @@ export default function DashboardPage() {
           ============================================================ */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
         {/* Card 1: Inflow */}
-        <div className="kpi-stat-card bg-card border border-border/80 rounded-2xl p-5 shadow-xs hover:-translate-y-1 hover:shadow-md transition-all duration-200 cursor-default">
+        <div className="kpi-stat-card bg-card border border-border/80 rounded-2xl p-5 shadow-xs hover:border-border transition-[box-shadow,border-color] duration-200 cursor-default">
           <div className="flex items-center justify-between">
             <span className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">
               Cash Inflow
@@ -330,7 +318,7 @@ export default function DashboardPage() {
         </div>
 
         {/* Card 2: Outflow */}
-        <div className="kpi-stat-card bg-card border border-border/80 rounded-2xl p-5 shadow-xs hover:-translate-y-1 hover:shadow-md transition-all duration-200 cursor-default">
+        <div className="kpi-stat-card bg-card border border-border/80 rounded-2xl p-5 shadow-xs hover:border-border transition-[box-shadow,border-color] duration-200 cursor-default">
           <div className="flex items-center justify-between">
             <span className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">
               Total Outflow
@@ -350,7 +338,7 @@ export default function DashboardPage() {
         </div>
 
         {/* Card 3: Net Savings Velocity */}
-        <div className="kpi-stat-card bg-card border border-border/80 rounded-2xl p-5 shadow-xs hover:-translate-y-1 hover:shadow-md transition-all duration-200 cursor-default">
+        <div className="kpi-stat-card bg-card border border-border/80 rounded-2xl p-5 shadow-xs hover:border-border transition-[box-shadow,border-color] duration-200 cursor-default">
           <div className="flex items-center justify-between">
             <span className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">
               Savings Velocity
@@ -374,7 +362,7 @@ export default function DashboardPage() {
         </div>
 
         {/* Card 4: Needs vs Wants Equilibrium */}
-        <div className="kpi-stat-card bg-card border border-border/80 rounded-2xl p-5 shadow-xs hover:-translate-y-1 hover:shadow-md transition-all duration-200 cursor-default">
+        <div className="kpi-stat-card bg-card border border-border/80 rounded-2xl p-5 shadow-xs hover:border-border transition-[box-shadow,border-color] duration-200 cursor-default">
           <div className="flex items-center justify-between">
             <span className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">
               Needs vs Wants
