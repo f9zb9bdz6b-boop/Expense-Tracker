@@ -1,9 +1,12 @@
 // ============================================================
-// DashboardPage - Human-first redesign (warm, editorial)
+// DashboardPage - Executive Financial Hub with GSAP Motion Design
+// Redesigned with Apple Wallet / Revolut Ultra aesthetic & 10+ Motion Elements
 // ============================================================
-import React, { useState, useMemo } from 'react';
+import React, { useState, useMemo, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useLiveQuery } from 'dexie-react-hooks';
+import gsap from 'gsap';
+import { useGSAP } from '@gsap/react';
 import { db } from '@/db/database';
 import { useDashboard } from '@/hooks/useDashboard';
 import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card';
@@ -12,24 +15,33 @@ import { Badge } from '@/components/ui/badge';
 import { Progress } from '@/components/ui/progress';
 import { formatCurrency, formatCurrencyCompact } from '@/utils/currency';
 import { formatDate } from '@/utils/date';
-import { getCategoryEmoji } from '@/utils/emojis';
+import { getCategoryEmoji, getPaymentMethodEmoji } from '@/utils/emojis';
 import {
-  TrendingUp, TrendingDown, Wallet,
-  ArrowUpRight, ArrowDownLeft,
-  PlusCircle, Target, ArrowRight,
-  PieChart as PieChartIcon,
+  TrendingUp, TrendingDown, Wallet, ArrowUpRight, ArrowDownLeft,
+  PlusCircle, Target, ArrowRight, Sparkles, ShieldCheck,
+  Calendar, Layers, Clock, Activity, Zap, CheckCircle2, ChevronRight
 } from 'lucide-react';
 import {
   PieChart, Pie, Cell, ResponsiveContainer, Tooltip as RechartsTooltip,
-  BarChart, Bar, XAxis, YAxis, Tooltip,
 } from 'recharts';
+
+gsap.registerPlugin(useGSAP);
 
 export default function DashboardPage() {
   const navigate = useNavigate();
+  const dashboardRef = useRef<HTMLDivElement>(null);
+  const balanceValRef = useRef<HTMLSpanElement>(null);
+  const balanceTween = useRef({ val: 0 });
+
   const { summary, isLoading } = useDashboard();
   const [activePeriod, setActivePeriod] = useState<'month' | 'today' | 'all'>('month');
 
-  const categoriesList = useLiveQuery(() => Promise.all([db.expenseCategories.toArray(), db.incomeCategories.toArray()])) ?? [[], []];
+  // Categories query for live reactive emojis
+  const categoriesList = useLiveQuery(() => Promise.all([
+    db.expenseCategories.toArray(),
+    db.incomeCategories.toArray()
+  ])) ?? [[], []];
+
   const catEmojiMap = useMemo(() => {
     const map = new Map<string, string>();
     categoriesList[0]?.forEach(c => map.set(c.id, getCategoryEmoji(c)));
@@ -37,316 +49,520 @@ export default function DashboardPage() {
     return map;
   }, [categoriesList]);
 
-  if (isLoading || !summary) {
-    return (
-      <div className="space-y-5 animate-pulse">
-        <div className="h-20 bg-muted rounded-lg" />
-        <div className="grid grid-cols-2 lg:grid-cols-4 gap-3">
-          <div className="h-28 bg-muted rounded-lg" />
-          <div className="h-28 bg-muted rounded-lg" />
-          <div className="h-28 bg-muted rounded-lg" />
-          <div className="h-28 bg-muted rounded-lg" />
-        </div>
-      </div>
-    );
-  }
+  // Context-safe interactive button bounce & card hover animations
+  const { contextSafe } = useGSAP({ scope: dashboardRef });
 
-  const {
-    totalIncome, totalExpenses, netBalance,
-    currentMonthSpending, currentMonthIncome, todaySpending,
-    necessaryExpenses, discretionaryExpenses,
-    topCategories, recentTransactions, budgetProgress, goalProgress,
-  } = summary;
+  // MOTION ELEMENT 4: Interactive Button Spring Press
+  const handleButtonPress = contextSafe((e: React.MouseEvent<HTMLElement>) => {
+    gsap.timeline()
+      .to(e.currentTarget, { scale: 0.94, duration: 0.08, ease: 'power2.in' })
+      .to(e.currentTarget, { scale: 1, duration: 0.22, ease: 'back.out(2.5)' });
+  });
+
+  // MOTION ELEMENT 10: Interactive Card Hover Lift
+  const handleCardMouseEnter = contextSafe((e: React.MouseEvent<HTMLElement>) => {
+    gsap.to(e.currentTarget, {
+      y: -4,
+      boxShadow: '0 14px 28px -10px rgba(15, 23, 42, 0.08), 0 4px 8px -4px rgba(15, 23, 42, 0.04)',
+      duration: 0.28,
+      ease: 'power2.out',
+    });
+  });
+
+  const handleCardMouseLeave = contextSafe((e: React.MouseEvent<HTMLElement>) => {
+    gsap.to(e.currentTarget, {
+      y: 0,
+      boxShadow: '0 1px 2px 0 rgba(0, 0, 0, 0.05)',
+      duration: 0.28,
+      ease: 'power2.out',
+    });
+  });
+
+  // Data computations
+  const totalIncome = summary?.totalIncome ?? 0;
+  const totalExpenses = summary?.totalExpenses ?? 0;
+  const netBalance = summary?.netBalance ?? 0;
+  const currentMonthSpending = summary?.currentMonthSpending ?? 0;
+  const currentMonthIncome = summary?.currentMonthIncome ?? 0;
+  const todaySpending = summary?.todaySpending ?? 0;
+  const necessaryExpenses = summary?.necessaryExpenses ?? 0;
+  const discretionaryExpenses = summary?.discretionaryExpenses ?? 0;
+  const topCategories = summary?.topCategories ?? [];
+  const recentTransactions = summary?.recentTransactions ?? [];
+  const budgetProgress = summary?.budgetProgress ?? [];
+  const goalProgress = summary?.goalProgress ?? [];
 
   const displaySpending = activePeriod === 'today'
     ? todaySpending
     : activePeriod === 'month'
     ? currentMonthSpending
     : totalExpenses;
+
   const displayIncome = activePeriod === 'month' ? currentMonthIncome : totalIncome;
 
-  const classificationData = [
-    { name: 'Needs', value: necessaryExpenses, color: '#16a34a' },
-    { name: 'Wants', value: discretionaryExpenses, color: '#d97706' },
-  ].filter((d) => d.value > 0);
+  const savingsRate = displayIncome > 0
+    ? Math.max(0, Math.round(((displayIncome - displaySpending) / displayIncome) * 100))
+    : 0;
 
-  // Today's date in readable form
-  const today = new Date();
-  const dateLabel = today.toLocaleDateString('en-IN', {
-    weekday: 'long',
-    day: 'numeric',
-    month: 'long',
-    year: 'numeric',
-  });
+  // Today's formatted date
+  const todayDateStr = useMemo(() => {
+    return new Date().toLocaleDateString('en-IN', {
+      weekday: 'long',
+      day: 'numeric',
+      month: 'long',
+      year: 'numeric',
+    });
+  }, []);
+
+  // ============================================================
+  // GSAP ENTRANCE & CONTINUOUS ANIMATIONS
+  // ============================================================
+  useGSAP(() => {
+    if (isLoading || !summary) return;
+
+    const ctx = gsap.context(() => {
+      // MOTION ELEMENT 1: Live Rolling Number Ticker
+      gsap.to(balanceTween.current, {
+        val: netBalance,
+        duration: 1.1,
+        ease: 'power3.out',
+        onUpdate: () => {
+          if (balanceValRef.current) {
+            balanceValRef.current.textContent = formatCurrency(Math.round(balanceTween.current.val));
+          }
+        },
+      });
+
+      // MOTION ELEMENT 2: Hero Mesh Card Entrance
+      gsap.from('.hero-mesh-card', {
+        y: 28,
+        opacity: 0,
+        scale: 0.97,
+        duration: 0.7,
+        ease: 'back.out(1.2)',
+      });
+
+      // MOTION ELEMENT 3: Continuous Ambient Glow Orb Float
+      gsap.to('.ambient-glow-orb', {
+        y: -14,
+        x: 10,
+        scale: 1.15,
+        duration: 4.5,
+        repeat: -1,
+        yoyo: true,
+        ease: 'sine.inOut',
+      });
+
+      // MOTION ELEMENT 4: Staggered Entrance of 4 KPI Metric Cards
+      gsap.from('.kpi-stat-card', {
+        y: 22,
+        opacity: 0,
+        duration: 0.55,
+        stagger: 0.08,
+        ease: 'power3.out',
+        delay: 0.15,
+      });
+
+      // MOTION ELEMENT 5: Pulse Breathing of Health Badge
+      gsap.to('.health-pulse-pill', {
+        y: -2.5,
+        duration: 1.8,
+        repeat: -1,
+        yoyo: true,
+        ease: 'sine.inOut',
+      });
+
+      // MOTION ELEMENT 6: Category Spending Staggered Rows Entrance
+      gsap.from('.category-row-item', {
+        x: -16,
+        opacity: 0,
+        duration: 0.45,
+        stagger: 0.06,
+        ease: 'power2.out',
+        delay: 0.25,
+      });
+
+      // MOTION ELEMENT 7: Dynamic Progress Bars Fill Expansion
+      gsap.from('.animated-meter-bar', {
+        scaleX: 0,
+        transformOrigin: 'left',
+        duration: 0.9,
+        stagger: 0.1,
+        ease: 'power2.out',
+        delay: 0.3,
+      });
+
+      // MOTION ELEMENT 8: Recent Activity Transaction Ledger Cascade
+      gsap.from('.recent-tx-row', {
+        y: 14,
+        opacity: 0,
+        duration: 0.4,
+        stagger: 0.05,
+        ease: 'power2.out',
+        delay: 0.2,
+      });
+
+      // MOTION ELEMENT 9: Quick Action Buttons Stagger
+      gsap.from('.hero-action-btn', {
+        scale: 0.9,
+        opacity: 0,
+        duration: 0.45,
+        stagger: 0.08,
+        ease: 'back.out(2)',
+        delay: 0.3,
+      });
+
+      // MOTION ELEMENT 10: Budget & Goals Card Slide-In
+      gsap.from('.widget-card', {
+        y: 20,
+        opacity: 0,
+        duration: 0.55,
+        stagger: 0.1,
+        ease: 'power3.out',
+        delay: 0.25,
+      });
+    }, dashboardRef);
+
+    return () => ctx.revert();
+  }, [isLoading, summary]);
+
+  // Handle period change transition
+  useGSAP(() => {
+    if (!summary) return;
+    gsap.fromTo('.kpi-stat-card', 
+      { opacity: 0.6, y: 6 },
+      { opacity: 1, y: 0, duration: 0.35, stagger: 0.05, ease: 'power2.out' }
+    );
+  }, { dependencies: [activePeriod], scope: dashboardRef });
+
+  if (isLoading || !summary) {
+    return (
+      <div className="space-y-6 animate-pulse p-1">
+        <div className="h-56 bg-slate-200/80 dark:bg-slate-800 rounded-3xl" />
+        <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
+          <div className="h-32 bg-slate-200/70 dark:bg-slate-800 rounded-2xl" />
+          <div className="h-32 bg-slate-200/70 dark:bg-slate-800 rounded-2xl" />
+          <div className="h-32 bg-slate-200/70 dark:bg-slate-800 rounded-2xl" />
+          <div className="h-32 bg-slate-200/70 dark:bg-slate-800 rounded-2xl" />
+        </div>
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+          <div className="h-80 bg-slate-200/70 dark:bg-slate-800 rounded-2xl lg:col-span-2" />
+          <div className="h-80 bg-slate-200/70 dark:bg-slate-800 rounded-2xl" />
+        </div>
+      </div>
+    );
+  }
 
   return (
-    <div className="space-y-5">
-      {/* Header: Date + Balance + Quick links */}
-      <div className="pt-1">
-        <p className="text-xs text-muted-foreground mb-0.5">{dateLabel}</p>
-        <div className="flex flex-col sm:flex-row sm:items-end sm:justify-between gap-3">
-          <div>
-            <p className="text-xs text-muted-foreground mb-0.5">Net balance</p>
-            <span className={`text-4xl font-semibold tracking-tight ${netBalance >= 0 ? 'text-foreground' : 'text-rose-600 dark:text-rose-400'}`}>
-              {formatCurrency(netBalance)}
-            </span>
+    <div ref={dashboardRef} className="space-y-6 pb-12">
+      {/* ============================================================
+          TOP HERO CARD: Executive Midnight Mesh with Ambient Glow
+          ============================================================ */}
+      <div className="hero-mesh-card relative overflow-hidden rounded-3xl bg-gradient-to-br from-slate-950 via-slate-900 to-emerald-950 text-white p-6 sm:p-8 shadow-xl border border-emerald-500/20">
+        {/* Background Ambient Floating Orb (Motion Element 3) */}
+        <div
+          className="ambient-glow-orb absolute -top-24 -right-24 w-80 h-80 rounded-full bg-emerald-500/20 blur-3xl pointer-events-none"
+        />
+        <div
+          className="absolute -bottom-20 -left-20 w-72 h-72 rounded-full bg-teal-500/15 blur-3xl pointer-events-none"
+        />
+
+        <div className="relative z-10 flex flex-col md:flex-row md:items-center justify-between gap-6">
+          {/* Left Column: Date, Health Badge, Net Balance Ticker */}
+          <div className="space-y-3">
+            <div className="flex items-center gap-3">
+              <span className="text-xs font-semibold text-emerald-400/90 tracking-wider uppercase">
+                {todayDateStr}
+              </span>
+              <span className="w-1 h-1 rounded-full bg-emerald-400/50" />
+              {/* Floating Health Pulse Pill (Motion Element 5) */}
+              <div className="health-pulse-pill inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full bg-emerald-500/15 border border-emerald-400/30 text-emerald-300 text-[11px] font-semibold backdrop-blur-xs">
+                <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse" />
+                <span>{netBalance >= 0 ? 'Healthy Cash Flow' : 'Deficit Alert'}</span>
+              </div>
+            </div>
+
+            <div>
+              <p className="text-xs font-medium text-slate-400 uppercase tracking-wider">
+                Total Net Balance
+              </p>
+              <div className="flex items-baseline gap-2 mt-1">
+                {/* Live Animated Number Ticker (Motion Element 1) */}
+                <span
+                  ref={balanceValRef}
+                  className="text-4xl sm:text-5xl font-extrabold tracking-tight tabular-nums text-white"
+                >
+                  {formatCurrency(netBalance)}
+                </span>
+                <span className="text-xs text-emerald-400 font-semibold bg-emerald-500/10 border border-emerald-500/20 px-2 py-0.5 rounded-md">
+                  INR
+                </span>
+              </div>
+            </div>
+
+            <p className="text-xs text-slate-300/80 max-w-md flex items-center gap-1.5">
+              <ShieldCheck className="w-3.5 h-3.5 text-emerald-400 shrink-0" />
+              <span>100% Private local vault · Real-time Dexie ledger</span>
+            </p>
           </div>
-          <div className="flex items-center gap-2 pb-1">
-            <Button size="sm" onClick={() => navigate('/add-expense')} className="gap-1.5 h-8 text-xs px-3">
-              <PlusCircle className="w-3.5 h-3.5" /> Add expense
-            </Button>
-            <Button size="sm" variant="outline" onClick={() => navigate('/income')} className="gap-1.5 h-8 text-xs px-3">
-              <ArrowDownLeft className="w-3.5 h-3.5" /> Log income
-            </Button>
+
+          {/* Right Column: Interactive Quick Action Buttons (Motion Element 4 & 9) */}
+          <div className="flex flex-wrap sm:flex-nowrap items-center gap-3 shrink-0">
+            <button
+              onClick={e => {
+                handleButtonPress(e);
+                navigate('/add-expense');
+              }}
+              className="hero-action-btn flex items-center justify-center gap-2 bg-emerald-500 hover:bg-emerald-400 text-slate-950 font-bold px-5 py-3 rounded-2xl shadow-lg shadow-emerald-500/25 transition-all text-sm cursor-pointer select-none"
+            >
+              <PlusCircle className="w-4 h-4" /> Add Expense
+            </button>
+            <button
+              onClick={e => {
+                handleButtonPress(e);
+                navigate('/income');
+              }}
+              className="hero-action-btn flex items-center justify-center gap-2 bg-white/10 hover:bg-white/15 text-white border border-white/20 font-semibold px-4 py-3 rounded-2xl backdrop-blur-md transition-all text-sm cursor-pointer select-none"
+            >
+              <ArrowDownLeft className="w-4 h-4 text-emerald-400" /> Log Income
+            </button>
           </div>
         </div>
       </div>
 
-      <hr className="border-border" />
+      {/* ============================================================
+          PERIOD GLIDING CONTROLLER (Motion Element 6)
+          ============================================================ */}
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 px-1">
+        <div className="flex items-center gap-2">
+          <Activity className="w-4 h-4 text-primary" />
+          <h2 className="text-base font-bold text-foreground tracking-tight">Financial Pulse</h2>
+        </div>
 
-      {/* Period toggle */}
-      <div className="flex gap-1">
-        {(['month', 'today', 'all'] as const).map((p) => (
-          <button
-            key={p}
-            onClick={() => setActivePeriod(p)}
-            className={`px-3 py-1 rounded text-xs font-medium transition-colors ${
-              activePeriod === p
-                ? 'bg-foreground text-background'
-                : 'text-muted-foreground hover:text-foreground'
-            }`}
-          >
-            {p === 'month' ? 'This month' : p === 'today' ? 'Today' : 'All time'}
-          </button>
-        ))}
+        {/* Gliding Period Toggle Pills */}
+        <div className="flex rounded-xl border border-border/80 bg-card p-1 shadow-xs">
+          {(['month', 'today', 'all'] as const).map(p => (
+            <button
+              key={p}
+              onClick={() => setActivePeriod(p)}
+              className={`px-3.5 py-1.5 rounded-lg text-xs font-semibold transition-all cursor-pointer ${
+                activePeriod === p
+                  ? 'bg-foreground text-background shadow-xs scale-100 font-bold'
+                  : 'text-muted-foreground hover:text-foreground'
+              }`}
+            >
+              {p === 'month' ? 'This Month' : p === 'today' ? 'Today' : 'All Time'}
+            </button>
+          ))}
+        </div>
       </div>
 
-      {/* Stat cards */}
-      <div className="grid grid-cols-2 lg:grid-cols-4 gap-3">
-        {/* Income */}
-        <Card>
-          <CardContent className="pt-4 pb-3">
-            <p className="text-xs text-muted-foreground mb-1">Income</p>
-            <div className="text-xl font-semibold text-foreground">
-              {formatCurrency(displayIncome)}
+      {/* ============================================================
+          KPI METRIC CARDS GRID (Motion Elements 4 & 10)
+          ============================================================ */}
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+        {/* Card 1: Inflow */}
+        <div
+          onMouseEnter={handleCardMouseEnter}
+          onMouseLeave={handleCardMouseLeave}
+          className="kpi-stat-card bg-card border border-border/80 rounded-2xl p-5 shadow-xs transition-shadow cursor-default"
+        >
+          <div className="flex items-center justify-between">
+            <span className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">
+              Cash Inflow
+            </span>
+            <div className="w-9 h-9 rounded-xl bg-emerald-50 dark:bg-emerald-500/10 text-emerald-600 flex items-center justify-center text-base">
+              💰
             </div>
-            {activePeriod !== 'month' && (
-              <p className="text-[11px] text-muted-foreground mt-0.5">
-                Month: {formatCurrency(currentMonthIncome)}
-              </p>
-            )}
-          </CardContent>
-        </Card>
-
-        {/* Expenses */}
-        <Card>
-          <CardContent className="pt-4 pb-3">
-            <p className="text-xs text-muted-foreground mb-1">Spent</p>
-            <div className="text-xl font-semibold text-rose-600 dark:text-rose-400">
-              {formatCurrency(displaySpending)}
+          </div>
+          <div className="mt-3">
+            <div className="text-2xl font-bold tracking-tight text-emerald-600 dark:text-emerald-400 tabular-nums">
+              +{formatCurrency(displayIncome)}
             </div>
-            {activePeriod !== 'today' && (
-              <p className="text-[11px] text-muted-foreground mt-0.5">
-                Today: {formatCurrency(todaySpending)}
-              </p>
-            )}
-          </CardContent>
-        </Card>
-
-        {/* Net this month */}
-        <Card>
-          <CardContent className="pt-4 pb-3">
-            <p className="text-xs text-muted-foreground mb-1">Month net</p>
-            <div className={`text-xl font-semibold ${currentMonthIncome - currentMonthSpending >= 0 ? 'text-primary' : 'text-rose-600 dark:text-rose-400'}`}>
-              {formatCurrency(currentMonthIncome - currentMonthSpending)}
-            </div>
-            <p className="text-[11px] text-muted-foreground mt-0.5">
-              {currentMonthIncome - currentMonthSpending >= 0 ? 'Surplus' : 'Deficit'}
+            <p className="text-[11px] text-muted-foreground mt-1 flex items-center gap-1">
+              <span className="text-emerald-600 font-semibold">● Active</span>
+              <span>· {activePeriod === 'month' ? 'Current Month' : activePeriod === 'today' ? 'Today' : 'All Time'}</span>
             </p>
-          </CardContent>
-        </Card>
+          </div>
+        </div>
 
-        {/* Needs vs Wants */}
-        <Card>
-          <CardContent className="pt-4 pb-3">
-            <p className="text-xs text-muted-foreground mb-1">Needs vs Wants</p>
-            <div className="text-xl font-semibold text-foreground">
-              {currentMonthSpending > 0
-                ? `${Math.round((necessaryExpenses / currentMonthSpending) * 100)}%`
-                : '—'}
+        {/* Card 2: Outflow */}
+        <div
+          onMouseEnter={handleCardMouseEnter}
+          onMouseLeave={handleCardMouseLeave}
+          className="kpi-stat-card bg-card border border-border/80 rounded-2xl p-5 shadow-xs transition-shadow cursor-default"
+        >
+          <div className="flex items-center justify-between">
+            <span className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">
+              Total Outflow
+            </span>
+            <div className="w-9 h-9 rounded-xl bg-rose-50 dark:bg-rose-500/10 text-rose-600 flex items-center justify-center text-base">
+              💸
             </div>
-            <div className="w-full bg-muted rounded-full h-1.5 mt-2 flex overflow-hidden">
+          </div>
+          <div className="mt-3">
+            <div className="text-2xl font-bold tracking-tight text-rose-600 dark:text-rose-400 tabular-nums">
+              -{formatCurrency(displaySpending)}
+            </div>
+            <p className="text-[11px] text-muted-foreground mt-1">
+              {activePeriod !== 'today' ? `Today: ${formatCurrency(todaySpending)}` : `Month: ${formatCurrency(currentMonthSpending)}`}
+            </p>
+          </div>
+        </div>
+
+        {/* Card 3: Net Savings Velocity */}
+        <div
+          onMouseEnter={handleCardMouseEnter}
+          onMouseLeave={handleCardMouseLeave}
+          className="kpi-stat-card bg-card border border-border/80 rounded-2xl p-5 shadow-xs transition-shadow cursor-default"
+        >
+          <div className="flex items-center justify-between">
+            <span className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">
+              Savings Velocity
+            </span>
+            <div className="w-9 h-9 rounded-xl bg-indigo-50 dark:bg-indigo-500/10 text-indigo-600 flex items-center justify-center text-base">
+              📈
+            </div>
+          </div>
+          <div className="mt-3">
+            <div className="text-2xl font-bold tracking-tight text-foreground tabular-nums">
+              {savingsRate}%
+            </div>
+            <p className="text-[11px] text-muted-foreground mt-1">
+              {displayIncome - displaySpending >= 0 ? (
+                <span className="text-emerald-600 font-semibold">Surplus +{formatCurrency(displayIncome - displaySpending)}</span>
+              ) : (
+                <span className="text-rose-600 font-semibold">Deficit {formatCurrency(displayIncome - displaySpending)}</span>
+              )}
+            </p>
+          </div>
+        </div>
+
+        {/* Card 4: Needs vs Wants Equilibrium (Motion Element 7) */}
+        <div
+          onMouseEnter={handleCardMouseEnter}
+          onMouseLeave={handleCardMouseLeave}
+          className="kpi-stat-card bg-card border border-border/80 rounded-2xl p-5 shadow-xs transition-shadow cursor-default"
+        >
+          <div className="flex items-center justify-between">
+            <span className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">
+              Needs vs Wants
+            </span>
+            <div className="w-9 h-9 rounded-xl bg-amber-50 dark:bg-amber-500/10 text-amber-600 flex items-center justify-center text-base">
+              ⚖️
+            </div>
+          </div>
+          <div className="mt-2.5">
+            <div className="flex justify-between items-baseline">
+              <span className="text-lg font-bold text-foreground">
+                {currentMonthSpending > 0
+                  ? `${Math.round((necessaryExpenses / currentMonthSpending) * 100)}% Needs`
+                  : '—'}
+              </span>
+              <span className="text-xs text-muted-foreground font-medium">
+                {currentMonthSpending > 0
+                  ? `${Math.round((discretionaryExpenses / currentMonthSpending) * 100)}% Wants`
+                  : ''}
+              </span>
+            </div>
+            {/* Split Progress Meter Bar */}
+            <div className="w-full bg-slate-100 dark:bg-slate-800 rounded-full h-2 mt-2 flex overflow-hidden">
               <div
-                className="bg-primary h-full transition-all"
-                style={{ width: `${currentMonthSpending > 0 ? (necessaryExpenses / currentMonthSpending) * 100 : 0}%` }}
+                className="animated-meter-bar bg-primary h-full transition-all"
+                style={{
+                  width: `${currentMonthSpending > 0 ? (necessaryExpenses / currentMonthSpending) * 100 : 0}%`,
+                }}
               />
               <div
-                className="bg-amber-500 h-full transition-all"
-                style={{ width: `${currentMonthSpending > 0 ? (discretionaryExpenses / currentMonthSpending) * 100 : 0}%` }}
+                className="animated-meter-bar bg-amber-500 h-full transition-all"
+                style={{
+                  width: `${currentMonthSpending > 0 ? (discretionaryExpenses / currentMonthSpending) * 100 : 0}%`,
+                }}
               />
             </div>
             <div className="flex justify-between text-[10px] text-muted-foreground mt-1">
-              <span>Needs</span><span>Wants</span>
+              <span>🌿 Essential</span>
+              <span>✨ Lifestyle</span>
             </div>
-          </CardContent>
-        </Card>
+          </div>
+        </div>
       </div>
 
-      {/* Charts + Budgets */}
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-5">
-        {/* Top categories donut */}
-        <Card className="lg:col-span-2">
-          <CardHeader className="flex flex-row items-center justify-between pb-2">
-            <CardTitle>Top Spending Categories</CardTitle>
-            <Button variant="ghost" size="sm" onClick={() => navigate('/analytics')} className="gap-1 text-xs h-7">
-              Analytics <ArrowRight className="w-3 h-3" />
+      {/* ============================================================
+          MAIN BODY: Top Categories + Active Budgets
+          ============================================================ */}
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+        {/* Top Spending Categories (Motion Element 6 & 7) */}
+        <Card className="widget-card lg:col-span-2 rounded-2xl border-border/80 shadow-xs">
+          <CardHeader className="flex flex-row items-center justify-between pb-3">
+            <div>
+              <CardTitle className="text-base font-bold text-foreground flex items-center gap-2">
+                <span>🥧</span> Top Spending Categories
+              </CardTitle>
+              <p className="text-xs text-muted-foreground mt-0.5">
+                Where your money flows this billing cycle.
+              </p>
+            </div>
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={() => navigate('/categories')}
+              className="text-xs gap-1 h-8 rounded-xl"
+            >
+              View all <ChevronRight className="w-3.5 h-3.5" />
             </Button>
           </CardHeader>
+
           <CardContent>
             {topCategories.length === 0 ? (
-              <div className="h-48 flex flex-col items-center justify-center text-center text-muted-foreground">
-                <PieChartIcon className="w-10 h-10 stroke-[1.5] mb-2 opacity-30" />
-                <p className="text-sm">No expenses this month.</p>
-                <Button size="sm" variant="outline" onClick={() => navigate('/add-expense')} className="mt-3">
-                  Add First Expense
+              <div className="py-12 text-center text-muted-foreground">
+                <p className="text-sm font-medium">No expenses logged this period</p>
+                <Button
+                  size="sm"
+                  onClick={() => navigate('/add-expense')}
+                  className="mt-3 text-xs rounded-xl"
+                >
+                  Record first expense
                 </Button>
               </div>
             ) : (
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-5 items-center">
-                <div className="h-48">
-                  <ResponsiveContainer width="100%" height="100%">
-                    <PieChart>
-                      <Pie
-                        data={topCategories}
-                        cx="50%"
-                        cy="50%"
-                        innerRadius={50}
-                        outerRadius={80}
-                        paddingAngle={3}
-                        dataKey="amount"
-                      >
-                        {topCategories.map((entry, index) => (
-                          <Cell key={`cell-${index}`} fill={entry.categoryColor} />
-                        ))}
-                      </Pie>
-                      <RechartsTooltip
-                        formatter={(val: any) => [formatCurrency(Number(val) || 0), 'Spent']}
-                      />
-                    </PieChart>
-                  </ResponsiveContainer>
-                </div>
-                <div className="space-y-2.5">
-                  {topCategories.map((cat) => (
-                    <div key={cat.categoryId} className="flex items-center justify-between text-sm">
-                      <div className="flex items-center gap-2">
-                        <span className="text-base shrink-0">
-                          {catEmojiMap.get(cat.categoryId) || getCategoryEmoji(cat.categoryName)}
-                        </span>
-                        <span className="text-foreground truncate max-w-[130px] font-medium">{cat.categoryName}</span>
-                      </div>
-                      <div className="text-right">
-                        <div className="font-medium">{formatCurrency(cat.amount)}</div>
-                        <div className="text-[11px] text-muted-foreground">{cat.percentage.toFixed(1)}%</div>
-                      </div>
-                    </div>
-                  ))}
-                </div>
-              </div>
-            )}
-          </CardContent>
-        </Card>
-
-        {/* Active Budgets */}
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between pb-2">
-            <CardTitle>Budgets</CardTitle>
-            <Button variant="ghost" size="sm" onClick={() => navigate('/budgets')} className="gap-1 text-xs h-7">
-              Manage <ArrowRight className="w-3 h-3" />
-            </Button>
-          </CardHeader>
-          <CardContent className="space-y-3">
-            {budgetProgress.length === 0 ? (
-              <div className="text-center py-6 text-muted-foreground">
-                <p className="text-sm">No budgets set.</p>
-                <Button size="sm" variant="outline" onClick={() => navigate('/budgets')} className="mt-2">
-                  Create Budget
-                </Button>
-              </div>
-            ) : (
-              budgetProgress.map((b) => (
-                <div key={b.budgetId} className="space-y-1.5">
-                  <div className="flex justify-between items-center text-sm">
-                    <span className="text-foreground">{b.budgetName}</span>
-                    <span className={`text-xs font-medium ${b.status === 'exceeded' ? 'text-rose-600' : b.status === 'danger' ? 'text-orange-500' : 'text-muted-foreground'}`}>
-                      {b.status === 'exceeded' ? 'Over limit' : `${Math.round(b.percentage)}%`}
-                    </span>
-                  </div>
-                  <Progress value={Math.min(100, b.percentage)} className="h-1.5" />
-                  <div className="flex justify-between text-[11px] text-muted-foreground">
-                    <span>{formatCurrency(b.spent)}</span>
-                    <span>{formatCurrency(b.budgetAmount)}</span>
-                  </div>
-                </div>
-              ))
-            )}
-          </CardContent>
-        </Card>
-      </div>
-
-      {/* Recent Transactions + Goals */}
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-5">
-        {/* Recent Transactions */}
-        <Card className="lg:col-span-2">
-          <CardHeader className="flex flex-row items-center justify-between pb-2">
-            <CardTitle>Recent Transactions</CardTitle>
-            <Button variant="ghost" size="sm" onClick={() => navigate('/transactions')} className="gap-1 text-xs h-7">
-              View all <ArrowRight className="w-3 h-3" />
-            </Button>
-          </CardHeader>
-          <CardContent>
-            {recentTransactions.length === 0 ? (
-              <div className="py-8 text-center text-muted-foreground">
-                <p className="text-sm">No transactions yet.</p>
-                <Button size="sm" onClick={() => navigate('/add-expense')} className="mt-3">
-                  Record Expense
-                </Button>
-              </div>
-            ) : (
-              <div className="divide-y divide-border">
-                {recentTransactions.map((item) => {
-                  const isExpense = 'classification' in item;
-                  const emoji = catEmojiMap.get((item as any).categoryId) || (isExpense ? '💸' : '💰');
+              <div className="space-y-3.5">
+                {topCategories.map(cat => {
+                  const emoji = catEmojiMap.get(cat.categoryId) || getCategoryEmoji(cat.categoryName);
                   return (
                     <div
-                      key={item.id}
-                      className="py-2.5 flex items-center justify-between gap-3 group"
+                      key={cat.categoryId}
+                      className="category-row-item p-2.5 rounded-xl hover:bg-muted/30 transition-colors"
                     >
-                      <div className="flex items-center gap-3 min-w-0">
-                        <div
-                          className="w-8 h-8 rounded-xl flex items-center justify-center shrink-0 text-base shadow-xs"
-                          style={{
-                            backgroundColor: isExpense ? '#fee2e2' : '#dcfce7',
-                          }}
-                        >
-                          <span>{emoji}</span>
+                      <div className="flex items-center justify-between text-sm mb-1.5">
+                        <div className="flex items-center gap-2.5">
+                          <span className="w-8 h-8 rounded-xl bg-slate-100 dark:bg-slate-800 flex items-center justify-center text-base shadow-xs">
+                            {emoji}
+                          </span>
+                          <span className="font-semibold text-foreground">{cat.categoryName}</span>
+                          <span className="text-[11px] text-muted-foreground">
+                            · {cat.transactionCount} {cat.transactionCount === 1 ? 'txn' : 'txns'}
+                          </span>
                         </div>
-                        <div className="min-w-0">
-                          <p className="text-sm font-medium text-foreground truncate">
-                            {item.description || (isExpense ? 'Expense' : 'Income')}
-                          </p>
-                          <p className="text-[11px] text-muted-foreground">
-                            {formatDate(item.date)}
-                            {isExpense && item.merchant && ` · ${item.merchant}`}
-                          </p>
+                        <div className="text-right">
+                          <span className="font-bold text-foreground tabular-nums">
+                            {formatCurrency(cat.amount)}
+                          </span>
+                          <span className="text-xs text-muted-foreground ml-2 font-medium">
+                            {cat.percentage.toFixed(1)}%
+                          </span>
                         </div>
                       </div>
-                      <div className="text-right shrink-0">
-                        <p className={`text-sm font-semibold tabular-nums ${isExpense ? 'text-rose-600 dark:text-rose-400' : 'text-primary'}`}>
-                          {isExpense ? '−' : '+'}{formatCurrency(item.amount)}
-                        </p>
-                        {isExpense && (
-                          <p className="text-[10px] text-muted-foreground capitalize">{(item as any).classification}</p>
-                        )}
+
+                      {/* Animated Category Progress Fill Bar */}
+                      <div className="w-full bg-slate-100 dark:bg-slate-800 rounded-full h-2 overflow-hidden">
+                        <div
+                          className="animated-meter-bar h-full rounded-full transition-all"
+                          style={{
+                            width: `${Math.min(100, Math.max(3, cat.percentage))}%`,
+                            backgroundColor: cat.categoryColor || '#059669',
+                          }}
+                        />
                       </div>
                     </div>
                   );
@@ -356,41 +572,186 @@ export default function DashboardPage() {
           </CardContent>
         </Card>
 
-        {/* Goals Snapshot */}
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between pb-2">
-            <CardTitle>Goals</CardTitle>
-            <Button variant="ghost" size="sm" onClick={() => navigate('/goals')} className="gap-1 text-xs h-7">
-              View all <ArrowRight className="w-3 h-3" />
+        {/* Budgets & Spending Runway (Motion Element 10) */}
+        <Card className="widget-card rounded-2xl border-border/80 shadow-xs">
+          <CardHeader className="flex flex-row items-center justify-between pb-3">
+            <CardTitle className="text-base font-bold text-foreground flex items-center gap-2">
+              <span>🎯</span> Active Budgets
+            </CardTitle>
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={() => navigate('/budgets')}
+              className="text-xs gap-1 h-8 rounded-xl"
+            >
+              Manage <ChevronRight className="w-3.5 h-3.5" />
             </Button>
           </CardHeader>
+
           <CardContent className="space-y-4">
-            {goalProgress.length === 0 ? (
-              <div className="text-center py-6 text-muted-foreground">
-                <Target className="w-8 h-8 mx-auto mb-2 opacity-30" />
-                <p className="text-sm">No savings goals yet.</p>
-                <Button size="sm" variant="outline" onClick={() => navigate('/goals')} className="mt-2">
-                  Set a Goal
+            {budgetProgress.length === 0 ? (
+              <div className="text-center py-8 text-muted-foreground">
+                <p className="text-sm font-medium">No budgets created</p>
+                <p className="text-xs mt-1">Set monthly limits to guard your runway.</p>
+                <Button
+                  size="sm"
+                  variant="outline"
+                  onClick={() => navigate('/budgets')}
+                  className="mt-3 text-xs rounded-xl"
+                >
+                  Create Budget
                 </Button>
               </div>
             ) : (
-              goalProgress.map((g) => (
-                <div key={g.goalId} className="space-y-1.5">
+              budgetProgress.slice(0, 4).map(b => (
+                <div key={b.budgetId} className="space-y-1.5 p-2 rounded-xl hover:bg-muted/20 transition-colors">
                   <div className="flex justify-between items-center text-sm">
-                    <span className="text-foreground">{g.goalName}</span>
-                    <span className="text-xs font-medium text-primary">{Math.round(g.percentage)}%</span>
+                    <span className="font-semibold text-foreground truncate max-w-[150px]">{b.budgetName}</span>
+                    <span
+                      className={`text-xs font-bold px-2 py-0.5 rounded-md ${
+                        b.status === 'exceeded'
+                          ? 'bg-rose-50 text-rose-600 dark:bg-rose-500/10'
+                          : b.status === 'danger'
+                          ? 'bg-orange-50 text-orange-600 dark:bg-orange-500/10'
+                          : 'bg-emerald-50 text-emerald-600 dark:bg-emerald-500/10'
+                      }`}
+                    >
+                      {b.status === 'exceeded' ? 'Over Budget' : `${Math.round(b.percentage)}%`}
+                    </span>
                   </div>
-                  <Progress value={Math.min(100, g.percentage)} className="h-1.5" />
+                  <Progress value={Math.min(100, b.percentage)} className="h-2 rounded-full" />
                   <div className="flex justify-between text-[11px] text-muted-foreground">
-                    <span>{formatCurrency(g.currentAmount)}</span>
-                    <span>{formatCurrency(g.targetAmount)}</span>
+                    <span>{formatCurrency(b.spent)}</span>
+                    <span>Cap: {formatCurrency(b.budgetAmount)}</span>
                   </div>
                 </div>
               ))
             )}
+
+            {/* Quick Goals Snapshot */}
+            {goalProgress.length > 0 && (
+              <div className="pt-3 border-t border-border/80">
+                <div className="flex items-center justify-between mb-2">
+                  <span className="text-xs font-bold text-foreground uppercase tracking-wider">
+                    Savings Targets
+                  </span>
+                  <button
+                    onClick={() => navigate('/goals')}
+                    className="text-xs text-primary font-semibold hover:underline"
+                  >
+                    View Goals
+                  </button>
+                </div>
+                {goalProgress.slice(0, 2).map(g => (
+                  <div key={g.goalId} className="space-y-1 py-1">
+                    <div className="flex justify-between text-xs">
+                      <span className="font-medium text-foreground">{g.goalName}</span>
+                      <span className="font-bold text-emerald-600">{Math.round(g.percentage)}%</span>
+                    </div>
+                    <Progress value={Math.min(100, g.percentage)} className="h-1.5 rounded-full" />
+                  </div>
+                ))}
+              </div>
+            )}
           </CardContent>
         </Card>
       </div>
+
+      {/* ============================================================
+          BOTTOM SECTION: Recent Activity Ledger (Motion Element 8)
+          ============================================================ */}
+      <Card className="widget-card rounded-2xl border-border/80 shadow-xs">
+        <CardHeader className="flex flex-row items-center justify-between pb-3">
+          <div>
+            <CardTitle className="text-base font-bold text-foreground flex items-center gap-2">
+              <span>⚡</span> Recent Ledger Activity
+            </CardTitle>
+            <p className="text-xs text-muted-foreground mt-0.5">
+              Latest transactions synced to local IndexedDB.
+            </p>
+          </div>
+          <Button
+            variant="ghost"
+            size="sm"
+            onClick={() => navigate('/transactions')}
+            className="text-xs gap-1 h-8 rounded-xl font-semibold"
+          >
+            Full Ledger <ArrowRight className="w-3.5 h-3.5" />
+          </Button>
+        </CardHeader>
+
+        <CardContent>
+          {recentTransactions.length === 0 ? (
+            <div className="py-10 text-center text-muted-foreground">
+              <p className="text-sm font-medium">No recorded transactions</p>
+              <Button
+                size="sm"
+                onClick={() => navigate('/add-expense')}
+                className="mt-3 text-xs rounded-xl"
+              >
+                Log an Expense
+              </Button>
+            </div>
+          ) : (
+            <div className="divide-y divide-border/60">
+              {recentTransactions.slice(0, 6).map(item => {
+                const isExpense = 'classification' in item;
+                const emoji = catEmojiMap.get((item as any).categoryId) || (isExpense ? '💸' : '💰');
+                const pmName = isExpense && 'paymentMethodId' in item ? (item as any).paymentMethodId : (item as any).paymentMethod;
+                const pmEmoji = getPaymentMethodEmoji(pmName || (isExpense ? 'Cash' : 'Bank Transfer'));
+
+                return (
+                  <div
+                    key={item.id}
+                    className="recent-tx-row py-3 flex items-center justify-between gap-3 hover:bg-muted/30 px-2 rounded-xl transition-colors group cursor-default"
+                  >
+                    <div className="flex items-center gap-3.5 min-w-0">
+                      {/* Squircle Emoji Avatar */}
+                      <div
+                        className="w-10 h-10 rounded-2xl flex items-center justify-center shrink-0 text-lg shadow-xs transition-transform group-hover:scale-105"
+                        style={{
+                          backgroundColor: isExpense ? '#fee2e2' : '#dcfce7',
+                        }}
+                      >
+                        <span>{emoji}</span>
+                      </div>
+                      <div className="min-w-0 space-y-0.5">
+                        <p className="text-sm font-semibold text-foreground truncate">
+                          {item.description || (isExpense ? 'Expense' : 'Income')}
+                        </p>
+                        <div className="flex flex-wrap items-center gap-x-2 text-xs text-muted-foreground">
+                          <span>{formatDate(item.date)}</span>
+                          <span className="inline-flex items-center gap-1 bg-muted/60 px-1.5 py-0.2 rounded text-[10px] font-medium text-foreground">
+                            <span>{pmEmoji}</span>
+                          </span>
+                          {isExpense && item.merchant && (
+                            <span className="truncate">· {item.merchant}</span>
+                          )}
+                        </div>
+                      </div>
+                    </div>
+
+                    <div className="text-right shrink-0">
+                      <p
+                        className={`text-sm font-bold tabular-nums tracking-tight ${
+                          isExpense ? 'text-rose-600 dark:text-rose-400' : 'text-emerald-600 dark:text-emerald-400'
+                        }`}
+                      >
+                        {isExpense ? '-' : '+'}{formatCurrency(item.amount)}
+                      </p>
+                      {isExpense && (item as any).classification && (
+                        <span className="text-[10px] font-semibold uppercase tracking-wider text-muted-foreground">
+                          {(item as any).classification === 'necessary' ? '🌿 Need' : '✨ Want'}
+                        </span>
+                      )}
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
+          )}
+        </CardContent>
+      </Card>
     </div>
   );
 }
