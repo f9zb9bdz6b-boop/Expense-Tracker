@@ -9,7 +9,8 @@ import { useGSAP } from '@gsap/react';
 import { db } from '@/db/database';
 import { receiptRepo, expenseRepo } from '@/db/repositories';
 import { readFileAsDataURL, compressImage } from '@/utils/helpers';
-import { formatCurrency, DEFAULT_CURRENCY, toMinorUnits } from '@/utils/currency';
+import { formatCurrency, DEFAULT_CURRENCY, toMinorUnits, convertMinorUnits, getActiveMasterCurrency } from '@/utils/currency';
+import { useSettings } from '@/contexts/SettingsContext';
 import { getCurrentDate, getCurrentTime, formatDate } from '@/utils/date';
 import { animateSpringPress, animateHoverLift } from '@/utils/motion';
 import { Card, CardHeader, CardTitle, CardDescription, CardContent } from '@/components/ui/card';
@@ -30,6 +31,8 @@ import type { Receipt, OCRResult } from '@/types';
 export default function ReceiptsPage() {
   const navigate = useNavigate();
   const { toast } = useToast();
+  const { settings } = useSettings();
+  const masterCurrency = settings?.currency || getActiveMasterCurrency();
 
   const [isScanning, setIsScanning] = useState(false);
   const [previewReceipt, setPreviewReceipt] = useState<Receipt | null>(null);
@@ -100,7 +103,7 @@ export default function ReceiptsPage() {
       setPreviewReceipt(receipt);
       toast({
         title: 'Receipt Scanned Successfully!',
-        description: `Extracted ${DEFAULT_CURRENCY.symbol}${randAmount} at ${randMerchant}.`,
+        description: `Extracted ${masterCurrency.symbol}${randAmount} at ${randMerchant}.`,
       });
     } catch (err) {
       toast({ title: 'Upload failed', description: err instanceof Error ? err.message : 'Unknown error', variant: 'destructive' });
@@ -116,9 +119,11 @@ export default function ReceiptsPage() {
     try {
       const categories = await db.expenseCategories.toArray();
       const paymentMethods = await db.paymentMethods.toArray();
+      const enteredMinor = toMinorUnits(extractedData.amount, masterCurrency.decimalPlaces);
+      const baseMinor = convertMinorUnits(enteredMinor, masterCurrency.code, 'INR');
 
       await expenseRepo.create({
-        amount: toMinorUnits(extractedData.amount),
+        amount: baseMinor,
         currency: DEFAULT_CURRENCY.code,
         categoryId: categories[0]?.id || 'cat-exp-0',
         paymentMethodId: paymentMethods[0]?.id || 'pm-0',
@@ -263,7 +268,7 @@ export default function ReceiptsPage() {
                     </span>
                     {rec.ocrResult?.totalAmount && (
                       <span className="font-bold text-primary">
-                        {DEFAULT_CURRENCY.symbol}{rec.ocrResult.totalAmount.toFixed(2)}
+                        {masterCurrency.symbol}{rec.ocrResult.totalAmount.toFixed(2)}
                       </span>
                     )}
                   </div>
@@ -297,7 +302,7 @@ export default function ReceiptsPage() {
                 />
               </div>
               <div className="space-y-1.5">
-                <Label htmlFor="extAmount">Total Amount ({DEFAULT_CURRENCY.symbol})</Label>
+                <Label htmlFor="extAmount">Total Amount ({masterCurrency.symbol} {masterCurrency.code})</Label>
                 <Input
                   id="extAmount"
                   type="number"

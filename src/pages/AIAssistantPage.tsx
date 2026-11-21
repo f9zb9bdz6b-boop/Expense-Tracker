@@ -404,7 +404,7 @@ export default function AIAssistantPage() {
               </div>
 
               <div className="space-y-1.5">
-                <label className="text-xs font-bold text-foreground">Amount ({DEFAULT_CURRENCY.symbol})</label>
+                <label className="text-xs font-bold text-foreground">Amount ({masterCurrency.symbol} {masterCurrency.code})</label>
                 <Input
                   type="number"
                   value={simAmount}
@@ -507,7 +507,7 @@ export default function AIAssistantPage() {
             </CardHeader>
             <CardContent className="space-y-4">
               <div className="space-y-1.5">
-                <Label className="text-xs font-bold text-foreground">Purchase Price ({DEFAULT_CURRENCY.symbol})</Label>
+                <Label className="text-xs font-bold text-foreground">Purchase Price ({masterCurrency.symbol} {masterCurrency.code})</Label>
                 <Input
                   type="number"
                   value={lifePrice}
@@ -518,7 +518,7 @@ export default function AIAssistantPage() {
               </div>
 
               <div className="space-y-1.5">
-                <Label className="text-xs font-bold text-foreground">Your Hourly Take-Home Wage ({DEFAULT_CURRENCY.symbol}/hr)</Label>
+                <Label className="text-xs font-bold text-foreground">Your Hourly Take-Home Wage ({masterCurrency.symbol} {masterCurrency.code}/hr)</Label>
                 <Input
                   type="number"
                   value={hourlyWage}

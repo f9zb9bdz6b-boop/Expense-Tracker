@@ -8,7 +8,7 @@ import { useGSAP } from '@gsap/react';
 import { db } from '@/db/database';
 import { goalRepo } from '@/db/repositories';
 import { useSettings } from '@/contexts/SettingsContext';
-import { formatCurrency, toMinorUnits, DEFAULT_CURRENCY, getActiveMasterCurrency } from '@/utils/currency';
+import { formatCurrency, toMinorUnits, fromMinorUnits, convertMinorUnits, DEFAULT_CURRENCY, getActiveMasterCurrency } from '@/utils/currency';
 import { formatDate, getCurrentDate } from '@/utils/date';
 import { animateSpringPress } from '@/utils/motion';
 import { Card, CardHeader, CardTitle, CardDescription, CardContent } from '@/components/ui/card';
@@ -108,10 +108,12 @@ export default function GoalsPage() {
     }
 
     try {
+      const enteredMinor = toMinorUnits(targetNum, masterCurrency.decimalPlaces);
+      const baseMinor = convertMinorUnits(enteredMinor, masterCurrency.code, 'INR');
       await goalRepo.create({
         name: name.trim(),
         description: description.trim(),
-        targetAmount: toMinorUnits(targetNum),
+        targetAmount: baseMinor,
         currentAmount: 0,
         currency: DEFAULT_CURRENCY.code,
         targetDate: targetDate || undefined,
@@ -155,7 +157,9 @@ export default function GoalsPage() {
       : depositSource;
 
     try {
-      await goalRepo.addContribution(selectedGoal.id, toMinorUnits(depNum), {
+      const enteredMinor = toMinorUnits(depNum, masterCurrency.decimalPlaces);
+      const baseMinor = convertMinorUnits(enteredMinor, masterCurrency.code, 'INR');
+      await goalRepo.addContribution(selectedGoal.id, baseMinor, {
         source: resolvedSource,
         notes: depositNotes.trim(),
         deductFromSavings,
@@ -164,8 +168,8 @@ export default function GoalsPage() {
       toast({
         title: 'Contribution Added!',
         description: deductFromSavings
-          ? `${formatCurrency(toMinorUnits(depNum))} deducted from savings & added to ${selectedGoal.name}`
-          : `${formatCurrency(toMinorUnits(depNum))} added to ${selectedGoal.name}`,
+          ? `${formatCurrency(baseMinor, masterCurrency)} deducted from savings & added to ${selectedGoal.name}`
+          : `${formatCurrency(baseMinor, masterCurrency)} added to ${selectedGoal.name}`,
       });
       setIsDepositOpen(false);
     } catch (err) {
@@ -192,9 +196,10 @@ export default function GoalsPage() {
       return;
     }
 
-    const minorUnits = toMinorUnits(withNum);
-    if (minorUnits > selectedGoal.currentAmount) {
-      toast({ title: 'Amount exceeds current savings', description: `Maximum available to withdraw is ${formatCurrency(selectedGoal.currentAmount)}.`, variant: 'destructive' });
+    const enteredMinor = toMinorUnits(withNum, masterCurrency.decimalPlaces);
+    const baseMinor = convertMinorUnits(enteredMinor, masterCurrency.code, 'INR');
+    if (baseMinor > selectedGoal.currentAmount) {
+      toast({ title: 'Amount exceeds current savings', description: `Maximum available to withdraw is ${formatCurrency(selectedGoal.currentAmount, masterCurrency)}.`, variant: 'destructive' });
       return;
     }
 
@@ -203,7 +208,7 @@ export default function GoalsPage() {
       : withdrawReason;
 
     try {
-      await goalRepo.withdrawContribution(selectedGoal.id, minorUnits, {
+      await goalRepo.withdrawContribution(selectedGoal.id, baseMinor, {
         reason: resolvedReason,
         returnToSavings,
         date: withdrawDate,
@@ -211,8 +216,8 @@ export default function GoalsPage() {
       toast({
         title: 'Contribution Withdrawn!',
         description: returnToSavings
-          ? `${formatCurrency(minorUnits)} returned to normal savings/balance & recorded in Transactions.`
-          : `${formatCurrency(minorUnits)} removed from ${selectedGoal.name}.`,
+          ? `${formatCurrency(baseMinor, masterCurrency)} returned to normal savings/balance & recorded in Transactions.`
+          : `${formatCurrency(baseMinor, masterCurrency)} removed from ${selectedGoal.name}.`,
       });
       setIsWithdrawOpen(false);
     } catch (err) {
@@ -421,7 +426,7 @@ export default function GoalsPage() {
             </div>
 
             <div className="space-y-1.5">
-              <Label htmlFor="goalTarget">Target Amount ({DEFAULT_CURRENCY.symbol}) *</Label>
+              <Label htmlFor="goalTarget">Target Amount ({masterCurrency.symbol} {masterCurrency.code}) *</Label>
               <Input
                 id="goalTarget"
                 type="number"
@@ -462,7 +467,7 @@ export default function GoalsPage() {
           </DialogHeader>
           <div className="space-y-3.5 py-2">
             <div className="space-y-1.5">
-              <Label htmlFor="depAmt">Contribution Amount ({DEFAULT_CURRENCY.symbol}) *</Label>
+              <Label htmlFor="depAmt">Contribution Amount ({masterCurrency.symbol} {masterCurrency.code}) *</Label>
               <Input
                 id="depAmt"
                 type="number"
@@ -553,11 +558,11 @@ export default function GoalsPage() {
           </DialogHeader>
           <div className="space-y-3.5 py-2">
             <p className="text-xs text-muted-foreground">
-              Currently saved in goal: <strong>{selectedGoal ? formatCurrency(selectedGoal.currentAmount) : ''}</strong>
+              Currently saved in goal: <strong>{selectedGoal ? formatCurrency(selectedGoal.currentAmount, masterCurrency) : ''}</strong>
             </p>
 
             <div className="space-y-1.5">
-              <Label htmlFor="withAmt">Withdraw Amount ({DEFAULT_CURRENCY.symbol}) *</Label>
+              <Label htmlFor="withAmt">Withdraw Amount ({masterCurrency.symbol} {masterCurrency.code}) *</Label>
               <Input
                 id="withAmt"
                 type="number"

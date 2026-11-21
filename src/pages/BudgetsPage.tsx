@@ -8,7 +8,7 @@ import { useGSAP } from '@gsap/react';
 import { db } from '@/db/database';
 import { budgetRepo } from '@/db/repositories';
 import { useSettings } from '@/contexts/SettingsContext';
-import { formatCurrency, toMinorUnits, DEFAULT_CURRENCY, getActiveMasterCurrency } from '@/utils/currency';
+import { formatCurrency, toMinorUnits, fromMinorUnits, convertMinorUnits, DEFAULT_CURRENCY, getActiveMasterCurrency } from '@/utils/currency';
 import { getCurrentDate } from '@/utils/date';
 import { animateSpringPress } from '@/utils/motion';
 import { Card, CardHeader, CardTitle, CardDescription, CardContent } from '@/components/ui/card';
@@ -89,7 +89,8 @@ export default function BudgetsPage() {
   const handleOpenEdit = (b: Budget) => {
     setEditingId(b.id);
     setName(b.name);
-    setAmount((b.amount / 100).toString());
+    const convertedMinor = convertMinorUnits(b.amount, 'INR', masterCurrency.code);
+    setAmount(fromMinorUnits(convertedMinor, masterCurrency.decimalPlaces).toString());
     setPeriod(b.period);
     setCategoryId(b.categoryId || '');
     setNotes(b.notes || '');
@@ -104,7 +105,8 @@ export default function BudgetsPage() {
     }
 
     try {
-      const minorUnits = toMinorUnits(parsedAmount);
+      const enteredMinor = toMinorUnits(parsedAmount, masterCurrency.decimalPlaces);
+      const minorUnits = convertMinorUnits(enteredMinor, masterCurrency.code, 'INR');
       if (editingId) {
         await budgetRepo.update(editingId, {
           name: name.trim(),
@@ -305,7 +307,7 @@ export default function BudgetsPage() {
             </div>
 
             <div className="space-y-1.5">
-              <Label htmlFor="bAmount">Budget Amount ({DEFAULT_CURRENCY.symbol}) *</Label>
+              <Label htmlFor="bAmount">Budget Amount ({masterCurrency.symbol} {masterCurrency.code}) *</Label>
               <Input
                 id="bAmount"
                 type="number"

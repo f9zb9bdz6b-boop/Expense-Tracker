@@ -8,7 +8,7 @@ import gsap from 'gsap';
 import { useGSAP } from '@gsap/react';
 import { db } from '@/db/database';
 import { useSettings } from '@/contexts/SettingsContext';
-import { formatCurrency, DEFAULT_CURRENCY, toMinorUnits, fromMinorUnits, getActiveMasterCurrency } from '@/utils/currency';
+import { formatCurrency, DEFAULT_CURRENCY, toMinorUnits, fromMinorUnits, convertMinorUnits, getActiveMasterCurrency } from '@/utils/currency';
 import { animateSpringPress } from '@/utils/motion';
 import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -136,13 +136,15 @@ export default function WealthPage() {
   const handleAddAsset = () => {
     const amt = parseFloat(newAssetAmount);
     if (!newAssetName.trim() || isNaN(amt) || amt <= 0) return;
+    const enteredMinor = toMinorUnits(amt, masterCurrency.decimalPlaces);
+    const baseMinor = convertMinorUnits(enteredMinor, masterCurrency.code, 'INR');
     const updated: AssetItem[] = [
       ...assets,
       {
         id: `ast-${Date.now()}`,
         name: newAssetName.trim(),
         category: newAssetCategory,
-        amount: toMinorUnits(amt),
+        amount: baseMinor,
         currency: DEFAULT_CURRENCY.code,
       },
     ];
@@ -289,7 +291,7 @@ export default function WealthPage() {
                 className="text-xs flex-1 rounded-xl"
               />
               <Input
-                placeholder="Amount (₹)"
+                placeholder={`Amount (${masterCurrency.symbol})`}
                 type="number"
                 value={newAssetAmount}
                 onChange={e => setNewAssetAmount(e.target.value)}
@@ -370,7 +372,7 @@ export default function WealthPage() {
             ))}
 
             <div className="p-3 rounded-xl bg-emerald-500/10 border border-emerald-500/30 text-xs text-emerald-800 dark:text-emerald-300">
-              💡 <strong>Strategy Advice</strong>: By directing an extra {DEFAULT_CURRENCY.symbol}{extraPaymentMonthly}/month toward your highest interest target #{1} ({sortedDebts[0]?.name}), you will become 100% debt-free approximately <strong>14 months earlier</strong> and save substantial compound interest.
+              💡 <strong>Strategy Advice</strong>: By directing an extra {masterCurrency.symbol}{extraPaymentMonthly}/month toward your highest interest target #{1} ({sortedDebts[0]?.name}), you will become 100% debt-free approximately <strong>14 months earlier</strong> and save substantial compound interest.
             </div>
           </CardContent>
         </Card>

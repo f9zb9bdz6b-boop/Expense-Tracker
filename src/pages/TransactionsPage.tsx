@@ -10,7 +10,7 @@ import gsap from 'gsap';
 import { useGSAP } from '@gsap/react';
 import { db } from '@/db/database';
 import { expenseRepo, incomeRepo } from '@/db/repositories';
-import { formatCurrency, toMinorUnits, DEFAULT_CURRENCY, convertMinorUnits, getActiveMasterCurrency } from '@/utils/currency';
+import { formatCurrency, toMinorUnits, fromMinorUnits, DEFAULT_CURRENCY, convertMinorUnits, getActiveMasterCurrency } from '@/utils/currency';
 import { useSettings } from '@/contexts/SettingsContext';
 import { formatDate } from '@/utils/date';
 import { downloadFile } from '@/utils/helpers';
@@ -219,7 +219,8 @@ export default function TransactionsPage() {
   const handleOpenEdit = (t: CombinedTransaction) => {
     setEditingTransaction(t);
     setEditDescription(t.description);
-    setEditAmount((t.amount / 100).toString());
+    const convertedMinor = convertMinorUnits(t.amount, t.currency || 'INR', masterCurrency.code);
+    setEditAmount(fromMinorUnits(convertedMinor, masterCurrency.decimalPlaces).toString());
     setEditCategoryId(t.categoryId);
     setEditDate(t.date);
     setEditNotes(t.notes || '');
@@ -240,7 +241,8 @@ export default function TransactionsPage() {
       return;
     }
 
-    const minorUnits = toMinorUnits(amtNum);
+    const enteredMinor = toMinorUnits(amtNum, masterCurrency.decimalPlaces);
+    const minorUnits = convertMinorUnits(enteredMinor, masterCurrency.code, editingTransaction.currency || 'INR');
     try {
       if (editingTransaction.type === 'expense') {
         await expenseRepo.update(editingTransaction.id, {
@@ -806,7 +808,7 @@ export default function TransactionsPage() {
 
               {/* Amount */}
               <div className="space-y-1.5">
-                <Label htmlFor="editAmt">Amount ({DEFAULT_CURRENCY.symbol}) *</Label>
+                <Label htmlFor="editAmt">Amount ({masterCurrency.symbol} {masterCurrency.code}) *</Label>
                 <Input
                   id="editAmt"
                   type="number"

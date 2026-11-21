@@ -8,7 +8,8 @@ import gsap from 'gsap';
 import { useGSAP } from '@gsap/react';
 import { db } from '@/db/database';
 import { expenseRepo } from '@/db/repositories';
-import { formatCurrency, DEFAULT_CURRENCY, toMinorUnits } from '@/utils/currency';
+import { formatCurrency, DEFAULT_CURRENCY, toMinorUnits, convertMinorUnits, getActiveMasterCurrency } from '@/utils/currency';
+import { useSettings } from '@/contexts/SettingsContext';
 import { getCurrentDate, getCurrentTime } from '@/utils/date';
 import { downloadFile } from '@/utils/helpers';
 import { animateSpringPress } from '@/utils/motion';
@@ -26,6 +27,8 @@ import {
 
 export default function ToolsPage() {
   const { toast } = useToast();
+  const { settings } = useSettings();
+  const masterCurrency = settings?.currency || getActiveMasterCurrency();
   const pageRef = useRef<HTMLDivElement>(null);
   const { contextSafe } = useGSAP({ scope: pageRef });
 
@@ -80,8 +83,10 @@ export default function ToolsPage() {
   const handleSaveParsedSMS = async () => {
     if (!parsedSms) return;
     try {
+      const enteredMinor = toMinorUnits(parsedSms.amount, masterCurrency.decimalPlaces);
+      const baseMinor = convertMinorUnits(enteredMinor, masterCurrency.code, 'INR');
       await expenseRepo.create({
-        amount: toMinorUnits(parsedSms.amount),
+        amount: baseMinor,
         currency: DEFAULT_CURRENCY.code,
         categoryId: categories[0]?.id || 'cat-0',
         paymentMethodId: paymentMethods[0]?.id || 'pm-0',
@@ -218,7 +223,7 @@ export default function ToolsPage() {
                   <div>
                     <p className="font-bold text-foreground">Extracted: {parsedSms.merchant}</p>
                     <p className="text-emerald-600 dark:text-emerald-400 font-extrabold text-sm">
-                      {DEFAULT_CURRENCY.symbol}{parsedSms.amount.toFixed(2)}
+                      {masterCurrency.symbol}{parsedSms.amount.toFixed(2)}
                     </p>
                   </div>
                   <Button size="sm" onClick={handleSaveParsedSMS} className="bg-[#7cf046] text-[#082b14] font-bold hover:bg-[#6ee33a] rounded-xl text-xs">

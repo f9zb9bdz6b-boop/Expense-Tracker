@@ -8,7 +8,7 @@ import { useGSAP } from '@gsap/react';
 import { db } from '@/db/database';
 import { recurringRepo } from '@/db/repositories';
 import { useSettings } from '@/contexts/SettingsContext';
-import { formatCurrency, toMinorUnits, DEFAULT_CURRENCY, getActiveMasterCurrency } from '@/utils/currency';
+import { formatCurrency, toMinorUnits, fromMinorUnits, convertMinorUnits, DEFAULT_CURRENCY, getActiveMasterCurrency } from '@/utils/currency';
 import { formatDate, getCurrentDate } from '@/utils/date';
 import { animateSpringPress } from '@/utils/motion';
 import { Card, CardHeader, CardTitle, CardDescription, CardContent } from '@/components/ui/card';
@@ -93,9 +93,11 @@ export default function RecurringPage() {
     }
 
     try {
+      const enteredMinor = toMinorUnits(amtNum, masterCurrency.decimalPlaces);
+      const baseMinor = convertMinorUnits(enteredMinor, masterCurrency.code, 'INR');
       await recurringRepo.create({
         type,
-        amount: toMinorUnits(amtNum),
+        amount: baseMinor,
         currency: DEFAULT_CURRENCY.code,
         categoryId: categoryId || categories[0]?.id || 'cat-exp-0',
         description: description.trim(),
@@ -293,7 +295,7 @@ export default function RecurringPage() {
             </div>
 
             <div className="space-y-1.5">
-              <Label htmlFor="recAmount">Amount ({DEFAULT_CURRENCY.symbol}) *</Label>
+              <Label htmlFor="recAmount">Amount ({masterCurrency.symbol} {masterCurrency.code}) *</Label>
               <Input
                 id="recAmount"
                 type="number"

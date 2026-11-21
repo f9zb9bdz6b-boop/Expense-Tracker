@@ -8,7 +8,7 @@ import { useGSAP } from '@gsap/react';
 import { db } from '@/db/database';
 import { eventRepo, expenseRepo } from '@/db/repositories';
 import { useSettings } from '@/contexts/SettingsContext';
-import { formatCurrency, toMinorUnits, DEFAULT_CURRENCY, getActiveMasterCurrency } from '@/utils/currency';
+import { formatCurrency, toMinorUnits, fromMinorUnits, convertMinorUnits, DEFAULT_CURRENCY, getActiveMasterCurrency } from '@/utils/currency';
 import { formatDate, getCurrentDate } from '@/utils/date';
 import { animateSpringPress } from '@/utils/motion';
 import { Card, CardHeader, CardTitle, CardDescription, CardContent } from '@/components/ui/card';
@@ -118,7 +118,8 @@ export default function EventsPage() {
     }
 
     try {
-      const minorUnits = toMinorUnits(budgetNum);
+      const enteredMinor = toMinorUnits(budgetNum, masterCurrency.decimalPlaces);
+      const minorUnits = convertMinorUnits(enteredMinor, masterCurrency.code, 'INR');
       if (editingId) {
         await eventRepo.update(editingId, {
           name: name.trim(),
@@ -160,8 +161,10 @@ export default function EventsPage() {
     }
 
     try {
+      const enteredMinor = toMinorUnits(amtNum, masterCurrency.decimalPlaces);
+      const baseMinor = convertMinorUnits(enteredMinor, masterCurrency.code, 'INR');
       await expenseRepo.create({
-        amount: toMinorUnits(amtNum),
+        amount: baseMinor,
         currency: DEFAULT_CURRENCY.code,
         categoryId: expCategoryId,
         paymentMethodId: expPaymentMethodId,
@@ -372,7 +375,7 @@ export default function EventsPage() {
             </div>
 
             <div className="space-y-1.5">
-              <Label htmlFor="evBudget">Budget Limit ({DEFAULT_CURRENCY.symbol}) *</Label>
+              <Label htmlFor="evBudget">Budget Limit ({masterCurrency.symbol} {masterCurrency.code}) *</Label>
               <Input
                 id="evBudget"
                 type="number"
@@ -422,7 +425,7 @@ export default function EventsPage() {
           </DialogHeader>
           <div className="space-y-3.5 py-2">
             <div className="space-y-1.5">
-              <Label htmlFor="evExpAmt">Amount ({DEFAULT_CURRENCY.symbol}) *</Label>
+              <Label htmlFor="evExpAmt">Amount ({masterCurrency.symbol} {masterCurrency.code}) *</Label>
               <Input
                 id="evExpAmt"
                 type="number"

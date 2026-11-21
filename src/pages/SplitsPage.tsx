@@ -13,7 +13,7 @@ import { useGSAP } from '@gsap/react';
 import { db } from '@/db/database';
 import { splitRepo, expenseRepo } from '@/db/repositories';
 import { useSettings } from '@/contexts/SettingsContext';
-import { formatCurrency, toMinorUnits, DEFAULT_CURRENCY, getActiveMasterCurrency } from '@/utils/currency';
+import { formatCurrency, toMinorUnits, fromMinorUnits, convertMinorUnits, DEFAULT_CURRENCY, getActiveMasterCurrency } from '@/utils/currency';
 import { animateSpringPress } from '@/utils/motion';
 import { Card, CardHeader, CardTitle, CardDescription, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -108,7 +108,8 @@ export default function SplitsPage() {
     }
 
     try {
-      const splitMinor = toMinorUnits(totalNum);
+      const enteredTotal = toMinorUnits(totalNum, masterCurrency.decimalPlaces);
+      const splitMinor = convertMinorUnits(enteredTotal, masterCurrency.code, 'INR');
       const split = await splitRepo.create({
         expenseId: `exp-${Date.now()}`,
         description: description.trim(),
@@ -121,7 +122,8 @@ export default function SplitsPage() {
       // Save each participant
       for (const p of validParticipants) {
         const isMe = p.name.trim().toLowerCase() === 'me';
-        const sAmt = toMinorUnits(parseFloat(p.share));
+        const enteredShare = toMinorUnits(parseFloat(p.share), masterCurrency.decimalPlaces);
+        const sAmt = convertMinorUnits(enteredShare, masterCurrency.code, 'INR');
         await splitRepo.addParticipant({
           splitId: split.id,
           name: p.name.trim(),
@@ -453,7 +455,7 @@ export default function SplitsPage() {
 
             <div className="space-y-1.5">
               <div className="flex justify-between items-center">
-                <Label htmlFor="spAmt">Total Bill Amount ({DEFAULT_CURRENCY.symbol}) *</Label>
+                <Label htmlFor="spAmt">Total Bill Amount ({masterCurrency.symbol} {masterCurrency.code}) *</Label>
                 <Button
                   type="button"
                   variant="ghost"
@@ -488,7 +490,7 @@ export default function SplitsPage() {
                   />
                   <div className="relative w-28">
                     <span className="absolute left-2.5 top-1/2 -translate-y-1/2 text-xs text-muted-foreground">
-                      {DEFAULT_CURRENCY.symbol}
+                      {masterCurrency.symbol}
                     </span>
                     <Input
                       type="number"

@@ -11,7 +11,7 @@ import { useGSAP } from '@gsap/react';
 import { db } from '@/db/database';
 import { incomeRepo, incomeCategoryRepo } from '@/db/repositories';
 import { useSettings } from '@/contexts/SettingsContext';
-import { toMinorUnits, formatCurrency, DEFAULT_CURRENCY, getActiveMasterCurrency } from '@/utils/currency';
+import { toMinorUnits, fromMinorUnits, convertMinorUnits, formatCurrency, DEFAULT_CURRENCY, getActiveMasterCurrency } from '@/utils/currency';
 import { getCurrentDate, getCurrentTime, formatDate } from '@/utils/date';
 import { getCategoryEmoji, getPaymentMethodEmoji } from '@/utils/emojis';
 import { animateSpringPress } from '@/utils/motion';
@@ -120,8 +120,10 @@ export default function IncomePage() {
     setIsSubmitting(true);
     try {
       const finalCategoryId = data.categoryId || selectedCategoryId || categories[0]?.id;
+      const enteredMinor = toMinorUnits(data.amount, masterCurrency.decimalPlaces);
+      const baseMinor = convertMinorUnits(enteredMinor, masterCurrency.code, 'INR');
       await incomeRepo.create({
-        amount: toMinorUnits(data.amount),
+        amount: baseMinor,
         currency: DEFAULT_CURRENCY.code,
         categoryId: finalCategoryId,
         paymentMethod: data.paymentMethod || 'Bank Transfer',
@@ -136,7 +138,7 @@ export default function IncomePage() {
 
       toast({
         title: 'Income Logged!',
-        description: `Recorded ${DEFAULT_CURRENCY.symbol}${data.amount} from "${data.source}".`,
+        description: `Recorded ${masterCurrency.symbol}${data.amount} from "${data.source}".`,
       });
 
       reset({
@@ -202,7 +204,7 @@ export default function IncomePage() {
               {/* Amount */}
               <div className="space-y-1.5">
                 <Label htmlFor="amount" className="text-xs uppercase text-muted-foreground font-semibold">
-                  Amount ({DEFAULT_CURRENCY.symbol}) *
+                  Amount ({masterCurrency.symbol} {masterCurrency.code}) *
                 </Label>
                 <Input
                   id="amount"
@@ -366,7 +368,7 @@ export default function IncomePage() {
                         </div>
 
                         <div className="flex items-center gap-3">
-                          <span className="text-sm font-bold text-emerald-600 dark:text-emerald-400">
+                          <span className="text-sm font-bold text-emerald-600 dark:text-emerald-400 privacy-blur tabular-nums">
                             +{formatCurrency(item.amount, masterCurrency)}
                           </span>
                           <Button
