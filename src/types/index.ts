@@ -300,6 +300,8 @@ export interface UserSettings {
   backupReminder: boolean;
   backupReminderDays: number;
   lastBackupDate?: Timestamp;
+  coffeeShopMode?: boolean;
+  biometricLockEnabled?: boolean;
   createdAt: Timestamp;
   updatedAt: Timestamp;
 }

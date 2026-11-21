@@ -21,6 +21,9 @@ import SettingsPage from '@/pages/SettingsPage';
 import ReceiptsPage from '@/pages/ReceiptsPage';
 import RecurringPage from '@/pages/RecurringPage';
 import SplitsPage from '@/pages/SplitsPage';
+import WealthPage from '@/pages/WealthPage';
+import HabitsPage from '@/pages/HabitsPage';
+import ToolsPage from '@/pages/ToolsPage';
 
 function AppRoutes() {
   const [dbReady, setDbReady] = useState(false);
@@ -64,6 +67,9 @@ function AppRoutes() {
         <Route path="/receipts" element={<ReceiptsPage />} />
         <Route path="/recurring" element={<RecurringPage />} />
         <Route path="/splits" element={<SplitsPage />} />
+        <Route path="/wealth" element={<WealthPage />} />
+        <Route path="/habits" element={<HabitsPage />} />
+        <Route path="/tools" element={<ToolsPage />} />
         <Route path="*" element={<Navigate to="/" replace />} />
       </Routes>
     </AppLayout>

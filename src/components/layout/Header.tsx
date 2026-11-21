@@ -1,7 +1,8 @@
 import React from 'react';
 import { useLocation } from 'react-router-dom';
-import { Moon, Sun, Monitor } from 'lucide-react';
+import { Moon, Sun, Monitor, Eye, EyeOff } from 'lucide-react';
 import { useTheme } from '@/contexts/ThemeContext';
+import { useSettings } from '@/contexts/SettingsContext';
 import { Button } from '@/components/ui/button';
 
 const routeTitles: Record<string, string> = {
@@ -14,7 +15,10 @@ const routeTitles: Record<string, string> = {
   '/events': 'Events',
   '/analytics': 'Analytics',
   '/goals': 'Goals',
-  '/ai-assistant': 'AI Assistant',
+  '/wealth': 'Wealth & FIRE',
+  '/habits': 'Habits & Challenges',
+  '/tools': 'Automation & Imports',
+  '/ai-assistant': 'Predictive AI',
   '/settings': 'Settings',
   '/receipts': 'Receipts',
   '/recurring': 'Recurring',
@@ -24,6 +28,7 @@ const routeTitles: Record<string, string> = {
 export function Header() {
   const location = useLocation();
   const { theme, setTheme } = useTheme();
+  const { coffeeShopMode, toggleCoffeeShopMode } = useSettings();
   const title = routeTitles[location.pathname] ?? 'Expense Tracker';
 
   const cycleTheme = () => {
@@ -52,8 +57,24 @@ export function Header() {
         </span>
       </div>
 
-      {/* Right controls: Theme toggle & vault status */}
+      {/* Right controls: Privacy Mode, Theme toggle & vault status */}
       <div className="flex items-center gap-2">
+        {/* Coffee Shop Privacy Mode Button */}
+        <Button
+          variant={coffeeShopMode ? 'default' : 'ghost'}
+          size="sm"
+          onClick={toggleCoffeeShopMode}
+          title={coffeeShopMode ? 'Privacy Mode Active (Amounts Blurred)' : 'Enable Coffee Shop Privacy Mode'}
+          className={`h-8 gap-1.5 rounded-xl px-2.5 text-xs font-semibold ${
+            coffeeShopMode
+              ? 'bg-[#7cf046] text-[#082b14] hover:bg-[#6ee33a]'
+              : 'text-muted-foreground hover:text-foreground'
+          }`}
+        >
+          {coffeeShopMode ? <EyeOff className="h-3.5 w-3.5" /> : <Eye className="h-3.5 w-3.5" />}
+          <span className="hidden md:inline">{coffeeShopMode ? 'Privacy On' : 'Privacy'}</span>
+        </Button>
+
         <div className="hidden sm:flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-muted/60 border border-border/60 text-xs font-semibold text-muted-foreground">
           <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse" />
           <span>Local Vault Synced</span>

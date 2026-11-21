@@ -191,3 +191,16 @@ dialog[open] {
 .pb-safe {
   padding-bottom: env(safe-area-inset-bottom, 0px);
 }
+
+/* Coffee Shop Mode - Instant Privacy Camouflage */
+.coffee-shop-mode .tabular-nums,
+.coffee-shop-mode [data-currency-val],
+.coffee-shop-mode .privacy-blur {
+  filter: blur(7px);
+  user-select: none;
+  transition: filter 0.25s ease-in-out;
+}
+.coffee-shop-mode .tabular-nums:hover,
+.coffee-shop-mode .privacy-blur:hover {
+  filter: blur(0px);
+}

@@ -62,20 +62,15 @@ export default function BudgetsPage() {
   });
 
   useGSAP(() => {
-    const ctx = gsap.context(() => {
-      gsap.fromTo('.motion-header', { y: 28, opacity: 0 }, { y: 0, opacity: 1, duration: 0.85, ease: 'power3.out', clearProps: 'all' });
-      gsap.fromTo(
-        '.motion-budget-card',
-        { y: 26, opacity: 0 },
-        { y: 0, opacity: 1, duration: 0.82, stagger: 0.08, ease: 'power3.out', delay: 0.08, clearProps: 'all' }
-      );
-      gsap.fromTo(
-        '.motion-meter',
-        { scaleX: 0, transformOrigin: 'left' },
-        { scaleX: 1, duration: 0.95, stagger: 0.06, ease: 'power2.out', delay: 0.2, clearProps: 'transformOrigin' }
-      );
-    }, pageRef);
-    return () => ctx.revert();
+    gsap.from('.motion-header', { y: 16, opacity: 0.3, duration: 0.5, ease: 'power2.out', clearProps: 'all' });
+    gsap.from(
+      '.motion-budget-card',
+      { y: 20, opacity: 0.3, duration: 0.6, stagger: 0.08, ease: 'power2.out', delay: 0.06, clearProps: 'all' }
+    );
+    gsap.from(
+      '.motion-meter',
+      { scaleX: 0, transformOrigin: 'left', duration: 0.8, stagger: 0.06, ease: 'power2.out', delay: 0.15, clearProps: 'transformOrigin' }
+    );
   }, []);
 
   const handleOpenAdd = () => {

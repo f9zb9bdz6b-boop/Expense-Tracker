@@ -5,6 +5,8 @@ import { settingsRepo } from '@/db/repositories';
 interface SettingsContextValue {
   settings: UserSettings | null;
   isLoading: boolean;
+  coffeeShopMode: boolean;
+  toggleCoffeeShopMode: () => void;
   updateSettings: (data: Partial<UserSettings>) => Promise<void>;
   refresh: () => Promise<void>;
 }
@@ -14,11 +16,15 @@ const SettingsContext = React.createContext<SettingsContextValue | null>(null);
 export function SettingsProvider({ children }: { children: React.ReactNode }) {
   const [settings, setSettings] = React.useState<UserSettings | null>(null);
   const [isLoading, setIsLoading] = React.useState(true);
+  const [coffeeShopMode, setCoffeeShopMode] = React.useState(false);
 
   const load = React.useCallback(async () => {
     try {
       const s = await settingsRepo.get();
       setSettings(s);
+      if (s?.coffeeShopMode !== undefined) {
+        setCoffeeShopMode(s.coffeeShopMode);
+      }
     } catch {
       // Settings may not exist yet during initial setup
       setSettings(null);
@@ -31,13 +37,28 @@ export function SettingsProvider({ children }: { children: React.ReactNode }) {
     void load();
   }, [load]);
 
+  const toggleCoffeeShopMode = React.useCallback(async () => {
+    setCoffeeShopMode(prev => {
+      const next = !prev;
+      settingsRepo.update({ coffeeShopMode: next }).catch(console.error);
+      return next;
+    });
+  }, []);
+
   const updateSettings = React.useCallback(async (data: Partial<UserSettings>) => {
     await settingsRepo.update(data);
     await load();
   }, [load]);
 
   return (
-    <SettingsContext.Provider value={{ settings, isLoading, updateSettings, refresh: load }}>
+    <SettingsContext.Provider value={{
+      settings,
+      isLoading,
+      coffeeShopMode,
+      toggleCoffeeShopMode,
+      updateSettings,
+      refresh: load
+    }}>
       {children}
     </SettingsContext.Provider>
   );

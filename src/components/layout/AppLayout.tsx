@@ -2,14 +2,17 @@ import React from 'react';
 import { Sidebar } from './Sidebar';
 import { Header } from './Header';
 import { MobileNav } from './MobileNav';
+import { useSettings } from '@/contexts/SettingsContext';
 
 interface AppLayoutProps {
   children: React.ReactNode;
 }
 
 export function AppLayout({ children }: AppLayoutProps) {
+  const { coffeeShopMode } = useSettings();
+
   return (
-    <div className="flex h-screen bg-background">
+    <div className={`flex h-screen bg-background ${coffeeShopMode ? 'coffee-shop-mode' : ''}`}>
       <Sidebar />
       <div className="flex flex-1 flex-col min-w-0 overflow-hidden">
         <Header />

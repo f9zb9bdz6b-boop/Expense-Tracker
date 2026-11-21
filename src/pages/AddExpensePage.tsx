@@ -58,6 +58,8 @@ export default function AddExpensePage() {
   const [selectedCurrencyCode, setSelectedCurrencyCode] = useState(masterCurrency.code);
   const [fxRates, setFxRates] = useState<Record<string, number>>(FALLBACK_RATES);
   const [tags, setTags] = useState<string[]>([]);
+  const [naturalInput, setNaturalInput] = useState('');
+  const [isTaxDeductible, setIsTaxDeductible] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [showNewCatDialog, setShowNewCatDialog] = useState(false);
   const [newCatName, setNewCatName] = useState('');
@@ -90,14 +92,11 @@ export default function AddExpensePage() {
   });
 
   useGSAP(() => {
-    const ctx = gsap.context(() => {
-      gsap.fromTo('.motion-header', { y: 28, opacity: 0 }, { y: 0, opacity: 1, duration: 0.85, ease: 'power3.out', clearProps: 'all' });
-      gsap.fromTo('.motion-hero-amount', { y: 26, opacity: 0, scale: 0.98 }, { y: 0, opacity: 1, scale: 1, duration: 0.82, ease: 'power3.out', clearProps: 'all' });
-      gsap.fromTo('.motion-card', { y: 26, opacity: 0 }, { y: 0, opacity: 1, duration: 0.82, stagger: 0.08, ease: 'power3.out', delay: 0.08, clearProps: 'all' });
-      gsap.fromTo('.motion-category-btn', { scale: 0.92, opacity: 0 }, { scale: 1, opacity: 1, duration: 0.5, stagger: 0.025, ease: 'back.out(1.4)', delay: 0.16, clearProps: 'all' });
-      gsap.fromTo('.motion-payment-btn', { scale: 0.92, opacity: 0 }, { scale: 1, opacity: 1, duration: 0.5, stagger: 0.025, ease: 'back.out(1.4)', delay: 0.2, clearProps: 'all' });
-    }, pageRef);
-    return () => ctx.revert();
+    gsap.from('.motion-header', { y: 16, opacity: 0.3, duration: 0.5, ease: 'power2.out', clearProps: 'all' });
+    gsap.from('.motion-hero-amount', { y: 16, opacity: 0.3, scale: 0.98, duration: 0.55, ease: 'power2.out', clearProps: 'all' });
+    gsap.from('.motion-card', { y: 20, opacity: 0.3, duration: 0.6, stagger: 0.08, ease: 'power2.out', delay: 0.05, clearProps: 'all' });
+    gsap.from('.motion-category-btn', { scale: 0.92, opacity: 0.3, duration: 0.4, stagger: 0.02, ease: 'back.out(1.4)', delay: 0.1, clearProps: 'all' });
+    gsap.from('.motion-payment-btn', { scale: 0.92, opacity: 0.3, duration: 0.4, stagger: 0.02, ease: 'back.out(1.4)', delay: 0.12, clearProps: 'all' });
   }, []);
 
   const {
@@ -164,6 +163,58 @@ export default function AddExpensePage() {
     setTags(tags.filter(t => t !== tagToRemove));
   };
 
+  const handleParseNaturalInput = () => {
+    const raw = naturalInput.trim();
+    if (!raw) return;
+
+    // 1. Extract Amount (e.g. $45, 450, 12.50, ₹1200)
+    const amountMatch = raw.match(/(?:[$€£₹¥]|INR|USD|EUR|GBP|AUD|CAD)?\s*([0-9]+(?:\.[0-9]{1,2})?)/i);
+    if (amountMatch && amountMatch[1]) {
+      setValue('amount', amountMatch[1], { shouldValidate: true, shouldDirty: true });
+    }
+
+    // 2. Extract Currency if specified
+    if (raw.includes('$') || /USD/i.test(raw)) setSelectedCurrencyCode('USD');
+    else if (raw.includes('€') || /EUR/i.test(raw)) setSelectedCurrencyCode('EUR');
+    else if (raw.includes('£') || /GBP/i.test(raw)) setSelectedCurrencyCode('GBP');
+    else if (raw.includes('₹') || /INR/i.test(raw)) setSelectedCurrencyCode('INR');
+
+    // 3. Category heuristics
+    const lower = raw.toLowerCase();
+    let matchedCat = categories.find(c => {
+      const cName = c.name.toLowerCase();
+      if (cName.includes('food') && (lower.includes('coffee') || lower.includes('dinner') || lower.includes('lunch') || lower.includes('starbucks') || lower.includes('food') || lower.includes('pizza') || lower.includes('burger') || lower.includes('cafe'))) return true;
+      if (cName.includes('transport') && (lower.includes('uber') || lower.includes('cab') || lower.includes('taxi') || lower.includes('metro') || lower.includes('flight') || lower.includes('fuel') || lower.includes('gas'))) return true;
+      if (cName.includes('grocer') && (lower.includes('grocer') || lower.includes('supermarket') || lower.includes('walmart') || lower.includes('target') || lower.includes('milk'))) return true;
+      if (cName.includes('subscri') && (lower.includes('netflix') || lower.includes('spotify') || lower.includes('gym') || lower.includes('prime') || lower.includes('youtube'))) return true;
+      if (cName.includes('shop') && (lower.includes('amazon') || lower.includes('clothes') || lower.includes('shoes') || lower.includes('zara'))) return true;
+      return false;
+    });
+
+    if (matchedCat) {
+      setValue('categoryId', matchedCat.id, { shouldValidate: true, shouldDirty: true });
+    }
+
+    // 4. Description & Merchant
+    const merchantMatch = raw.match(/\bat\s+([a-zA-Z0-9\s]+?)(?:\s+yesterday|\s+today|\s+for|$)/i);
+    if (merchantMatch && merchantMatch[1]) {
+      setValue('merchant', merchantMatch[1].trim(), { shouldValidate: true });
+    }
+
+    // Strip numbers and currency to form a clean description
+    const cleanedDesc = raw
+      .replace(/(?:[$€£₹¥]|INR|USD|EUR|GBP|AUD|CAD)?\s*[0-9]+(?:\.[0-9]{1,2})?/gi, '')
+      .replace(/\s+/g, ' ')
+      .trim();
+
+    setValue('description', cleanedDesc || raw, { shouldValidate: true, shouldDirty: true });
+
+    toast({
+      title: 'Auto-Filled from Natural Text! ✨',
+      description: `Parsed: ${amountMatch ? amountMatch[1] : ''} ${matchedCat ? '(' + matchedCat.name + ')' : ''}`,
+    });
+  };
+
   const handleCreateCategory = async () => {
     if (!newCatName.trim()) return;
     try {
@@ -215,6 +266,11 @@ export default function AddExpensePage() {
         ? `${data.notes ? data.notes.trim() + ' | ' : ''}Foreign expense: ${activeCurrencyConfig.symbol}${data.amount} ${selectedCurrencyCode} @ ${exchangeRate.toFixed(4)}`
         : (data.notes?.trim() || '');
 
+      const finalTags = [...tags];
+      if (isTaxDeductible && !finalTags.includes('tax-deductible')) {
+        finalTags.push('tax-deductible');
+      }
+
       await expenseRepo.create({
         amount: masterMinorUnits,
         currency: masterCurrency.code,
@@ -231,7 +287,7 @@ export default function AddExpensePage() {
         detailedClassification: data.classification === 'necessary' ? 'needs' : 'wants',
         eventId: data.eventId || undefined,
         notes: notesContent,
-        tags,
+        tags: finalTags,
         isRecurring: false,
       });
 
@@ -276,6 +332,33 @@ export default function AddExpensePage() {
       <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
         <input type="hidden" {...register('categoryId')} />
         <input type="hidden" {...register('paymentMethodId')} />
+
+        {/* Feature 7: Natural Language Quick Entry Input */}
+        <div className="motion-card p-3 rounded-2xl bg-card border border-border shadow-xs flex items-center gap-3">
+          <div className="w-8 h-8 rounded-xl bg-[#7cf046]/20 text-[#082b14] dark:text-[#7cf046] flex items-center justify-center shrink-0">
+            <Sparkles className="w-4 h-4" />
+          </div>
+          <Input
+            placeholder="✨ Quick Entry: e.g. '450 coffee at Starbucks' or '$25 groceries yesterday'..."
+            value={naturalInput}
+            onChange={e => setNaturalInput(e.target.value)}
+            onKeyDown={e => {
+              if (e.key === 'Enter') {
+                e.preventDefault();
+                handleParseNaturalInput();
+              }
+            }}
+            className="border-0 shadow-none focus-visible:ring-0 text-sm bg-transparent flex-1"
+          />
+          <Button
+            type="button"
+            size="sm"
+            onClick={handleParseNaturalInput}
+            className="rounded-xl text-xs font-bold shrink-0 bg-primary text-primary-foreground"
+          >
+            Auto-Fill
+          </Button>
+        </div>
         {/* Main Card: Amount & Description */}
         <Card className="motion-hero-amount">
           <CardContent className="pt-6 space-y-4">
@@ -519,6 +602,24 @@ export default function AddExpensePage() {
                 </select>
               </div>
             )}
+
+            {/* Feature 8: Tax Deduction Flag */}
+            <div className="p-3.5 rounded-2xl bg-muted/30 border border-border flex items-center justify-between">
+              <div className="space-y-0.5">
+                <span className="text-xs font-bold text-foreground flex items-center gap-1.5">
+                  <span>💼</span> Tax-Deductible Business Expense
+                </span>
+                <p className="text-[11px] text-muted-foreground">
+                  Tag for automated Schedule C / GST write-off export in Tools
+                </p>
+              </div>
+              <input
+                type="checkbox"
+                checked={isTaxDeductible}
+                onChange={e => setIsTaxDeductible(e.target.checked)}
+                className="w-4 h-4 accent-primary rounded cursor-pointer"
+              />
+            </div>
 
             {/* Tags Input */}
             <div className="space-y-1.5">

@@ -5,7 +5,7 @@ import { useGSAP } from '@gsap/react';
 import {
   LayoutDashboard, ArrowUpDown, PlusCircle, TrendingUp, Tag,
   Wallet, CalendarDays, BarChart3, Target,
-  Settings, RefreshCw, Users2,
+  Settings, RefreshCw, Users2, Landmark, Flame, Wrench, Sparkles
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { animateSpringPress, animateAvatarBounce } from '@/utils/motion';
@@ -41,6 +41,15 @@ const navGroups: { label?: string; items: NavItem[] }[] = [
       { to: '/events', icon: <CalendarDays className="h-4 w-4" />, label: 'Events' },
       { to: '/recurring', icon: <RefreshCw className="h-4 w-4" />, label: 'Recurring' },
       { to: '/analytics', icon: <BarChart3 className="h-4 w-4" />, label: 'Analytics' },
+    ],
+  },
+  {
+    label: 'Wealth & Insights',
+    items: [
+      { to: '/wealth', icon: <Landmark className="h-4 w-4" />, label: 'Wealth & FIRE' },
+      { to: '/habits', icon: <Flame className="h-4 w-4" />, label: 'Habits & Scores' },
+      { to: '/tools', icon: <Wrench className="h-4 w-4" />, label: 'Tools & Import' },
+      { to: '/ai-assistant', icon: <Sparkles className="h-4 w-4" />, label: 'AI Predictor' },
     ],
   },
 ];
