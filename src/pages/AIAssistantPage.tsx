@@ -19,7 +19,8 @@ import {
   calculateLifeHours,
   simulateScenario
 } from '@/utils/ai-quant-engine';
-import { formatCurrency, DEFAULT_CURRENCY, toMinorUnits } from '@/utils/currency';
+import { useSettings } from '@/contexts/SettingsContext';
+import { formatCurrency, DEFAULT_CURRENCY, toMinorUnits, getActiveMasterCurrency } from '@/utils/currency';
 import { animateSpringPress, playFeedbackChime } from '@/utils/motion';
 import { Card, CardHeader, CardTitle, CardDescription, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -55,6 +56,8 @@ const QUICK_QUESTIONS = [
 ];
 
 export default function AIAssistantPage() {
+  const { settings } = useSettings();
+  const masterCurrency = settings?.currency || getActiveMasterCurrency();
   const [messages, setMessages] = useState<AIChatMessage[]>(INITIAL_MESSAGES);
   const [inputText, setInputText] = useState('');
   const [isTyping, setIsTyping] = useState(false);

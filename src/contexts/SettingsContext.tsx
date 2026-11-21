@@ -1,6 +1,7 @@
 import * as React from 'react';
 import type { UserSettings } from '@/types';
 import { settingsRepo } from '@/db/repositories';
+import { setActiveMasterCurrency, getActiveMasterCurrency, DEFAULT_CURRENCY } from '@/utils/currency';
 
 interface SettingsContextValue {
   settings: UserSettings | null;
@@ -14,17 +15,45 @@ interface SettingsContextValue {
 const SettingsContext = React.createContext<SettingsContextValue | null>(null);
 
 export function SettingsProvider({ children }: { children: React.ReactNode }) {
-  const [settings, setSettings] = React.useState<UserSettings | null>(null);
+  const [settings, setSettings] = React.useState<UserSettings | null>(() => {
+    const active = getActiveMasterCurrency();
+    return {
+      id: 'user-settings',
+      currency: active,
+      dateFormat: 'dd/MM/yyyy',
+      timeFormat: '12h',
+      theme: 'system',
+      defaultClassification: 'necessary',
+      budgetAlertThresholds: [50, 75, 90, 100],
+      showDecimal: true,
+      weekStartsOn: 1,
+      enableNotifications: true,
+      enableBrowserNotifications: false,
+      hasCompletedOnboarding: true,
+      backupReminder: true,
+      backupReminderDays: 7,
+      createdAt: Date.now(),
+      updatedAt: Date.now(),
+    };
+  });
   const [isLoading, setIsLoading] = React.useState(true);
   const [coffeeShopMode, setCoffeeShopMode] = React.useState(false);
 
   const load = React.useCallback(async () => {
     try {
       const s = await settingsRepo.get();
-      setSettings(s);
-      if (s?.coffeeShopMode !== undefined) {
-        setCoffeeShopMode(s.coffeeShopMode);
-      } else if (s?.privacyDefaultActive) {
+      const active = getActiveMasterCurrency();
+      const resolved = {
+        ...s,
+        currency: s?.currency || active || DEFAULT_CURRENCY,
+      };
+      setSettings(resolved);
+      if (resolved.currency) {
+        setActiveMasterCurrency(resolved.currency);
+      }
+      if (resolved.coffeeShopMode !== undefined) {
+        setCoffeeShopMode(resolved.coffeeShopMode);
+      } else if (resolved.privacyDefaultActive) {
         setCoffeeShopMode(true);
       }
 
@@ -34,11 +63,29 @@ export function SettingsProvider({ children }: { children: React.ReactNode }) {
         medium: '8px',
         heavy: '16px',
       };
-      const radius = blurRadiusMap[s?.privacyBlurStrength || 'medium'] || '8px';
+      const radius = blurRadiusMap[resolved.privacyBlurStrength || 'medium'] || '8px';
       document.documentElement.style.setProperty('--privacy-blur-radius', radius);
     } catch {
-      // Settings may not exist yet during initial setup
-      setSettings(null);
+      const active = getActiveMasterCurrency();
+      setSettings(prev => ({
+        id: 'user-settings',
+        currency: active,
+        dateFormat: 'dd/MM/yyyy',
+        timeFormat: '12h',
+        theme: 'system',
+        defaultClassification: 'necessary',
+        budgetAlertThresholds: [50, 75, 90, 100],
+        showDecimal: true,
+        weekStartsOn: 1,
+        enableNotifications: true,
+        enableBrowserNotifications: false,
+        hasCompletedOnboarding: true,
+        backupReminder: true,
+        backupReminderDays: 7,
+        createdAt: Date.now(),
+        updatedAt: Date.now(),
+        ...(prev || {}),
+      }));
     } finally {
       setIsLoading(false);
     }
@@ -66,6 +113,29 @@ export function SettingsProvider({ children }: { children: React.ReactNode }) {
   }, []);
 
   const updateSettings = React.useCallback(async (data: Partial<UserSettings>) => {
+    if (data.currency) {
+      setActiveMasterCurrency(data.currency);
+      setSettings(prev => ({
+        id: 'user-settings',
+        currency: data.currency!,
+        dateFormat: 'dd/MM/yyyy',
+        timeFormat: '12h',
+        theme: 'system',
+        defaultClassification: 'necessary',
+        budgetAlertThresholds: [50, 75, 90, 100],
+        showDecimal: true,
+        weekStartsOn: 1,
+        enableNotifications: true,
+        enableBrowserNotifications: false,
+        hasCompletedOnboarding: true,
+        backupReminder: true,
+        backupReminderDays: 7,
+        createdAt: Date.now(),
+        updatedAt: Date.now(),
+        ...(prev || {}),
+        ...data,
+      }));
+    }
     await settingsRepo.update(data);
     await load();
   }, [load]);

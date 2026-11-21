@@ -7,7 +7,8 @@ import gsap from 'gsap';
 import { useGSAP } from '@gsap/react';
 import { db } from '@/db/database';
 import { eventRepo, expenseRepo } from '@/db/repositories';
-import { formatCurrency, toMinorUnits, DEFAULT_CURRENCY } from '@/utils/currency';
+import { useSettings } from '@/contexts/SettingsContext';
+import { formatCurrency, toMinorUnits, DEFAULT_CURRENCY, getActiveMasterCurrency } from '@/utils/currency';
 import { formatDate, getCurrentDate } from '@/utils/date';
 import { animateSpringPress } from '@/utils/motion';
 import { Card, CardHeader, CardTitle, CardDescription, CardContent } from '@/components/ui/card';
@@ -28,6 +29,8 @@ import type { SpecialEvent, EventStatus, Expense, ExpenseClassification } from '
 
 export default function EventsPage() {
   const { toast } = useToast();
+  const { settings } = useSettings();
+  const masterCurrency = settings?.currency || getActiveMasterCurrency();
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [editingId, setEditingId] = useState<string | null>(null);
   const [deleteId, setDeleteId] = useState<string | null>(null);
@@ -278,10 +281,10 @@ export default function EventsPage() {
                   <div className="space-y-1.5">
                     <div className="flex justify-between text-xs">
                       <span className="font-medium text-foreground">
-                        Spent: {formatCurrency(totalSpent)} of {formatCurrency(ev.budget)} ({Math.round(pct)}%)
+                        Spent: {formatCurrency(totalSpent, masterCurrency)} of {formatCurrency(ev.budget, masterCurrency)} ({Math.round(pct)}%)
                       </span>
                       <span className="text-muted-foreground">
-                        Remaining: {formatCurrency(remaining)}
+                        Remaining: {formatCurrency(remaining, masterCurrency)}
                       </span>
                     </div>
                     <Progress value={Math.min(100, pct)} className="h-2" />
@@ -323,7 +326,7 @@ export default function EventsPage() {
                                   {e.notes && <p className="text-[11px] text-muted-foreground">{e.notes}</p>}
                                 </div>
                                 <span className="font-semibold text-rose-600 dark:text-rose-400">
-                                  {formatCurrency(e.amount)}
+                                  {formatCurrency(e.amount, masterCurrency)}
                                 </span>
                               </div>
                             ))}

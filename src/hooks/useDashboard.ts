@@ -4,10 +4,16 @@
 import { useLiveQuery } from 'dexie-react-hooks';
 import { db } from '@/db/database';
 import { format, startOfMonth, endOfMonth, startOfWeek, startOfDay, endOfDay } from 'date-fns';
+import { convertMinorUnits } from '@/utils/currency';
 import type {
   DashboardSummary, CategorySpending, BudgetProgress,
   GoalProgress, Expense, Income, ExpenseCategory, Budget, FinancialGoal, RecurringTransaction,
 } from '@/types';
+
+function toBaseInr(amount: number, currency?: string): number {
+  if (!currency || currency === 'INR') return amount;
+  return convertMinorUnits(amount, currency, 'INR');
+}
 
 function getCurrentMonthRange() {
   const now = new Date();
@@ -64,28 +70,28 @@ export function useDashboard(): { summary: DashboardSummary | null; isLoading: b
       db.recurringTransactions.where('isActive').equals(1).toArray() as Promise<RecurringTransaction[]>,
     ]);
 
-    const totalExpenses = allExpenses.reduce((s: number, e: Expense) => s + e.amount, 0);
-    const totalIncome = allIncome.reduce((s: number, i: Income) => s + i.amount, 0);
+    const totalExpenses = allExpenses.reduce((s: number, e: Expense) => s + toBaseInr(e.amount, e.currency), 0);
+    const totalIncome = allIncome.reduce((s: number, i: Income) => s + toBaseInr(i.amount, i.currency), 0);
     const netBalance = totalIncome - totalExpenses;
 
-    const currentMonthSpending = monthExpenses.reduce((s: number, e: Expense) => s + e.amount, 0);
-    const currentMonthIncome = monthIncome.reduce((s: number, i: Income) => s + i.amount, 0);
-    const currentWeekSpending = weekExpenses.reduce((s: number, e: Expense) => s + e.amount, 0);
-    const todaySpending = todayExpenses.reduce((s: number, e: Expense) => s + e.amount, 0);
+    const currentMonthSpending = monthExpenses.reduce((s: number, e: Expense) => s + toBaseInr(e.amount, e.currency), 0);
+    const currentMonthIncome = monthIncome.reduce((s: number, i: Income) => s + toBaseInr(i.amount, i.currency), 0);
+    const currentWeekSpending = weekExpenses.reduce((s: number, e: Expense) => s + toBaseInr(e.amount, e.currency), 0);
+    const todaySpending = todayExpenses.reduce((s: number, e: Expense) => s + toBaseInr(e.amount, e.currency), 0);
 
     const monthNecessary = monthExpenses
       .filter((e: Expense) => e.classification === 'necessary')
-      .reduce((s: number, e: Expense) => s + e.amount, 0);
+      .reduce((s: number, e: Expense) => s + toBaseInr(e.amount, e.currency), 0);
     const monthDiscretionary = monthExpenses
       .filter((e: Expense) => e.classification === 'discretionary')
-      .reduce((s: number, e: Expense) => s + e.amount, 0);
+      .reduce((s: number, e: Expense) => s + toBaseInr(e.amount, e.currency), 0);
 
     const allNecessary = allExpenses
       .filter((e: Expense) => e.classification === 'necessary')
-      .reduce((s: number, e: Expense) => s + e.amount, 0);
+      .reduce((s: number, e: Expense) => s + toBaseInr(e.amount, e.currency), 0);
     const allDiscretionary = allExpenses
       .filter((e: Expense) => e.classification === 'discretionary')
-      .reduce((s: number, e: Expense) => s + e.amount, 0);
+      .reduce((s: number, e: Expense) => s + toBaseInr(e.amount, e.currency), 0);
 
     const necessaryExpenses = (monthNecessary > 0 || monthDiscretionary > 0) ? monthNecessary : allNecessary;
     const discretionaryExpenses = (monthNecessary > 0 || monthDiscretionary > 0) ? monthDiscretionary : allDiscretionary;
@@ -96,7 +102,7 @@ export function useDashboard(): { summary: DashboardSummary | null; isLoading: b
     // Top categories this month
     const categoryTotals = new Map<string, number>();
     for (const e of monthExpenses) {
-      categoryTotals.set(e.categoryId, (categoryTotals.get(e.categoryId) ?? 0) + e.amount);
+      categoryTotals.set(e.categoryId, (categoryTotals.get(e.categoryId) ?? 0) + toBaseInr(e.amount, e.currency));
     }
     const sortedCategories = [...categoryTotals.entries()]
       .sort((a, b) => b[1] - a[1])

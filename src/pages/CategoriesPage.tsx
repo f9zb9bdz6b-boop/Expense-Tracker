@@ -13,7 +13,8 @@ import gsap from 'gsap';
 import { useGSAP } from '@gsap/react';
 import { db } from '@/db/database';
 import { expenseCategoryRepo, incomeCategoryRepo } from '@/db/repositories';
-import { formatCurrency } from '@/utils/currency';
+import { useSettings } from '@/contexts/SettingsContext';
+import { formatCurrency, getActiveMasterCurrency } from '@/utils/currency';
 import { formatDate } from '@/utils/date';
 import { getCategoryEmoji, POPULAR_CATEGORY_EMOJIS } from '@/utils/emojis';
 import { animateSpringPress } from '@/utils/motion';
@@ -42,6 +43,8 @@ const PRESET_COLORS = [
 export default function CategoriesPage() {
   const navigate = useNavigate();
   const { toast } = useToast();
+  const { settings } = useSettings();
+  const masterCurrency = settings?.currency || getActiveMasterCurrency();
   const [activeTab, setActiveTab] = useState<'expense' | 'income'>('expense');
 
   // Modal states for Create/Edit
@@ -306,7 +309,7 @@ export default function CategoriesPage() {
                       {cat.name}
                     </h3>
                     <p className="text-xs text-muted-foreground truncate">
-                      <span className="privacy-blur tabular-nums font-semibold">{formatCurrency(stats.total)}</span> • {stats.count} txn{stats.count === 1 ? '' : 's'}
+                      <span className="privacy-blur tabular-nums font-semibold">{formatCurrency(stats.total, masterCurrency)}</span> • {stats.count} txn{stats.count === 1 ? '' : 's'}
                     </p>
                   </div>
                 </div>
@@ -368,7 +371,7 @@ export default function CategoriesPage() {
                   <div className="text-right">
                     <p className="text-xs text-muted-foreground font-semibold">Total Cumulative</p>
                     <p className="text-xl font-extrabold text-primary privacy-blur tabular-nums">
-                      {formatCurrency(selectedCatStats.total)}
+                      {formatCurrency(selectedCatStats.total, masterCurrency)}
                     </p>
                   </div>
                 </div>
@@ -446,7 +449,7 @@ export default function CategoriesPage() {
                           <span className={`text-sm font-extrabold privacy-blur tabular-nums ${
                             activeTab === 'expense' ? 'text-rose-600' : 'text-emerald-600 dark:text-[#7cf046]'
                           }`}>
-                            {activeTab === 'expense' ? '-' : '+'}{formatCurrency(item.amount)}
+                            {activeTab === 'expense' ? '-' : '+'}{formatCurrency(item.amount, masterCurrency)}
                           </span>
                         </div>
                       </div>

@@ -10,7 +10,8 @@ import gsap from 'gsap';
 import { useGSAP } from '@gsap/react';
 import { db } from '@/db/database';
 import { expenseRepo, incomeRepo } from '@/db/repositories';
-import { formatCurrency, toMinorUnits, DEFAULT_CURRENCY } from '@/utils/currency';
+import { formatCurrency, toMinorUnits, DEFAULT_CURRENCY, convertMinorUnits, getActiveMasterCurrency } from '@/utils/currency';
+import { useSettings } from '@/contexts/SettingsContext';
 import { formatDate } from '@/utils/date';
 import { downloadFile } from '@/utils/helpers';
 import { getCategoryEmoji, getPaymentMethodEmoji } from '@/utils/emojis';
@@ -38,6 +39,8 @@ type CombinedTransaction = (Expense | Income) & {
 export default function TransactionsPage() {
   const navigate = useNavigate();
   const { toast } = useToast();
+  const { settings } = useSettings();
+  const masterCurrency = settings?.currency || getActiveMasterCurrency();
 
   const [activeTab, setActiveTab] = useState<'all' | 'expense' | 'income'>('all');
   const [searchQuery, setSearchQuery] = useState('');
@@ -166,8 +169,11 @@ export default function TransactionsPage() {
     let spent = 0;
     let received = 0;
     filteredTransactions.forEach(t => {
-      if (t.type === 'expense') spent += t.amount;
-      else received += t.amount;
+      const amt = (t.currency && t.currency !== 'INR')
+        ? convertMinorUnits(t.amount, t.currency, 'INR')
+        : t.amount;
+      if (t.type === 'expense') spent += amt;
+      else received += amt;
     });
     return {
       spent,
@@ -197,10 +203,13 @@ export default function TransactionsPage() {
       const group = map.get(dateKey)!;
       group.items.push(t);
       group.count += 1;
+      const amt = (t.currency && t.currency !== 'INR')
+        ? convertMinorUnits(t.amount, t.currency, 'INR')
+        : t.amount;
       if (t.type === 'expense') {
-        group.subtotal -= t.amount;
+        group.subtotal -= amt;
       } else {
-        group.subtotal += t.amount;
+        group.subtotal += amt;
       }
     });
 
@@ -365,7 +374,7 @@ export default function TransactionsPage() {
               </span>
             </div>
             <p className="text-xl font-bold text-rose-600 dark:text-rose-400 mt-1 privacy-blur tabular-nums">
-              -{formatCurrency(metrics.spent)}
+              -{formatCurrency(metrics.spent, masterCurrency)}
             </p>
           </div>
           <div className="w-10 h-10 rounded-xl bg-rose-50 dark:bg-rose-500/10 text-rose-600 flex items-center justify-center text-lg">
@@ -382,7 +391,7 @@ export default function TransactionsPage() {
               </span>
             </div>
             <p className="text-xl font-bold text-emerald-600 dark:text-emerald-400 mt-1 privacy-blur tabular-nums">
-              +{formatCurrency(metrics.received)}
+              +{formatCurrency(metrics.received, masterCurrency)}
             </p>
           </div>
           <div className="w-10 h-10 rounded-xl bg-emerald-50 dark:bg-emerald-500/10 text-emerald-600 flex items-center justify-center text-lg">
@@ -399,7 +408,7 @@ export default function TransactionsPage() {
               </span>
             </div>
             <p className={`text-xl font-bold mt-1 privacy-blur tabular-nums ${metrics.net >= 0 ? 'text-primary' : 'text-rose-600'}`}>
-              {metrics.net >= 0 ? '+' : ''}{formatCurrency(metrics.net)}
+              {metrics.net >= 0 ? '+' : ''}{formatCurrency(metrics.net, masterCurrency)}
             </p>
           </div>
           <div className="w-10 h-10 rounded-xl bg-slate-100 dark:bg-slate-800 text-foreground flex items-center justify-center text-lg">
@@ -585,7 +594,7 @@ export default function TransactionsPage() {
                   </span>
                 </div>
                 <span className={`text-xs font-semibold privacy-blur tabular-nums ${group.subtotal >= 0 ? 'text-emerald-600 dark:text-emerald-400' : 'text-muted-foreground'}`}>
-                  {group.subtotal > 0 ? `+${formatCurrency(group.subtotal)}` : group.subtotal < 0 ? `-${formatCurrency(Math.abs(group.subtotal))}` : '₹0.00'}
+                  {group.subtotal > 0 ? `+${formatCurrency(group.subtotal, masterCurrency)}` : group.subtotal < 0 ? `-${formatCurrency(Math.abs(group.subtotal), masterCurrency)}` : formatCurrency(0, masterCurrency)}
                 </span>
               </div>
 
@@ -708,7 +717,7 @@ export default function TransactionsPage() {
                           <span className={`text-base font-bold tabular-nums tracking-tight privacy-blur ${
                             isExp ? 'text-rose-600 dark:text-rose-400' : 'text-emerald-600 dark:text-emerald-400'
                           }`}>
-                            {isExp ? '-' : '+'}{formatCurrency(t.amount)}
+                            {isExp ? '-' : '+'}{formatCurrency(t.amount, masterCurrency, t.currency || 'INR')}
                           </span>
                           {isExp && 'originalCurrency' in t && (t as any).originalCurrency && (t as any).originalAmount && (t as any).originalCurrency !== (t.currency || 'INR') && (
                             <p className="text-[10px] text-muted-foreground font-semibold flex items-center justify-end gap-1">

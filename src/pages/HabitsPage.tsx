@@ -7,7 +7,8 @@ import { useLiveQuery } from 'dexie-react-hooks';
 import gsap from 'gsap';
 import { useGSAP } from '@gsap/react';
 import { db } from '@/db/database';
-import { formatCurrency, DEFAULT_CURRENCY, toMinorUnits } from '@/utils/currency';
+import { useSettings } from '@/contexts/SettingsContext';
+import { formatCurrency, DEFAULT_CURRENCY, toMinorUnits, getActiveMasterCurrency } from '@/utils/currency';
 import { getCurrentDate } from '@/utils/date';
 import { animateSpringPress } from '@/utils/motion';
 import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card';
@@ -42,6 +43,8 @@ const BADGES = [
 
 export default function HabitsPage() {
   const { toast } = useToast();
+  const { settings } = useSettings();
+  const masterCurrency = settings?.currency || getActiveMasterCurrency();
   const pageRef = useRef<HTMLDivElement>(null);
   const { contextSafe } = useGSAP({ scope: pageRef });
 
@@ -217,12 +220,12 @@ export default function HabitsPage() {
             </span>
           </div>
           <p className="text-2xl font-bold text-foreground mt-2 tabular-nums">
-            {formatCurrency(wantsSpent)}
+            {formatCurrency(wantsSpent, masterCurrency)}
           </p>
           <div className="mt-2 space-y-1">
             <Progress value={burnRatio} className="h-2 rounded-full" />
             <p className="text-[11px] text-muted-foreground">
-              Discretionary spending cap: <span className="privacy-blur tabular-nums">{formatCurrency(wantsThreshold)}</span>/week
+              Discretionary spending cap: <span className="privacy-blur tabular-nums">{formatCurrency(wantsThreshold, masterCurrency)}</span>/week
             </p>
           </div>
         </div>
@@ -236,12 +239,12 @@ export default function HabitsPage() {
             </span>
           </div>
           <p className="text-2xl font-bold text-foreground mt-2 tabular-nums">
-            {formatCurrency(challenge52WeeksSaved)}
+            {formatCurrency(challenge52WeeksSaved, masterCurrency)}
           </p>
           <div className="mt-2 space-y-1">
             <Progress value={Math.round((challenge52WeeksSaved / challenge52WeeksTarget) * 100)} className="h-2 rounded-full" />
             <p className="text-[11px] text-muted-foreground">
-              Target: <span className="privacy-blur tabular-nums">{formatCurrency(challenge52WeeksTarget)}</span>
+              Target: <span className="privacy-blur tabular-nums">{formatCurrency(challenge52WeeksTarget, masterCurrency)}</span>
             </p>
           </div>
         </div>
@@ -271,7 +274,7 @@ export default function HabitsPage() {
               >
                 <span className="text-xs">{d.dayNum}</span>
                 <span className="text-[10px] mt-1">
-                  {d.isNoSpend ? '✓ Clean' : <span className="privacy-blur tabular-nums">-{formatCurrency(d.spent).split('.')[0]}</span>}
+                  {d.isNoSpend ? '✓ Clean' : <span className="privacy-blur tabular-nums">-{formatCurrency(d.spent, masterCurrency).split('.')[0]}</span>}
                 </span>
               </div>
             ))}
@@ -303,7 +306,7 @@ export default function HabitsPage() {
                   <div>
                     <h4 className="text-sm font-semibold text-foreground">{item.name}</h4>
                     <p className="text-xs text-muted-foreground flex items-center gap-1.5 mt-0.5">
-                      <span className="font-bold text-foreground privacy-blur tabular-nums">{formatCurrency(item.amount)}</span>
+                      <span className="font-bold text-foreground privacy-blur tabular-nums">{formatCurrency(item.amount, masterCurrency)}</span>
                       <span>·</span>
                       <span className={isUnlocked ? 'text-emerald-600 font-bold' : 'text-amber-600'}>
                         {isUnlocked ? '🔓 72h Cooldown Completed' : '⏳ Cooling off in progress'}

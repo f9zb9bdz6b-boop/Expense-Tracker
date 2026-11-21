@@ -7,7 +7,8 @@ import gsap from 'gsap';
 import { useGSAP } from '@gsap/react';
 import { db } from '@/db/database';
 import { recurringRepo } from '@/db/repositories';
-import { formatCurrency, toMinorUnits, DEFAULT_CURRENCY } from '@/utils/currency';
+import { useSettings } from '@/contexts/SettingsContext';
+import { formatCurrency, toMinorUnits, DEFAULT_CURRENCY, getActiveMasterCurrency } from '@/utils/currency';
 import { formatDate, getCurrentDate } from '@/utils/date';
 import { animateSpringPress } from '@/utils/motion';
 import { Card, CardHeader, CardTitle, CardDescription, CardContent } from '@/components/ui/card';
@@ -27,6 +28,8 @@ import type { RecurringTransaction, RecurrenceFrequency, TransactionType } from 
 
 export default function RecurringPage() {
   const { toast } = useToast();
+  const { settings } = useSettings();
+  const masterCurrency = settings?.currency || getActiveMasterCurrency();
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [deleteId, setDeleteId] = useState<string | null>(null);
 
@@ -159,7 +162,7 @@ export default function RecurringPage() {
           <Card className="motion-card p-4 border-border/80">
             <span className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">Monthly Commitment</span>
             <p className="text-2xl font-extrabold text-foreground mt-1 privacy-blur tabular-nums">
-              {formatCurrency(totalMonthlyCommitment)}
+              {formatCurrency(totalMonthlyCommitment, masterCurrency)}
             </p>
             <p className="text-[10px] text-muted-foreground mt-0.5">Recurring monthly obligations</p>
           </Card>
@@ -173,7 +176,7 @@ export default function RecurringPage() {
           <Card className="motion-card p-4 border-border/80">
             <span className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">Annualized Drain</span>
             <p className="text-2xl font-extrabold text-rose-600 dark:text-rose-400 mt-1 privacy-blur tabular-nums">
-              {formatCurrency(totalMonthlyCommitment * 12)}
+              {formatCurrency(totalMonthlyCommitment * 12, masterCurrency)}
             </p>
             <p className="text-[10px] text-muted-foreground mt-0.5">Annual recurring outflow</p>
           </Card>
@@ -254,7 +257,7 @@ export default function RecurringPage() {
                   <div className="flex justify-between items-baseline">
                     <span className="text-xs text-muted-foreground">Amount:</span>
                     <span className="text-lg font-bold text-foreground">
-                      <span className="privacy-blur tabular-nums">{formatCurrency(item.amount)}</span> <span className="text-xs font-normal text-muted-foreground">/{item.frequency}</span>
+                      <span className="privacy-blur tabular-nums">{formatCurrency(item.amount, masterCurrency)}</span> <span className="text-xs font-normal text-muted-foreground">/{item.frequency}</span>
                     </span>
                   </div>
 

@@ -7,7 +7,8 @@ import gsap from 'gsap';
 import { useGSAP } from '@gsap/react';
 import { db } from '@/db/database';
 import { budgetRepo } from '@/db/repositories';
-import { formatCurrency, toMinorUnits, DEFAULT_CURRENCY } from '@/utils/currency';
+import { useSettings } from '@/contexts/SettingsContext';
+import { formatCurrency, toMinorUnits, DEFAULT_CURRENCY, getActiveMasterCurrency } from '@/utils/currency';
 import { getCurrentDate } from '@/utils/date';
 import { animateSpringPress } from '@/utils/motion';
 import { Card, CardHeader, CardTitle, CardDescription, CardContent } from '@/components/ui/card';
@@ -29,6 +30,8 @@ import { format, startOfMonth, endOfMonth } from 'date-fns';
 
 export default function BudgetsPage() {
   const { toast } = useToast();
+  const { settings } = useSettings();
+  const masterCurrency = settings?.currency || getActiveMasterCurrency();
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [editingId, setEditingId] = useState<string | null>(null);
   const [deleteId, setDeleteId] = useState<string | null>(null);
@@ -244,9 +247,9 @@ export default function BudgetsPage() {
                       </span>
                       <span className={`font-semibold ${isExceeded ? 'text-rose-600' : 'text-muted-foreground'}`}>
                         {isExceeded ? (
-                          <>Over by <span className="privacy-blur tabular-nums">{formatCurrency(spent - b.amount)}</span></>
+                          <>Over by <span className="privacy-blur tabular-nums">{formatCurrency(spent - b.amount, masterCurrency)}</span></>
                         ) : (
-                          <>Remaining: <span className="privacy-blur tabular-nums">{formatCurrency(remaining)}</span></>
+                          <>Remaining: <span className="privacy-blur tabular-nums">{formatCurrency(remaining, masterCurrency)}</span></>
                         )}
                       </span>
                     </div>
@@ -266,8 +269,8 @@ export default function BudgetsPage() {
                   </div>
 
                   <div className="flex justify-between text-xs text-muted-foreground pt-1 border-t">
-                    <span>Spent: <strong className="text-foreground privacy-blur tabular-nums">{formatCurrency(spent)}</strong></span>
-                    <span>Cap: <strong className="text-foreground privacy-blur tabular-nums">{formatCurrency(b.amount)}</strong></span>
+                    <span>Spent: <strong className="text-foreground privacy-blur tabular-nums">{formatCurrency(spent, masterCurrency)}</strong></span>
+                    <span>Cap: <strong className="text-foreground privacy-blur tabular-nums">{formatCurrency(b.amount, masterCurrency)}</strong></span>
                   </div>
 
                   {isExceeded && (

@@ -7,7 +7,8 @@ import { useLiveQuery } from 'dexie-react-hooks';
 import gsap from 'gsap';
 import { useGSAP } from '@gsap/react';
 import { db } from '@/db/database';
-import { formatCurrency, DEFAULT_CURRENCY, toMinorUnits, fromMinorUnits } from '@/utils/currency';
+import { useSettings } from '@/contexts/SettingsContext';
+import { formatCurrency, DEFAULT_CURRENCY, toMinorUnits, fromMinorUnits, getActiveMasterCurrency } from '@/utils/currency';
 import { animateSpringPress } from '@/utils/motion';
 import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -54,6 +55,8 @@ const DEFAULT_DEBTS: DebtItem[] = [
 
 export default function WealthPage() {
   const { toast } = useToast();
+  const { settings } = useSettings();
+  const masterCurrency = settings?.currency || getActiveMasterCurrency();
   const pageRef = useRef<HTMLDivElement>(null);
   const { contextSafe } = useGSAP({ scope: pageRef });
 
@@ -184,12 +187,12 @@ export default function WealthPage() {
             </span>
           </div>
           <p className="text-2xl sm:text-3xl font-extrabold text-foreground mt-2 tabular-nums">
-            {formatCurrency(netWorth)}
+            {formatCurrency(netWorth, masterCurrency)}
           </p>
           <div className="flex items-center gap-3 mt-2 text-xs text-muted-foreground">
-            <span className="text-emerald-600 font-semibold">+<span className="privacy-blur tabular-nums">{formatCurrency(totalAssets)}</span> assets</span>
+            <span className="text-emerald-600 font-semibold">+<span className="privacy-blur tabular-nums">{formatCurrency(totalAssets, masterCurrency)}</span> assets</span>
             <span>·</span>
-            <span className="text-rose-600 font-semibold">-<span className="privacy-blur tabular-nums">{formatCurrency(totalDebts)}</span> debt</span>
+            <span className="text-rose-600 font-semibold">-<span className="privacy-blur tabular-nums">{formatCurrency(totalDebts, masterCurrency)}</span> debt</span>
           </div>
         </div>
 
@@ -202,12 +205,12 @@ export default function WealthPage() {
             </span>
           </div>
           <p className="text-2xl sm:text-3xl font-extrabold text-foreground mt-2 tabular-nums">
-            {formatCurrency(fireTarget)}
+            {formatCurrency(fireTarget, masterCurrency)}
           </p>
           <div className="mt-2 space-y-1">
             <Progress value={fireProgress} className="h-2 rounded-full" />
             <p className="text-[11px] text-muted-foreground">
-              Based on {targetFireMultiplier}x annual necessity burn (<span className="privacy-blur tabular-nums">{formatCurrency(annualSpending)}</span>/yr)
+              Based on {targetFireMultiplier}x annual necessity burn (<span className="privacy-blur tabular-nums">{formatCurrency(annualSpending, masterCurrency)}</span>/yr)
             </p>
           </div>
         </div>
@@ -225,10 +228,10 @@ export default function WealthPage() {
             </span>
           </div>
           <p className="text-2xl sm:text-3xl font-extrabold text-foreground mt-2 tabular-nums">
-            {formatCurrency(liquidCash)}
+            {formatCurrency(liquidCash, masterCurrency)}
           </p>
           <div className="mt-2 text-xs text-muted-foreground flex items-center justify-between">
-            <span>6-Mo Target: <span className="privacy-blur tabular-nums">{formatCurrency(emergencyFund6M)}</span></span>
+            <span>6-Mo Target: <span className="privacy-blur tabular-nums">{formatCurrency(emergencyFund6M, masterCurrency)}</span></span>
             <span className={creditUtilization > 30 ? 'text-rose-600 font-bold' : 'text-emerald-600 font-semibold'}>
               Credit Util: <span className="privacy-blur tabular-nums">{creditUtilization}%</span>
             </span>
@@ -246,7 +249,7 @@ export default function WealthPage() {
               <InfoHint text="Accounts, index funds, real estate, cash reserves, and gold bonds." />
             </CardTitle>
             <span className="text-xs font-bold text-emerald-600 dark:text-emerald-400 privacy-blur tabular-nums">
-              +{formatCurrency(totalAssets)}
+              +{formatCurrency(totalAssets, masterCurrency)}
             </span>
           </CardHeader>
           <CardContent className="space-y-3">
@@ -263,7 +266,7 @@ export default function WealthPage() {
                 </div>
                 <div className="flex items-center gap-3">
                   <span className="text-sm font-bold text-foreground tabular-nums">
-                    {formatCurrency(asset.amount)}
+                    {formatCurrency(asset.amount, masterCurrency)}
                   </span>
                   <Button
                     variant="ghost"
@@ -347,7 +350,7 @@ export default function WealthPage() {
                   </div>
                   <div className="text-right">
                     <span className="text-sm font-bold text-rose-600 dark:text-rose-400 tabular-nums">
-                      {formatCurrency(debt.balance)}
+                      {formatCurrency(debt.balance, masterCurrency)}
                     </span>
                     <span className="text-[11px] text-muted-foreground ml-2">
                       ({debt.interestRate}% APR)
@@ -356,7 +359,7 @@ export default function WealthPage() {
                 </div>
 
                 <div className="flex items-center justify-between text-xs text-muted-foreground pt-1">
-                  <span>Min Payment: <span className="privacy-blur tabular-nums">{formatCurrency(debt.minimumPayment)}</span>/mo</span>
+                  <span>Min Payment: <span className="privacy-blur tabular-nums">{formatCurrency(debt.minimumPayment, masterCurrency)}</span>/mo</span>
                   {index === 0 && (
                     <span className="text-emerald-600 font-bold bg-[#7cf046]/20 px-2 py-0.5 rounded-md text-[10px]">
                       ⚡ FOCUS TARGET

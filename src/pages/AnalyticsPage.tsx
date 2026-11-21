@@ -6,7 +6,8 @@ import { useLiveQuery } from 'dexie-react-hooks';
 import gsap from 'gsap';
 import { useGSAP } from '@gsap/react';
 import { db } from '@/db/database';
-import { formatCurrency, DEFAULT_CURRENCY } from '@/utils/currency';
+import { useSettings } from '@/contexts/SettingsContext';
+import { formatCurrency, DEFAULT_CURRENCY, getActiveMasterCurrency } from '@/utils/currency';
 import { formatDate, getDateRange, formatRelativeDate } from '@/utils/date';
 import { animateSpringPress } from '@/utils/motion';
 import { Card, CardHeader, CardTitle, CardDescription, CardContent } from '@/components/ui/card';
@@ -26,6 +27,8 @@ import { format, subDays, parseISO, startOfMonth, endOfMonth, eachDayOfInterval 
 import type { Expense, ExpenseCategory } from '@/types';
 
 export default function AnalyticsPage() {
+  const { settings } = useSettings();
+  const masterCurrency = settings?.currency || getActiveMasterCurrency();
   const [timeRange, setTimeRange] = useState<'30days' | 'thisMonth' | 'all'>('30days');
 
   const allExpenses = useLiveQuery(() => db.expenses.orderBy('date').toArray()) ?? [];
@@ -184,7 +187,7 @@ export default function AnalyticsPage() {
                 <span className="text-xs text-muted-foreground font-medium">Period Spending</span>
                 <Sparkles className="w-4 h-4 text-primary" />
               </div>
-              <p className="text-2xl font-bold mt-1 text-foreground privacy-blur tabular-nums">{formatCurrency(totalSpent)}</p>
+              <p className="text-2xl font-bold mt-1 text-foreground privacy-blur tabular-nums">{formatCurrency(totalSpent, masterCurrency)}</p>
               <p className="text-xs text-muted-foreground mt-0.5">{filteredExpenses.length} transactions logged</p>
             </CardContent>
           </Card>
@@ -196,7 +199,7 @@ export default function AnalyticsPage() {
                 <Flame className="w-4 h-4 text-rose-500" />
               </div>
               <p className="text-2xl font-bold mt-1 text-rose-600 dark:text-rose-400 privacy-blur tabular-nums">
-                {formatCurrency(highlights.largest.amount)}
+                {formatCurrency(highlights.largest.amount, masterCurrency)}
               </p>
               <p className="text-xs text-muted-foreground mt-0.5 truncate">{highlights.largest.description}</p>
             </CardContent>
@@ -209,7 +212,7 @@ export default function AnalyticsPage() {
                 <Calendar className="w-4 h-4 text-amber-500" />
               </div>
               <p className="text-2xl font-bold mt-1 text-foreground privacy-blur tabular-nums">
-                {formatCurrency(highlights.highestDay[1])}
+                {formatCurrency(highlights.highestDay[1], masterCurrency)}
               </p>
               <p className="text-xs text-muted-foreground mt-0.5">{formatDate(highlights.highestDay[0])}</p>
             </CardContent>
@@ -225,7 +228,7 @@ export default function AnalyticsPage() {
                 <span className="privacy-blur tabular-nums">{totalSpent > 0 ? Math.round((highlights.wants / totalSpent) * 100) : 0}%</span>
               </p>
               <p className="text-xs text-muted-foreground mt-0.5">
-                <span className="privacy-blur tabular-nums">{formatCurrency(highlights.wants)}</span> on wants
+                <span className="privacy-blur tabular-nums">{formatCurrency(highlights.wants, masterCurrency)}</span> on wants
               </p>
             </CardContent>
           </Card>
@@ -262,9 +265,9 @@ export default function AnalyticsPage() {
                       stroke="#888888"
                       fontSize={11}
                       tickLine={false}
-                      tickFormatter={(val: number) => `${DEFAULT_CURRENCY.symbol}${Math.round(val / 100)}`}
+                      tickFormatter={(val: number) => formatCurrency(Number(val) || 0, masterCurrency)}
                     />
-                    <Tooltip formatter={(val: any) => [formatCurrency(Number(val) || 0), 'Spent']} />
+                    <Tooltip formatter={(val: any) => [formatCurrency(Number(val) || 0, masterCurrency), 'Spent']} />
                     <Area
                       type="monotone"
                       dataKey="amount"
@@ -311,7 +314,7 @@ export default function AnalyticsPage() {
                           <Cell key={`cell-${idx}`} fill={e.color} />
                         ))}
                       </Pie>
-                      <Tooltip formatter={(val: any) => [formatCurrency(Number(val) || 0), 'Spent']} />
+                      <Tooltip formatter={(val: any) => [formatCurrency(Number(val) || 0, masterCurrency), 'Spent']} />
                     </PieChart>
                   </ResponsiveContainer>
                 </div>
@@ -324,7 +327,7 @@ export default function AnalyticsPage() {
                         <span className="font-medium text-foreground truncate max-w-[120px]">{c.name}</span>
                       </div>
                       <div className="text-right">
-                        <span className="font-semibold privacy-blur tabular-nums">{formatCurrency(c.amount)}</span>
+                        <span className="font-semibold privacy-blur tabular-nums">{formatCurrency(c.amount, masterCurrency)}</span>
                         <span className="text-muted-foreground ml-1.5">(<span className="privacy-blur tabular-nums">{c.percentage.toFixed(1)}%</span>)</span>
                       </div>
                     </div>

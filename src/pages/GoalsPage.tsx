@@ -7,7 +7,8 @@ import gsap from 'gsap';
 import { useGSAP } from '@gsap/react';
 import { db } from '@/db/database';
 import { goalRepo } from '@/db/repositories';
-import { formatCurrency, toMinorUnits, DEFAULT_CURRENCY } from '@/utils/currency';
+import { useSettings } from '@/contexts/SettingsContext';
+import { formatCurrency, toMinorUnits, DEFAULT_CURRENCY, getActiveMasterCurrency } from '@/utils/currency';
 import { formatDate, getCurrentDate } from '@/utils/date';
 import { animateSpringPress } from '@/utils/motion';
 import { Card, CardHeader, CardTitle, CardDescription, CardContent } from '@/components/ui/card';
@@ -45,6 +46,8 @@ const WITHDRAWAL_REASONS = [
 
 export default function GoalsPage() {
   const { toast } = useToast();
+  const { settings } = useSettings();
+  const masterCurrency = settings?.currency || getActiveMasterCurrency();
   const [isAddGoalOpen, setIsAddGoalOpen] = useState(false);
   const [isDepositOpen, setIsDepositOpen] = useState(false);
   const [isWithdrawOpen, setIsWithdrawOpen] = useState(false);
@@ -306,15 +309,15 @@ export default function GoalsPage() {
                         <span className="privacy-blur tabular-nums">{Math.round(pct)}%</span> achieved
                       </span>
                       <span className="text-muted-foreground">
-                        {isCompleted ? 'Goal Reached!' : <>Remaining: <span className="privacy-blur tabular-nums">{formatCurrency(remaining)}</span></>}
+                        {isCompleted ? 'Goal Reached!' : <>Remaining: <span className="privacy-blur tabular-nums">{formatCurrency(remaining, masterCurrency)}</span></>}
                       </span>
                     </div>
                     <Progress value={Math.min(100, pct)} className="h-2.5" />
                   </div>
 
                   <div className="flex justify-between items-center text-xs pt-1 border-t">
-                    <span>Saved: <strong className="text-foreground privacy-blur tabular-nums">{formatCurrency(g.currentAmount)}</strong></span>
-                    <span>Target: <strong className="text-foreground privacy-blur tabular-nums">{formatCurrency(g.targetAmount)}</strong></span>
+                    <span>Saved: <strong className="text-foreground privacy-blur tabular-nums">{formatCurrency(g.currentAmount, masterCurrency)}</strong></span>
+                    <span>Target: <strong className="text-foreground privacy-blur tabular-nums">{formatCurrency(g.targetAmount, masterCurrency)}</strong></span>
                   </div>
 
                   <div className="flex items-center gap-2 pt-1">

@@ -15,7 +15,7 @@ import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Progress } from '@/components/ui/progress';
-import { formatCurrency, formatCurrencyCompact, SUPPORTED_CURRENCIES, DEFAULT_CURRENCY } from '@/utils/currency';
+import { formatCurrency, formatCurrencyCompact, SUPPORTED_CURRENCIES, DEFAULT_CURRENCY, getActiveMasterCurrency } from '@/utils/currency';
 import type { CurrencyConfig } from '@/types';
 import { formatDate } from '@/utils/date';
 import { getCategoryEmoji, getPaymentMethodEmoji } from '@/utils/emojis';
@@ -44,25 +44,27 @@ export default function DashboardPage() {
   const { toast } = useToast();
   const [showCurrencyPicker, setShowCurrencyPicker] = useState(false);
 
-  const masterCurrency = settings?.currency || DEFAULT_CURRENCY;
+  const masterCurrency = settings?.currency || getActiveMasterCurrency();
+
+  // Close currency dropdown smoothly when clicking outside
+  useEffect(() => {
+    if (!showCurrencyPicker) return;
+    const handleOutsideClick = (e: MouseEvent) => {
+      if (currencyPickerRef.current && !currencyPickerRef.current.contains(e.target as Node)) {
+        setShowCurrencyPicker(false);
+      }
+    };
+    const timer = setTimeout(() => {
+      window.addEventListener('click', handleOutsideClick);
+    }, 10);
+    return () => {
+      clearTimeout(timer);
+      window.removeEventListener('click', handleOutsideClick);
+    };
+  }, [showCurrencyPicker]);
 
   const { summary, isLoading } = useDashboard();
   const [activePeriod, setActivePeriod] = useState<'month' | 'today' | 'all'>('month');
-
-  // Close currency picker when clicking outside
-  useEffect(() => {
-    function handleClickOutside(event: MouseEvent) {
-      if (currencyPickerRef.current && !currencyPickerRef.current.contains(event.target as Node)) {
-        setShowCurrencyPicker(false);
-      }
-    }
-    if (showCurrencyPicker) {
-      document.addEventListener('mousedown', handleClickOutside);
-    }
-    return () => {
-      document.removeEventListener('mousedown', handleClickOutside);
-    };
-  }, [showCurrencyPicker]);
 
   const handleSelectCurrency = async (curr: CurrencyConfig) => {
     try {
@@ -70,7 +72,7 @@ export default function DashboardPage() {
       playFeedbackChime('coin');
       toast({
         title: 'Master Currency Updated',
-        description: `Master ledger currency set to ${curr.name} (${curr.symbol} ${curr.code}).`,
+        description: `Master ledger currency set to ${curr.name} (${curr.symbol} ${curr.code}). All amounts converted at live exchange rates.`,
       });
       setShowCurrencyPicker(false);
     } catch {
@@ -240,7 +242,7 @@ export default function DashboardPage() {
       {/* ============================================================
           TOP HERO CARD: Coinest Deep Forest with Vibrant Lime Highlights
           ============================================================ */}
-      <div className="hero-mesh-card relative overflow-hidden rounded-3xl bg-gradient-to-br from-[#10241a] via-[#143322] to-[#0c1d14] text-white p-6 sm:p-7 shadow-sm border border-[#1b3d2b]">
+      <div className="hero-mesh-card relative overflow-visible rounded-3xl bg-gradient-to-br from-[#10241a] via-[#143322] to-[#0c1d14] text-white p-6 sm:p-7 shadow-sm border border-[#1b3d2b]">
         <div className="relative z-10 flex flex-col md:flex-row md:items-center justify-between gap-6">
           {/* Left Column: Date, Health Badge, Net Balance Ticker */}
           <div className="space-y-3">
@@ -275,11 +277,14 @@ export default function DashboardPage() {
                   {formatCurrency(netBalance, masterCurrency)}
                 </span>
 
-                {/* Master Currency Switcher Pill & Dropdown directly on Hero Card */}
+                {/* Master Currency Switcher Pill & Non-glitching Dropdown */}
                 <div className="relative inline-block" ref={currencyPickerRef}>
                   <button
                     type="button"
-                    onClick={() => setShowCurrencyPicker(prev => !prev)}
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      setShowCurrencyPicker(prev => !prev);
+                    }}
                     className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-white/10 hover:bg-white/20 border border-white/20 hover:border-[#7cf046]/60 text-white font-extrabold text-xs cursor-pointer select-none transition-all active:scale-95 shadow-xs"
                     title="Change Master Currency"
                   >
@@ -290,12 +295,15 @@ export default function DashboardPage() {
                   </button>
 
                   {showCurrencyPicker && (
-                    <div className="absolute left-0 sm:left-auto sm:right-0 top-full mt-2 z-50 w-64 rounded-2xl bg-[#0c1d14] border border-[#1b3d2b] p-2.5 shadow-2xl backdrop-blur-xl animate-in fade-in zoom-in-95 duration-150">
+                    <div
+                      className="absolute left-0 top-full mt-2 z-50 w-64 sm:w-72 rounded-2xl bg-[#0c1d14] border border-[#235038] p-2.5 shadow-2xl backdrop-blur-2xl"
+                      onClick={(e) => e.stopPropagation()}
+                    >
                       <div className="px-2.5 py-1.5 text-[11px] font-bold text-[#7cf046] uppercase tracking-wider border-b border-white/10 mb-1.5 flex items-center justify-between">
                         <span className="flex items-center gap-1.5">
                           <Globe className="w-3.5 h-3.5" /> Master Currency
                         </span>
-                        <span className="text-[10px] text-white/60 lowercase font-normal">switch ledger</span>
+                        <span className="text-[10px] text-white/60 lowercase font-normal">live exchange sync</span>
                       </div>
                       <div className="max-h-64 overflow-y-auto space-y-1 pr-1 custom-scrollbar">
                         {SUPPORTED_CURRENCIES.map(curr => {
@@ -304,7 +312,10 @@ export default function DashboardPage() {
                             <button
                               key={curr.code}
                               type="button"
-                              onClick={() => handleSelectCurrency(curr)}
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                handleSelectCurrency(curr);
+                              }}
                               className={`w-full flex items-center justify-between px-3 py-2 rounded-xl text-xs font-semibold transition-all cursor-pointer ${
                                 isSelected
                                   ? 'bg-[#7cf046] text-[#082b14] font-extrabold shadow-xs'

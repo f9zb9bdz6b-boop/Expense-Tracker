@@ -3,6 +3,7 @@
 // ============================================================
 import { db } from './database';
 import { generateId } from '@/utils/helpers';
+import { DEFAULT_CURRENCY } from '@/utils/currency';
 import type {
   Expense, Income, ExpenseCategory, IncomeCategory,
   PaymentMethod, Budget, SpecialEvent, RecurringTransaction,
@@ -535,7 +536,30 @@ export const settingsRepo = {
   },
 
   async update(data: Partial<UserSettings>): Promise<void> {
-    await db.settings.update('user-settings', { ...data, updatedAt: Date.now() });
+    const existing = await db.settings.get('user-settings');
+    if (!existing) {
+      await db.settings.put({
+        id: 'user-settings',
+        currency: DEFAULT_CURRENCY,
+        dateFormat: 'dd/MM/yyyy',
+        timeFormat: '12h',
+        theme: 'system',
+        defaultClassification: 'necessary',
+        budgetAlertThresholds: [50, 75, 90, 100],
+        showDecimal: true,
+        weekStartsOn: 1,
+        enableNotifications: true,
+        enableBrowserNotifications: false,
+        hasCompletedOnboarding: true,
+        backupReminder: true,
+        backupReminderDays: 7,
+        ...data,
+        updatedAt: Date.now(),
+        createdAt: Date.now(),
+      } as any);
+    } else {
+      await db.settings.update('user-settings', { ...data, updatedAt: Date.now() });
+    }
   },
 };
 

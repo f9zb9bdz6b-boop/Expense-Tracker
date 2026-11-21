@@ -10,7 +10,8 @@ import gsap from 'gsap';
 import { useGSAP } from '@gsap/react';
 import { db } from '@/db/database';
 import { incomeRepo, incomeCategoryRepo } from '@/db/repositories';
-import { toMinorUnits, formatCurrency, DEFAULT_CURRENCY } from '@/utils/currency';
+import { useSettings } from '@/contexts/SettingsContext';
+import { toMinorUnits, formatCurrency, DEFAULT_CURRENCY, getActiveMasterCurrency } from '@/utils/currency';
 import { getCurrentDate, getCurrentTime, formatDate } from '@/utils/date';
 import { getCategoryEmoji, getPaymentMethodEmoji } from '@/utils/emojis';
 import { animateSpringPress } from '@/utils/motion';
@@ -44,6 +45,8 @@ type IncomeFormValues = z.infer<typeof incomeSchema>;
 
 export default function IncomePage() {
   const { toast } = useToast();
+  const { settings } = useSettings();
+  const masterCurrency = settings?.currency || getActiveMasterCurrency();
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [deleteId, setDeleteId] = useState<string | null>(null);
 
@@ -180,7 +183,7 @@ export default function IncomePage() {
         <div className="motion-hero-card bg-card border border-border/80 rounded-2xl px-5 py-3 shadow-xs text-right">
           <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">Total Received</p>
           <p className="text-2xl font-extrabold text-emerald-600 dark:text-emerald-400 privacy-blur tabular-nums">
-            +{formatCurrency(totalIncome)}
+            +{formatCurrency(totalIncome, masterCurrency)}
           </p>
         </div>
       </div>
@@ -317,7 +320,7 @@ export default function IncomePage() {
                         <Cell key={`cell-${idx}`} fill={e.color} />
                       ))}
                     </Pie>
-                    <Tooltip formatter={(val: any) => [formatCurrency(Number(val) || 0), 'Amount']} />
+                    <Tooltip formatter={(val: any) => [formatCurrency(Number(val) || 0, masterCurrency), 'Amount']} />
                   </PieChart>
                 </ResponsiveContainer>
               </CardContent>
@@ -364,7 +367,7 @@ export default function IncomePage() {
 
                         <div className="flex items-center gap-3">
                           <span className="text-sm font-bold text-emerald-600 dark:text-emerald-400">
-                            +{formatCurrency(item.amount)}
+                            +{formatCurrency(item.amount, masterCurrency)}
                           </span>
                           <Button
                             variant="ghost"
