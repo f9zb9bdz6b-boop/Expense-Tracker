@@ -43,6 +43,15 @@ export default function RecurringPage() {
   const categories = useLiveQuery(() => db.expenseCategories.toArray()) ?? [];
   const catMap = new Map(categories.map(c => [c.id, c]));
 
+  const totalMonthlyCommitment = recurringList
+    .filter(r => r.isActive && r.type === 'expense')
+    .reduce((s, r) => {
+      if (r.frequency === 'yearly') return s + Math.round(r.amount / 12);
+      if (r.frequency === 'weekly') return s + Math.round(r.amount * 4.33);
+      if (r.frequency === 'daily') return s + (r.amount * 30);
+      return s + r.amount;
+    }, 0);
+
   const pageRef = useRef<HTMLDivElement>(null);
   const { contextSafe } = useGSAP({ scope: pageRef });
 
@@ -145,6 +154,32 @@ export default function RecurringPage() {
         </Button>
       </div>
 
+      {recurringList.length > 0 && (
+        <div className="grid grid-cols-1 sm:grid-cols-3 gap-3.5">
+          <Card className="motion-card p-4 border-border/80">
+            <span className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">Monthly Commitment</span>
+            <p className="text-2xl font-extrabold text-foreground mt-1 privacy-blur tabular-nums">
+              {formatCurrency(totalMonthlyCommitment)}
+            </p>
+            <p className="text-[10px] text-muted-foreground mt-0.5">Recurring monthly obligations</p>
+          </Card>
+          <Card className="motion-card p-4 border-border/80">
+            <span className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">Active Services</span>
+            <p className="text-2xl font-extrabold text-primary mt-1">
+              <span className="privacy-blur tabular-nums">{recurringList.filter(r => r.isActive).length}</span> active
+            </p>
+            <p className="text-[10px] text-muted-foreground mt-0.5">Automated tracking enabled</p>
+          </Card>
+          <Card className="motion-card p-4 border-border/80">
+            <span className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">Annualized Drain</span>
+            <p className="text-2xl font-extrabold text-rose-600 dark:text-rose-400 mt-1 privacy-blur tabular-nums">
+              {formatCurrency(totalMonthlyCommitment * 12)}
+            </p>
+            <p className="text-[10px] text-muted-foreground mt-0.5">Annual recurring outflow</p>
+          </Card>
+        </div>
+      )}
+
       {recurringList.length === 0 ? (
         <Card className="motion-card py-16 text-center">
           <CardContent className="space-y-3">
@@ -219,7 +254,7 @@ export default function RecurringPage() {
                   <div className="flex justify-between items-baseline">
                     <span className="text-xs text-muted-foreground">Amount:</span>
                     <span className="text-lg font-bold text-foreground">
-                      {formatCurrency(item.amount)} <span className="text-xs font-normal text-muted-foreground">/{item.frequency}</span>
+                      <span className="privacy-blur tabular-nums">{formatCurrency(item.amount)}</span> <span className="text-xs font-normal text-muted-foreground">/{item.frequency}</span>
                     </span>
                   </div>
 

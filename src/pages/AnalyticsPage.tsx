@@ -184,7 +184,7 @@ export default function AnalyticsPage() {
                 <span className="text-xs text-muted-foreground font-medium">Period Spending</span>
                 <Sparkles className="w-4 h-4 text-primary" />
               </div>
-              <p className="text-2xl font-bold mt-1 text-foreground">{formatCurrency(totalSpent)}</p>
+              <p className="text-2xl font-bold mt-1 text-foreground privacy-blur tabular-nums">{formatCurrency(totalSpent)}</p>
               <p className="text-xs text-muted-foreground mt-0.5">{filteredExpenses.length} transactions logged</p>
             </CardContent>
           </Card>
@@ -195,7 +195,7 @@ export default function AnalyticsPage() {
                 <span className="text-xs text-muted-foreground font-medium">Largest Single Expense</span>
                 <Flame className="w-4 h-4 text-rose-500" />
               </div>
-              <p className="text-2xl font-bold mt-1 text-rose-600 dark:text-rose-400">
+              <p className="text-2xl font-bold mt-1 text-rose-600 dark:text-rose-400 privacy-blur tabular-nums">
                 {formatCurrency(highlights.largest.amount)}
               </p>
               <p className="text-xs text-muted-foreground mt-0.5 truncate">{highlights.largest.description}</p>
@@ -208,7 +208,7 @@ export default function AnalyticsPage() {
                 <span className="text-xs text-muted-foreground font-medium">Peak Spending Day</span>
                 <Calendar className="w-4 h-4 text-amber-500" />
               </div>
-              <p className="text-2xl font-bold mt-1 text-foreground">
+              <p className="text-2xl font-bold mt-1 text-foreground privacy-blur tabular-nums">
                 {formatCurrency(highlights.highestDay[1])}
               </p>
               <p className="text-xs text-muted-foreground mt-0.5">{formatDate(highlights.highestDay[0])}</p>
@@ -222,10 +222,10 @@ export default function AnalyticsPage() {
                 <ShieldCheck className="w-4 h-4 text-emerald-500" />
               </div>
               <p className="text-2xl font-bold mt-1 text-foreground">
-                {totalSpent > 0 ? Math.round((highlights.wants / totalSpent) * 100) : 0}%
+                <span className="privacy-blur tabular-nums">{totalSpent > 0 ? Math.round((highlights.wants / totalSpent) * 100) : 0}%</span>
               </p>
               <p className="text-xs text-muted-foreground mt-0.5">
-                {formatCurrency(highlights.wants)} on wants
+                <span className="privacy-blur tabular-nums">{formatCurrency(highlights.wants)}</span> on wants
               </p>
             </CardContent>
           </Card>
@@ -324,8 +324,8 @@ export default function AnalyticsPage() {
                         <span className="font-medium text-foreground truncate max-w-[120px]">{c.name}</span>
                       </div>
                       <div className="text-right">
-                        <span className="font-semibold">{formatCurrency(c.amount)}</span>
-                        <span className="text-muted-foreground ml-1.5">({c.percentage.toFixed(1)}%)</span>
+                        <span className="font-semibold privacy-blur tabular-nums">{formatCurrency(c.amount)}</span>
+                        <span className="text-muted-foreground ml-1.5">(<span className="privacy-blur tabular-nums">{c.percentage.toFixed(1)}%</span>)</span>
                       </div>
                     </div>
                   ))}

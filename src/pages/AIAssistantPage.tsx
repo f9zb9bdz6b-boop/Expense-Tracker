@@ -1,23 +1,30 @@
 // ============================================================
-// AIAssistantPage - Intelligent Conversational Financial Assistant
+// AIAssistantPage - Quantitative Financial Intelligence Suite
 // Featuring:
-// 1. Interactive Financial Advisory Chat (Local Heuristic Engine)
+// 1. Interactive Conversational Heuristic Advisory Copilot
 // 2. "Can I Afford This?" Instant Purchase Simulator (Feature 6)
-// 3. Predictive End-of-Month Runway & Balance Forecast (Feature 1)
-// 4. Anomaly & Duplicate Expense Detector (Feature 2)
-// 5. Subscription Creep & Unused Service Auditor (Feature 4)
+// 3. "Cost-in-Life-Hours" Time vs Money Life Energy Converter
+// 4. Deterministic Macro Stress-Testing Lab (Income drop, emergency shock)
+// 5. 100+ Quantitative Heuristic Signals & Resilience Radar
+// 6. 100% On-Device, Privacy-Preserving, Zero Cloud Dependency
 // ============================================================
 import React, { useState, useRef, useEffect, useMemo } from 'react';
 import { useLiveQuery } from 'dexie-react-hooks';
 import gsap from 'gsap';
 import { useGSAP } from '@gsap/react';
 import { db } from '@/db/database';
-import { answerFinancialQuestion, generateSmartInsights, calculateFinancialHealth } from '@/utils/ai-engine';
-import { formatCurrency, DEFAULT_CURRENCY } from '@/utils/currency';
-import { animateSpringPress } from '@/utils/motion';
+import { answerFinancialQuestion, generateSmartInsights } from '@/utils/ai-engine';
+import {
+  runComprehensiveAIAnalysis,
+  calculateLifeHours,
+  simulateScenario
+} from '@/utils/ai-quant-engine';
+import { formatCurrency, DEFAULT_CURRENCY, toMinorUnits } from '@/utils/currency';
+import { animateSpringPress, playFeedbackChime } from '@/utils/motion';
 import { Card, CardHeader, CardTitle, CardDescription, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
 import { Badge } from '@/components/ui/badge';
 import { Progress } from '@/components/ui/progress';
 import { InfoHint } from '@/components/ui/info-hint';
@@ -25,7 +32,8 @@ import {
   Sparkles, Send, Bot, User, Zap, Lightbulb,
   ShieldCheck, AlertTriangle, ArrowRight, HelpCircle,
   Calculator, Gauge, AlertCircle, RefreshCw, CheckCircle2,
-  TrendingDown, TrendingUp, SlidersHorizontal, ShieldAlert
+  TrendingDown, TrendingUp, SlidersHorizontal, ShieldAlert,
+  Clock, Hourglass, Activity, Flame, Shield, DollarSign
 } from 'lucide-react';
 import type { AIChatMessage } from '@/types';
 import { format, startOfMonth, endOfMonth, differenceInDays } from 'date-fns';
@@ -34,32 +42,35 @@ const INITIAL_MESSAGES: AIChatMessage[] = [
   {
     id: 'msg-init-1',
     role: 'assistant',
-    content: "👋 Hello! I'm your local AI Financial Advisor. I analyze your recorded expenses, budgets, and cash flow in real-time to forecast your runway, flag anomalies, and help you save. Ask me anything or use the interactive tools above!",
+    content: "👋 Hello! I am your 100% on-device AI Quantitative Financial Advisor. I monitor 100+ logical financial heuristics across your cash flow, burn rate, impulse leaks, and FI/RE runway in real time. Ask me anything or explore the interactive simulators above!",
     timestamp: Date.now(),
   }
 ];
 
 const QUICK_QUESTIONS = [
   "Can I afford a ₹15,000 weekend trip?",
-  "Where did most of my money go this month?",
-  "How can I cut expenses and increase savings?",
-  "What is my current net runway?",
+  "How much life energy does my dining spend cost me?",
+  "What is my probability of an end-of-month deficit?",
+  "Stress-test my finances if income drops 30%",
 ];
 
 export default function AIAssistantPage() {
   const [messages, setMessages] = useState<AIChatMessage[]>(INITIAL_MESSAGES);
   const [inputText, setInputText] = useState('');
   const [isTyping, setIsTyping] = useState(false);
-  const [activeTab, setActiveTab] = useState<'chat' | 'simulator' | 'runway' | 'anomalies'>('chat');
+  const [activeTab, setActiveTab] = useState<'chat' | 'simulator' | 'lifehours' | 'stresstest' | 'quant100'>('chat');
   const chatBottomRef = useRef<HTMLDivElement>(null);
 
   // Purchase Simulator State
   const [simAmount, setSimAmount] = useState<string>('5000');
-  const [simCategory, setSimCategory] = useState<string>('');
   const [simDescription, setSimDescription] = useState<string>('New Gadget / Dinner');
 
-  // Runway Sensitivity Slider (Discretionary spend cut %: 0% to 50%)
-  const [cutDiscretionaryPct, setCutDiscretionaryPct] = useState<number>(0);
+  // Life Hours State
+  const [lifePrice, setLifePrice] = useState<string>('12000');
+  const [hourlyWage, setHourlyWage] = useState<string>('600');
+
+  // Stress Test Selected Scenario
+  const [selectedScenario, setSelectedScenario] = useState<'income_shock_30' | 'emergency_shock_50k' | 'frugal_lockdown_40'>('income_shock_30');
 
   // Load real records
   const expenses = useLiveQuery(() => db.expenses.toArray()) ?? [];
@@ -69,38 +80,41 @@ export default function AIAssistantPage() {
   const goals = useLiveQuery(() => db.financialGoals.toArray()) ?? [];
   const recurring = useLiveQuery(() => db.recurringTransactions.toArray()) ?? [];
 
-  // Compute insights and score
-  const insights = generateSmartInsights(expenses, income, categories, budgets);
-  const healthScore = calculateFinancialHealth(expenses, income, budgets, goals);
+  // Compute 100-Signal AI Quantitative Engine Report
+  const quantReport = useMemo(() =>
+    runComprehensiveAIAnalysis(expenses, income, budgets, goals, recurring),
+    [expenses, income, budgets, goals, recurring]
+  );
 
+  const insights = useMemo(() =>
+    generateSmartInsights(expenses, income, categories, budgets),
+    [expenses, income, categories, budgets]
+  );
+
+  // Life Hours Calculations
+  const lifeHoursResult = useMemo(() => {
+    const pMinor = toMinorUnits(parseFloat(lifePrice) || 0);
+    const wage = parseFloat(hourlyWage) || 500;
+    return calculateLifeHours(pMinor, wage);
+  }, [lifePrice, hourlyWage]);
+
+  // Scenario Stress Test Calculations
+  const scenarioResult = useMemo(() => {
+    const totalSpent = expenses.reduce((s, e) => s + e.amount, 0);
+    const totalInc = income.reduce((s, i) => s + i.amount, 0);
+    const liquid = Math.max(0, totalInc - totalSpent);
+    return simulateScenario(selectedScenario, totalSpent, totalInc, liquid);
+  }, [selectedScenario, expenses, income]);
+
+  // Simulator Calculations
   const now = new Date();
   const mStart = format(startOfMonth(now), 'yyyy-MM-dd');
   const mEnd = format(endOfMonth(now), 'yyyy-MM-dd');
-  const daysInMonth = differenceInDays(endOfMonth(now), startOfMonth(now)) + 1;
-  const currentDay = now.getDate();
-  const remainingDays = Math.max(1, daysInMonth - currentDay);
+  const thisMonthExpenses = useMemo(() => expenses.filter(e => e.date >= mStart && e.date <= mEnd), [expenses, mStart, mEnd]);
+  const thisMonthIncome = useMemo(() => income.filter(i => i.date >= mStart && i.date <= mEnd), [income, mStart, mEnd]);
+  const totalSpentThisMonth = thisMonthExpenses.reduce((s, e) => s + e.amount, 0);
+  const totalIncomeThisMonth = thisMonthIncome.reduce((s, i) => s + i.amount, 0);
 
-  const thisMonthExpenses = useMemo(() =>
-    expenses.filter(e => e.date >= mStart && e.date <= mEnd),
-    [expenses, mStart, mEnd]
-  );
-
-  const totalSpentThisMonth = useMemo(() =>
-    thisMonthExpenses.reduce((s, e) => s + e.amount, 0),
-    [thisMonthExpenses]
-  );
-
-  const totalIncomeThisMonth = useMemo(() =>
-    income.filter(i => i.date >= mStart && i.date <= mEnd).reduce((s, i) => s + i.amount, 0),
-    [income, mStart, mEnd]
-  );
-
-  // Burn rate calculations
-  const dailyBurn = currentDay > 0 ? totalSpentThisMonth / currentDay : 0;
-  const projectedMonthEndSpend = totalSpentThisMonth + (dailyBurn * remainingDays * (1 - (cutDiscretionaryPct / 100) * 0.4));
-  const projectedBalance = totalIncomeThisMonth - projectedMonthEndSpend;
-
-  // Simulator Engine Calculations
   const simNum = (parseFloat(simAmount) || 0) * 100;
   const currentAvailableBuffer = Math.max(0, totalIncomeThisMonth - totalSpentThisMonth);
   const bufferAfterPurchase = totalIncomeThisMonth - (totalSpentThisMonth + simNum);
@@ -119,7 +133,7 @@ export default function AIAssistantPage() {
       return {
         verdict: 'CAUTION - 72H RULE',
         color: 'amber',
-        text: `Consumes ${Math.round(simImpactRatio)}% of your remaining monthly liquid buffer. Apply the 72-Hour cooling rule before completing this transaction.`,
+        text: `Consumes ${Math.round(simImpactRatio)}% of your remaining monthly buffer. Apply the 72-Hour cooling rule before completing this transaction.`,
       };
     }
     return {
@@ -128,47 +142,6 @@ export default function AIAssistantPage() {
       text: `Comfortably funded! Leaves ${formatCurrency(bufferAfterPurchase)} buffer remaining in your monthly cash runway.`,
     };
   }, [simNum, bufferAfterPurchase, simImpactRatio]);
-
-  // Anomaly & Duplicate Detector
-  const anomalies = useMemo(() => {
-    const list: { id: string; type: 'duplicate' | 'outlier'; title: string; desc: string; date: string; amount: number }[] = [];
-    
-    // Check duplicates (same amount within 24 hours)
-    for (let i = 0; i < expenses.length; i++) {
-      for (let j = i + 1; j < expenses.length; j++) {
-        const e1 = expenses[i];
-        const e2 = expenses[j];
-        if (e1.amount === e2.amount && Math.abs(new Date(e1.date).getTime() - new Date(e2.date).getTime()) <= 86400000) {
-          list.push({
-            id: `dup-${e1.id}-${e2.id}`,
-            type: 'duplicate',
-            title: `Potential Duplicate: ${e1.description} & ${e2.description}`,
-            desc: `Two identical charges of ${formatCurrency(e1.amount)} logged within 24 hours.`,
-            date: e1.date,
-            amount: e1.amount,
-          });
-          break;
-        }
-      }
-    }
-
-    // Outliers (> 3x average expense)
-    const avgSpend = expenses.length > 0 ? expenses.reduce((s, e) => s + e.amount, 0) / expenses.length : 0;
-    expenses.forEach(e => {
-      if (avgSpend > 0 && e.amount > avgSpend * 3) {
-        list.push({
-          id: `outlier-${e.id}`,
-          type: 'outlier',
-          title: `Statistical Outlier: ${e.description}`,
-          desc: `Expense is 3x higher than your average transaction size (${formatCurrency(avgSpend)}).`,
-          date: e.date,
-          amount: e.amount,
-        });
-      }
-    });
-
-    return list.slice(0, 5);
-  }, [expenses]);
 
   useEffect(() => {
     chatBottomRef.current?.scrollIntoView({ behavior: 'smooth' });
@@ -199,6 +172,7 @@ export default function AIAssistantPage() {
       };
       setMessages(prev => [...prev, botMsg]);
       setIsTyping(false);
+      playFeedbackChime('tap');
     }, 380);
   };
 
@@ -207,40 +181,47 @@ export default function AIAssistantPage() {
 
   const handleBtnPress = contextSafe((e: React.MouseEvent<HTMLElement>) => {
     animateSpringPress(e.currentTarget);
+    playFeedbackChime('tap');
   });
 
   useGSAP(() => {
     gsap.from('.motion-header', { y: 16, opacity: 0.3, duration: 0.5, ease: 'power2.out', clearProps: 'all' });
-    gsap.from('.motion-card', { y: 20, opacity: 0.3, duration: 0.6, stagger: 0.08, ease: 'power2.out', delay: 0.06, clearProps: 'all' });
+    gsap.from('.motion-card', { y: 18, opacity: 0.3, duration: 0.55, stagger: 0.05, ease: 'power2.out', delay: 0.06, clearProps: 'all' });
   }, []);
 
   return (
     <div ref={pageRef} className="space-y-6 max-w-6xl mx-auto pb-12">
-      {/* Header */}
+      {/* Header with Resilience Score */}
       <div className="motion-header flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-        <div className="flex items-center gap-2">
-          <h1 className="text-2xl font-extrabold tracking-tight text-foreground flex items-center gap-2">
-            AI Financial Copilot <Sparkles className="w-5 h-5 text-emerald-600 dark:text-[#7cf046]" />
-          </h1>
-          <InfoHint
-            title="Local AI Intelligence"
-            description="Private, 100% on-device predictive forecasting, purchase risk simulation, and anomaly detection."
-          />
+        <div>
+          <div className="flex items-center gap-2">
+            <h1 className="text-2xl font-extrabold tracking-tight text-foreground flex items-center gap-2">
+              AI Quantitative Financial Copilot <Sparkles className="w-5 h-5 text-emerald-600 dark:text-[#7cf046]" />
+            </h1>
+            <InfoHint
+              title="100+ AI Financial Signals"
+              description="Mathematical, 100% on-device heuristic engine evaluating 100 personal finance parameters: runway, stress tests, life hours, and behavioral deflections."
+            />
+          </div>
+          <p className="text-xs text-muted-foreground mt-0.5">
+            Real-time quantitative risk models, deterministic stress-testing, and behavioral heuristics.
+          </p>
         </div>
         <div className="flex items-center gap-2">
-          <Badge variant="outline" className="px-3 py-1 gap-1.5 text-xs text-emerald-700 dark:text-emerald-300 border-emerald-500/30 font-semibold bg-emerald-500/10">
-            <Zap className="w-3.5 h-3.5 text-emerald-600 dark:text-[#7cf046]" /> Real-time Heuristic Engine
+          <Badge className="px-3 py-1 gap-1.5 text-xs text-[#082b14] bg-[#7cf046] font-extrabold border-0 shadow-xs">
+            <Zap className="w-3.5 h-3.5" /> 100 AI Signals Active
           </Badge>
         </div>
       </div>
 
-      {/* Navigation Pills between Features */}
+      {/* Navigation Pills between AI Modules */}
       <div className="flex flex-wrap gap-2 border-b border-border pb-3">
         {[
           { id: 'chat', label: 'Advisory Chat', icon: <Bot className="w-4 h-4" /> },
           { id: 'simulator', label: 'Can I Afford This?', icon: <Calculator className="w-4 h-4" /> },
-          { id: 'runway', label: 'Runway Forecast', icon: <Gauge className="w-4 h-4" /> },
-          { id: 'anomalies', label: `Auditor (${anomalies.length})`, icon: <ShieldAlert className="w-4 h-4" /> },
+          { id: 'lifehours', label: 'Cost in Life-Hours', icon: <Clock className="w-4 h-4" /> },
+          { id: 'stresstest', label: 'Stress-Testing Lab', icon: <ShieldAlert className="w-4 h-4" /> },
+          { id: 'quant100', label: `100 AI Heuristics (${quantReport.overallHealthScore}/100)`, icon: <Activity className="w-4 h-4" /> },
         ].map(tab => (
           <button
             key={tab.id}
@@ -263,7 +244,6 @@ export default function AIAssistantPage() {
       {/* TAB 1: Conversational Advisory Chat */}
       {activeTab === 'chat' && (
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-          {/* Chat Window */}
           <Card className="motion-card lg:col-span-2 flex flex-col h-[580px] shadow-xs border-border/80">
             <CardHeader className="pb-3 border-b flex flex-row items-center justify-between">
               <div className="flex items-center gap-2.5">
@@ -271,8 +251,8 @@ export default function AIAssistantPage() {
                   <Bot className="w-5 h-5" />
                 </div>
                 <div>
-                  <CardTitle className="text-sm font-bold text-foreground">Financial Advisory Assistant</CardTitle>
-                  <CardDescription className="text-xs">Grounded in your private Dexie ledger records</CardDescription>
+                  <CardTitle className="text-sm font-bold text-foreground">Quantitative Financial Assistant</CardTitle>
+                  <CardDescription className="text-xs">Grounded strictly in your private local Dexie ledger</CardDescription>
                 </div>
               </div>
             </CardHeader>
@@ -304,13 +284,12 @@ export default function AIAssistantPage() {
 
               {isTyping && (
                 <div className="flex items-center gap-2 text-xs text-muted-foreground italic pl-11">
-                  <Sparkles className="w-3.5 h-3.5 animate-spin text-emerald-500" /> Computing insights from your data...
+                  <Sparkles className="w-3.5 h-3.5 animate-spin text-emerald-500" /> Calculating mathematical financial advice...
                 </div>
               )}
               <div ref={chatBottomRef} />
             </CardContent>
 
-            {/* Quick Questions & Input */}
             <div className="p-3 border-t bg-card space-y-2">
               <div className="flex flex-wrap gap-1.5 overflow-x-auto pb-1">
                 {QUICK_QUESTIONS.map(q => (
@@ -344,35 +323,36 @@ export default function AIAssistantPage() {
             </div>
           </Card>
 
-          {/* Right Column: Health Score & Highlights */}
           <div className="space-y-6">
             <Card className="motion-card">
               <CardHeader className="pb-3">
                 <CardTitle className="text-sm font-bold flex items-center justify-between text-foreground">
-                  <span>Financial Health Score</span>
+                  <span>AI Financial Resilience</span>
                   <ShieldCheck className="w-4 h-4 text-emerald-600 dark:text-[#7cf046]" />
                 </CardTitle>
-                <CardDescription className="text-xs">Multifactor financial resilience indicator</CardDescription>
+                <CardDescription className="text-xs">Composite score across 100 quantitative heuristics</CardDescription>
               </CardHeader>
               <CardContent className="space-y-4">
                 <div className="flex items-baseline justify-between">
-                  <span className="text-4xl font-extrabold text-foreground">{healthScore.overall}</span>
+                  <span className="text-4xl font-extrabold text-foreground privacy-blur tabular-nums">
+                    {quantReport.overallHealthScore}
+                  </span>
                   <span className="text-xs font-bold text-muted-foreground">/ 100</span>
                 </div>
-                <Progress value={healthScore.overall} className="h-2.5" />
+                <Progress value={quantReport.overallHealthScore} className="h-2.5" />
 
-                <div className="space-y-2 pt-2 text-xs border-t border-border">
-                  <div className="flex justify-between">
-                    <span className="text-muted-foreground">Savings Rate</span>
-                    <strong className="text-foreground">{healthScore.savingsRate}%</strong>
+                <div className="grid grid-cols-3 gap-2 pt-2 text-center text-xs border-t border-border">
+                  <div className="p-2 rounded-xl bg-emerald-500/10">
+                    <p className="font-extrabold text-emerald-700 dark:text-emerald-300 privacy-blur tabular-nums">{quantReport.optimalCount}</p>
+                    <p className="text-[10px] text-muted-foreground">Optimal</p>
                   </div>
-                  <div className="flex justify-between">
-                    <span className="text-muted-foreground">Budget Compliance</span>
-                    <strong className="text-foreground">{healthScore.budgetAdherence}%</strong>
+                  <div className="p-2 rounded-xl bg-amber-500/10">
+                    <p className="font-extrabold text-amber-700 dark:text-amber-300 privacy-blur tabular-nums">{quantReport.cautionCount}</p>
+                    <p className="text-[10px] text-muted-foreground">Caution</p>
                   </div>
-                  <div className="flex justify-between">
-                    <span className="text-muted-foreground">Discretionary Control</span>
-                    <strong className="text-foreground">{healthScore.discretionaryControl}%</strong>
+                  <div className="p-2 rounded-xl bg-rose-500/10">
+                    <p className="font-extrabold text-rose-700 dark:text-rose-300 privacy-blur tabular-nums">{quantReport.criticalCount}</p>
+                    <p className="text-[10px] text-muted-foreground">Critical</p>
                   </div>
                 </div>
               </CardContent>
@@ -386,10 +366,7 @@ export default function AIAssistantPage() {
               </CardHeader>
               <CardContent className="space-y-2.5">
                 {insights.slice(0, 3).map(ins => (
-                  <div
-                    key={ins.id}
-                    className="p-3 rounded-xl border border-border/70 text-xs space-y-1 bg-muted/20"
-                  >
+                  <div key={ins.id} className="p-3 rounded-xl border border-border/70 text-xs space-y-1 bg-muted/20">
                     <p className="font-bold text-foreground">{ins.title}</p>
                     <p className="text-muted-foreground leading-normal">{ins.message}</p>
                   </div>
@@ -409,12 +386,12 @@ export default function AIAssistantPage() {
                 <Calculator className="w-5 h-5 text-primary" /> Purchase Impact Simulator
               </CardTitle>
               <CardDescription className="text-xs">
-                Check whether an upcoming impulse or planned purchase will jeopardize your monthly runway or emergency fund.
+                Check whether an upcoming planned or impulse buy will breach your monthly runway or emergency buffer.
               </CardDescription>
             </CardHeader>
             <CardContent className="space-y-4">
               <div className="space-y-1.5">
-                <label className="text-xs font-bold text-foreground">Purchase Description</label>
+                <label className="text-xs font-bold text-foreground">Item or Experience</label>
                 <Input
                   value={simDescription}
                   onChange={e => setSimDescription(e.target.value)}
@@ -448,26 +425,25 @@ export default function AIAssistantPage() {
 
               <div className="p-3.5 rounded-xl bg-muted/40 border border-border text-xs space-y-1.5 mt-4">
                 <div className="flex justify-between">
-                  <span className="text-muted-foreground">Current Monthly Inflow:</span>
-                  <span className="font-bold text-foreground">{formatCurrency(totalIncomeThisMonth)}</span>
+                  <span className="text-muted-foreground">Monthly Inflow:</span>
+                  <span className="font-bold text-foreground privacy-blur tabular-nums">{formatCurrency(totalIncomeThisMonth)}</span>
                 </div>
                 <div className="flex justify-between">
                   <span className="text-muted-foreground">Spent So Far:</span>
-                  <span className="font-bold text-rose-600">-{formatCurrency(totalSpentThisMonth)}</span>
+                  <span className="font-bold text-rose-600 privacy-blur tabular-nums">-{formatCurrency(totalSpentThisMonth)}</span>
                 </div>
                 <div className="flex justify-between border-t border-border/80 pt-1">
                   <span className="text-muted-foreground">Liquid Buffer Remaining:</span>
-                  <span className="font-extrabold text-foreground">{formatCurrency(currentAvailableBuffer)}</span>
+                  <span className="font-extrabold text-foreground privacy-blur tabular-nums">{formatCurrency(currentAvailableBuffer)}</span>
                 </div>
               </div>
             </CardContent>
           </Card>
 
-          {/* Simulation Result Output */}
           <Card className="motion-card flex flex-col justify-between">
             <CardHeader>
               <CardTitle className="text-base font-bold text-foreground flex items-center justify-between">
-                <span>AI Verdict</span>
+                <span>AI Mathematical Verdict</span>
                 <Badge
                   className={`px-3 py-1 text-xs font-extrabold uppercase rounded-full ${
                     simVerdict.color === 'emerald'
@@ -489,19 +465,16 @@ export default function AIAssistantPage() {
                 <div className="space-y-1.5 pt-3">
                   <div className="flex justify-between text-xs">
                     <span className="text-muted-foreground">Buffer Consumed:</span>
-                    <strong className="text-foreground">{Math.min(100, Math.round(simImpactRatio))}%</strong>
+                    <strong className="text-foreground privacy-blur tabular-nums">{Math.min(100, Math.round(simImpactRatio))}%</strong>
                   </div>
-                  <Progress
-                    value={Math.min(100, simImpactRatio)}
-                    className="h-2"
-                  />
+                  <Progress value={Math.min(100, simImpactRatio)} className="h-2" />
                 </div>
               </div>
 
               <div className="grid grid-cols-2 gap-3 text-xs">
                 <div className="p-3 rounded-xl bg-muted/30 border border-border">
                   <p className="text-muted-foreground">Remaining Runway After</p>
-                  <p className="text-lg font-extrabold text-foreground mt-0.5">
+                  <p className="text-lg font-extrabold text-foreground mt-0.5 privacy-blur tabular-nums">
                     {formatCurrency(bufferAfterPurchase)}
                   </p>
                 </div>
@@ -517,161 +490,255 @@ export default function AIAssistantPage() {
         </div>
       )}
 
-      {/* TAB 3: Predictive End-of-Month Runway & Forecast (Feature 1) */}
-      {activeTab === 'runway' && (
-        <div className="space-y-6">
+      {/* TAB 3: "Cost-in-Life-Hours" Time vs Money Converter */}
+      {activeTab === 'lifehours' && (
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
           <Card className="motion-card">
             <CardHeader>
-              <CardTitle className="text-base font-bold text-foreground flex items-center justify-between">
-                <div className="flex items-center gap-2">
-                  <Gauge className="w-5 h-5 text-emerald-600 dark:text-[#7cf046]" />
-                  <span>Month-End Closing Balance Runway Forecast</span>
-                </div>
-                <Badge variant="outline" className="text-xs">
-                  {remainingDays} days remaining in cycle
-                </Badge>
+              <CardTitle className="text-base font-bold text-foreground flex items-center gap-2">
+                <Clock className="w-5 h-5 text-indigo-500" /> Cost in Life Energy Calculator
               </CardTitle>
               <CardDescription className="text-xs">
-                Continuous extrapolation based on your real daily spending velocity and recurring obligations.
+                Every rupee spent is life energy traded at your wage rate. Discover how many hours of work a purchase truly demands.
               </CardDescription>
             </CardHeader>
-            <CardContent className="space-y-6">
-              <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-                <div className="p-4 rounded-2xl bg-card border border-border shadow-xs">
-                  <p className="text-xs text-muted-foreground font-medium">Daily Spending Velocity</p>
-                  <p className="text-2xl font-extrabold text-foreground mt-1">{formatCurrency(dailyBurn)}</p>
-                  <p className="text-[10px] text-muted-foreground mt-1">Average per day so far</p>
-                </div>
-
-                <div className="p-4 rounded-2xl bg-card border border-border shadow-xs">
-                  <p className="text-xs text-muted-foreground font-medium">Projected Month-End Outflow</p>
-                  <p className="text-2xl font-extrabold text-rose-600 mt-1">-{formatCurrency(projectedMonthEndSpend)}</p>
-                  <p className="text-[10px] text-muted-foreground mt-1">Expected cycle close</p>
-                </div>
-
-                <div className="p-4 rounded-2xl bg-card border border-border shadow-xs">
-                  <p className="text-xs text-muted-foreground font-medium">Projected Net Balance</p>
-                  <p className={`text-2xl font-extrabold mt-1 ${projectedBalance >= 0 ? 'text-emerald-600 dark:text-[#7cf046]' : 'text-rose-600'}`}>
-                    {projectedBalance >= 0 ? `+${formatCurrency(projectedBalance)}` : `-${formatCurrency(Math.abs(projectedBalance))}`}
-                  </p>
-                  <p className="text-[10px] text-muted-foreground mt-1">
-                    {projectedBalance >= 0 ? 'Surplus runway guarded' : 'Projected cycle deficit'}
-                  </p>
-                </div>
+            <CardContent className="space-y-4">
+              <div className="space-y-1.5">
+                <Label className="text-xs font-bold text-foreground">Purchase Price ({DEFAULT_CURRENCY.symbol})</Label>
+                <Input
+                  type="number"
+                  value={lifePrice}
+                  onChange={e => setLifePrice(e.target.value)}
+                  placeholder="12000"
+                  className="rounded-xl text-lg font-bold"
+                />
               </div>
 
-              {/* Sensitivity Simulation Slider */}
-              <div className="p-4 rounded-2xl bg-muted/40 border border-border space-y-3">
-                <div className="flex justify-between items-center text-xs">
-                  <div className="flex items-center gap-2">
-                    <SlidersHorizontal className="w-4 h-4 text-primary" />
-                    <span className="font-bold text-foreground">Discretionary Spending Trim Lever:</span>
-                  </div>
-                  <Badge className="bg-[#7cf046] text-[#082b14] font-extrabold text-xs">
-                    Trim {cutDiscretionaryPct}%
-                  </Badge>
-                </div>
-                <input
-                  type="range"
-                  min="0"
-                  max="50"
-                  step="5"
-                  value={cutDiscretionaryPct}
-                  onChange={e => setCutDiscretionaryPct(parseInt(e.target.value))}
-                  className="w-full accent-primary cursor-pointer"
+              <div className="space-y-1.5">
+                <Label className="text-xs font-bold text-foreground">Your Hourly Take-Home Wage ({DEFAULT_CURRENCY.symbol}/hr)</Label>
+                <Input
+                  type="number"
+                  value={hourlyWage}
+                  onChange={e => setHourlyWage(e.target.value)}
+                  placeholder="600"
+                  className="rounded-xl font-bold"
                 />
-                <div className="flex justify-between text-[11px] text-muted-foreground">
-                  <span>Current Pace (0% cut)</span>
-                  <span>Moderate Trim (25%)</span>
-                  <span>Frugal Lockdown (50% cut)</span>
+                <p className="text-[11px] text-muted-foreground">
+                  (e.g., Monthly salary of ₹1,00,000 / 160 work hours = ≈ ₹625/hr)
+                </p>
+              </div>
+
+              <div className="grid grid-cols-3 gap-2 pt-2">
+                {['2000', '10000', '25000'].map(p => (
+                  <button
+                    key={p}
+                    onClick={() => setLifePrice(p)}
+                    className="p-2 rounded-xl border border-border text-xs font-semibold hover:bg-muted text-center cursor-pointer transition-colors"
+                  >
+                    ₹{parseInt(p).toLocaleString()}
+                  </button>
+                ))}
+              </div>
+            </CardContent>
+          </Card>
+
+          {/* Life Hours Output Card */}
+          <Card className="motion-card flex flex-col justify-between">
+            <CardHeader>
+              <CardTitle className="text-base font-bold text-foreground flex items-center justify-between">
+                <span>Life Energy Required</span>
+                <Badge className="bg-indigo-500/15 text-indigo-700 dark:text-indigo-300 border-indigo-500/30 text-xs font-bold">
+                  Work Equivalency
+                </Badge>
+              </CardTitle>
+            </CardHeader>
+            <CardContent className="space-y-4">
+              <div className="p-4 rounded-2xl bg-indigo-500/10 border border-indigo-500/20 text-center space-y-1">
+                <p className="text-xs text-indigo-900 dark:text-indigo-200 font-semibold uppercase tracking-wider">
+                  You Must Trade
+                </p>
+                <p className="text-4xl font-extrabold text-indigo-700 dark:text-indigo-300 privacy-blur tabular-nums">
+                  {lifeHoursResult.hours}h {lifeHoursResult.minutes}m
+                </p>
+                <p className="text-xs text-muted-foreground font-medium">
+                  Equivalent to <strong className="text-foreground">{lifeHoursResult.workDays} Full Work Days</strong> of your finite life
+                </p>
+              </div>
+
+              <div className="p-3.5 rounded-xl bg-card border border-border space-y-2 text-xs">
+                <span className="font-bold text-foreground flex items-center gap-1.5">
+                  <TrendingUp className="w-3.5 h-3.5 text-primary" /> Compounding Opportunity Cost
+                </span>
+                <p className="text-muted-foreground leading-normal">
+                  If this amount was deposited into an index wealth fund earning 10% CAGR instead:
+                </p>
+                <div className="grid grid-cols-2 gap-2 pt-1">
+                  <div className="p-2.5 rounded-lg bg-muted/40 border border-border">
+                    <p className="text-[10px] text-muted-foreground">Value in 10 Years</p>
+                    <p className="text-base font-extrabold text-foreground privacy-blur tabular-nums">
+                      ₹{lifeHoursResult.invested10Y.toLocaleString()}
+                    </p>
+                  </div>
+                  <div className="p-2.5 rounded-lg bg-muted/40 border border-border">
+                    <p className="text-[10px] text-muted-foreground">Value in 20 Years</p>
+                    <p className="text-base font-extrabold text-primary privacy-blur tabular-nums">
+                      ₹{lifeHoursResult.invested20Y.toLocaleString()}
+                    </p>
+                  </div>
                 </div>
-                {cutDiscretionaryPct > 0 && (
-                  <p className="text-xs font-semibold text-emerald-700 dark:text-emerald-300 pt-1">
-                    💡 Trimming discretionary spend by {cutDiscretionaryPct}% adds approximately{' '}
-                    <strong>{formatCurrency((dailyBurn * remainingDays * (cutDiscretionaryPct / 100) * 0.4))}</strong> to your end-of-month savings buffer!
-                  </p>
-                )}
               </div>
             </CardContent>
           </Card>
         </div>
       )}
 
-      {/* TAB 4: Anomaly & Duplicate Expense Auditor (Feature 2 & 4) */}
-      {activeTab === 'anomalies' && (
+      {/* TAB 4: Deterministic Scenario Stress-Testing Lab */}
+      {activeTab === 'stresstest' && (
         <div className="space-y-6">
           <Card className="motion-card">
             <CardHeader>
               <CardTitle className="text-base font-bold text-foreground flex items-center justify-between">
                 <div className="flex items-center gap-2">
                   <ShieldAlert className="w-5 h-5 text-amber-500" />
-                  <span>Ledger Anomaly & Recurring Leak Auditor</span>
+                  <span>Macro Financial Stress-Testing Lab</span>
                 </div>
-                <Badge variant="outline" className="text-xs">
-                  {anomalies.length} items flagged
+                <Badge variant="outline" className="text-xs">Deterministic Solvency Model</Badge>
+              </CardTitle>
+              <CardDescription className="text-xs">
+                Simulate catastrophic income shocks, medical emergencies, or aggressive frugal lockdown scenarios.
+              </CardDescription>
+            </CardHeader>
+            <CardContent className="space-y-6">
+              {/* Scenario Selector */}
+              <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+                {[
+                  { id: 'income_shock_30', title: 'Sudden 30% Pay Drop', desc: 'Layoff / Salary reduction shock' },
+                  { id: 'emergency_shock_50k', title: '₹50,000 Emergency Bill', desc: 'Sudden medical or vehicle repair' },
+                  { id: 'frugal_lockdown_40', title: '40% Frugal Lockdown', desc: 'Max savings surplus simulation' },
+                ].map(sc => {
+                  const isSelected = selectedScenario === sc.id;
+                  return (
+                    <button
+                      key={sc.id}
+                      onClick={() => setSelectedScenario(sc.id as typeof selectedScenario)}
+                      className={`p-3.5 rounded-xl border text-left transition-all cursor-pointer ${
+                        isSelected
+                          ? 'bg-[#7cf046] text-[#082b14] border-[#7cf046] font-bold shadow-xs'
+                          : 'bg-card text-muted-foreground hover:text-foreground border-border'
+                      }`}
+                    >
+                      <p className="text-xs font-bold">{sc.title}</p>
+                      <p className={`text-[10px] mt-0.5 ${isSelected ? 'text-[#082b14]/80' : 'text-muted-foreground'}`}>{sc.desc}</p>
+                    </button>
+                  );
+                })}
+              </div>
+
+              {/* Stress Test Simulation Output */}
+              <div className="p-5 rounded-2xl bg-card border border-border shadow-xs space-y-4">
+                <div className="flex items-center justify-between">
+                  <h3 className="text-base font-bold text-foreground">{scenarioResult.title}</h3>
+                  <Badge
+                    className={`px-3 py-1 text-xs font-extrabold uppercase rounded-full ${
+                      scenarioResult.verdict === 'SOLVENT' || scenarioResult.verdict === 'ABSORBED' || scenarioResult.verdict === 'HIGH SURPLUS'
+                        ? 'bg-emerald-500/15 text-emerald-700 dark:text-emerald-300 border-emerald-500/30'
+                        : 'bg-rose-500/15 text-rose-700 dark:text-rose-300 border-rose-500/30'
+                    }`}
+                  >
+                    {scenarioResult.verdict}
+                  </Badge>
+                </div>
+
+                <p className="text-sm text-foreground font-medium leading-relaxed">
+                  {scenarioResult.advice}
+                </p>
+
+                <div className="grid grid-cols-2 sm:grid-cols-3 gap-3 pt-2 text-xs">
+                  <div className="p-3 rounded-xl bg-muted/30 border border-border">
+                    <p className="text-muted-foreground">Post-Shock Balance</p>
+                    <p className={`text-lg font-extrabold mt-0.5 privacy-blur tabular-nums ${
+                      scenarioResult.netDelta >= 0 ? 'text-emerald-600 dark:text-[#7cf046]' : 'text-rose-600'
+                    }`}>
+                      {scenarioResult.netDelta >= 0 ? `+${formatCurrency(scenarioResult.netDelta)}` : `-${formatCurrency(Math.abs(scenarioResult.netDelta))}`}
+                    </p>
+                  </div>
+                  <div className="p-3 rounded-xl bg-muted/30 border border-border">
+                    <p className="text-muted-foreground">Reserves Survival Buffer</p>
+                    <p className="text-lg font-extrabold text-foreground mt-0.5 privacy-blur tabular-nums">
+                      {scenarioResult.runwayMonths >= 90 ? 'Indefinite' : `${scenarioResult.runwayMonths} Months`}
+                    </p>
+                  </div>
+                  <div className="p-3 rounded-xl bg-muted/30 border border-border col-span-2 sm:col-span-1">
+                    <p className="text-muted-foreground">Recommended Stance</p>
+                    <p className="text-lg font-extrabold text-primary mt-0.5">
+                      {scenarioResult.verdict === 'DEFICIT ALERT' ? 'Defensive' : 'Resilient'}
+                    </p>
+                  </div>
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+        </div>
+      )}
+
+      {/* TAB 5: 100+ Quantitative Signals Audit */}
+      {activeTab === 'quant100' && (
+        <div className="space-y-6">
+          <Card className="motion-card">
+            <CardHeader className="pb-3">
+              <CardTitle className="text-base font-bold text-foreground flex items-center justify-between">
+                <div className="flex items-center gap-2">
+                  <Activity className="w-5 h-5 text-primary" />
+                  <span>100 AI Quantitative Signals Audit</span>
+                </div>
+                <Badge className="bg-primary text-primary-foreground font-bold text-xs">
+                  Resilience Score: {quantReport.overallHealthScore}/100
                 </Badge>
               </CardTitle>
               <CardDescription className="text-xs">
-                Flags potential accidental duplicate entries, double card swipes, and statistical expenditure spikes.
+                Comprehensive evaluation across Cash Flow, Anomalies, Behavioral Biases, Budgets, and FI/RE Runway.
               </CardDescription>
             </CardHeader>
-            <CardContent className="space-y-3">
-              {anomalies.length === 0 ? (
-                <div className="py-12 text-center space-y-2">
-                  <CheckCircle2 className="w-10 h-10 text-emerald-500 mx-auto opacity-70" />
-                  <p className="text-sm font-semibold text-foreground">No Anomalies Found</p>
-                  <p className="text-xs text-muted-foreground">Your transaction ledger is clean with zero duplicate or rogue charges detected.</p>
-                </div>
-              ) : (
-                anomalies.map(anom => (
+            <CardContent className="space-y-4">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-3.5">
+                {quantReport.signals.map(sig => (
                   <div
-                    key={anom.id}
-                    className="p-3.5 rounded-xl border border-border bg-card shadow-xs flex items-center justify-between gap-4"
+                    key={sig.id}
+                    className="p-3.5 rounded-xl border border-border/80 bg-card shadow-xs flex flex-col justify-between gap-2"
                   >
-                    <div className="space-y-1">
-                      <div className="flex items-center gap-2">
-                        <Badge
-                          variant="secondary"
-                          className={`text-[10px] font-bold uppercase ${
-                            anom.type === 'duplicate'
-                              ? 'bg-rose-500/10 text-rose-600 border border-rose-500/20'
-                              : 'bg-amber-500/10 text-amber-600 border border-amber-500/20'
-                          }`}
-                        >
-                          {anom.type}
-                        </Badge>
-                        <span className="text-sm font-bold text-foreground">{anom.title}</span>
+                    <div className="flex items-start justify-between gap-2">
+                      <div>
+                        <span className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground">
+                          {sig.pillar}
+                        </span>
+                        <h4 className="text-sm font-bold text-foreground mt-0.5">{sig.title}</h4>
                       </div>
-                      <p className="text-xs text-muted-foreground">{anom.desc}</p>
+                      <Badge
+                        variant="secondary"
+                        className={`text-[10px] font-extrabold uppercase shrink-0 ${
+                          sig.status === 'optimal'
+                            ? 'bg-emerald-500/10 text-emerald-700 dark:text-emerald-300'
+                            : sig.status === 'caution'
+                            ? 'bg-amber-500/10 text-amber-700 dark:text-amber-300'
+                            : sig.status === 'critical'
+                            ? 'bg-rose-500/10 text-rose-700 dark:text-rose-300'
+                            : 'bg-muted text-foreground'
+                        }`}
+                      >
+                        {sig.status}
+                      </Badge>
                     </div>
-                    <div className="text-right shrink-0">
-                      <p className="text-sm font-extrabold text-foreground">{formatCurrency(anom.amount)}</p>
-                      <p className="text-[10px] text-muted-foreground">{anom.date}</p>
-                    </div>
-                  </div>
-                ))
-              )}
 
-              {/* Recurring Subscriptions Audit Preview */}
-              <div className="mt-6 pt-4 border-t border-border space-y-3">
-                <h4 className="text-xs font-bold uppercase tracking-wider text-muted-foreground flex items-center gap-1.5">
-                  <RefreshCw className="w-3.5 h-3.5 text-primary" /> Active Recurring Commitments ({recurring.length})
-                </h4>
-                {recurring.length === 0 ? (
-                  <p className="text-xs text-muted-foreground">No recurring subscriptions registered.</p>
-                ) : (
-                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                    {recurring.map(r => (
-                      <div key={r.id} className="p-3 rounded-xl bg-muted/30 border border-border text-xs flex justify-between items-center">
-                        <div>
-                          <p className="font-bold text-foreground">{r.description}</p>
-                          <p className="text-[10px] text-muted-foreground capitalize">{r.frequency} • Next: {r.nextDueDate}</p>
-                        </div>
-                        <span className="font-extrabold text-foreground">{formatCurrency(r.amount)}</span>
-                      </div>
-                    ))}
+                    <div className="p-2 rounded-lg bg-muted/30 border border-border text-xs flex justify-between items-center">
+                      <span className="text-muted-foreground">Observed Signal:</span>
+                      <strong className="text-foreground privacy-blur tabular-nums">{sig.metric}</strong>
+                    </div>
+
+                    <p className="text-xs text-muted-foreground leading-normal">
+                      {sig.recommendation}
+                    </p>
                   </div>
-                )}
+                ))}
               </div>
             </CardContent>
           </Card>

@@ -200,7 +200,11 @@ dialog[open] {
 .coffee-shop-mode .tabular-nums,
 .coffee-shop-mode [data-currency-val],
 .coffee-shop-mode .privacy-blur,
-.coffee-shop-mode [data-money] {
+.coffee-shop-mode [data-money],
+.coffee-shop-mode .recharts-text,
+.coffee-shop-mode .recharts-cartesian-axis-tick-value,
+.coffee-shop-mode .recharts-tooltip-item-value,
+.coffee-shop-mode .recharts-default-tooltip {
   filter: blur(var(--privacy-blur-radius, 8px)) !important;
   user-select: none;
   transition: filter 0.2s ease-in-out;
@@ -209,6 +213,8 @@ dialog[open] {
 .coffee-shop-mode .tabular-nums:hover,
 .coffee-shop-mode [data-currency-val]:hover,
 .coffee-shop-mode .privacy-blur:hover,
-.coffee-shop-mode [data-money]:hover {
+.coffee-shop-mode [data-money]:hover,
+.coffee-shop-mode .recharts-text:hover,
+.coffee-shop-mode .recharts-default-tooltip:hover {
   filter: blur(0px) !important;
 }
