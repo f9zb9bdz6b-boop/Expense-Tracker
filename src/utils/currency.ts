@@ -4,6 +4,7 @@
 // ============================================================
 
 import type { CurrencyConfig } from '@/types';
+export type { CurrencyConfig };
 
 /**
  * Convert a display amount (e.g. "123.45") to minor units (e.g. 12345 paise)

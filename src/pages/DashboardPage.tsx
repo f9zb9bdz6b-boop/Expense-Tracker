@@ -2,25 +2,30 @@
 // DashboardPage - Executive Financial Hub with GSAP Motion Design
 // Redesigned with Apple Wallet / Revolut Ultra aesthetic & 10+ Motion Elements
 // ============================================================
-import React, { useState, useMemo, useRef } from 'react';
+import React, { useState, useMemo, useRef, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useLiveQuery } from 'dexie-react-hooks';
 import gsap from 'gsap';
 import { useGSAP } from '@gsap/react';
 import { db } from '@/db/database';
 import { useDashboard } from '@/hooks/useDashboard';
+import { useSettings } from '@/contexts/SettingsContext';
+import { useToast } from '@/components/ui/use-toast';
 import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Progress } from '@/components/ui/progress';
-import { formatCurrency, formatCurrencyCompact } from '@/utils/currency';
+import { formatCurrency, formatCurrencyCompact, SUPPORTED_CURRENCIES, DEFAULT_CURRENCY } from '@/utils/currency';
+import type { CurrencyConfig } from '@/types';
 import { formatDate } from '@/utils/date';
 import { getCategoryEmoji, getPaymentMethodEmoji } from '@/utils/emojis';
 import { InfoHint } from '@/components/ui/info-hint';
+import { playFeedbackChime } from '@/utils/motion';
 import {
   TrendingUp, TrendingDown, Wallet, ArrowUpRight, ArrowDownLeft,
   PlusCircle, Target, ArrowRight, Sparkles, ShieldCheck,
-  Calendar, Layers, Clock, Activity, Zap, CheckCircle2, ChevronRight
+  Calendar, Layers, Clock, Activity, Zap, CheckCircle2, ChevronRight,
+  Globe, ChevronDown, Check
 } from 'lucide-react';
 import {
   PieChart, Pie, Cell, ResponsiveContainer, Tooltip as RechartsTooltip,
@@ -33,9 +38,45 @@ export default function DashboardPage() {
   const dashboardRef = useRef<HTMLDivElement>(null);
   const balanceValRef = useRef<HTMLSpanElement>(null);
   const balanceTween = useRef({ val: 0 });
+  const currencyPickerRef = useRef<HTMLDivElement>(null);
+
+  const { settings, updateSettings } = useSettings();
+  const { toast } = useToast();
+  const [showCurrencyPicker, setShowCurrencyPicker] = useState(false);
+
+  const masterCurrency = settings?.currency || DEFAULT_CURRENCY;
 
   const { summary, isLoading } = useDashboard();
   const [activePeriod, setActivePeriod] = useState<'month' | 'today' | 'all'>('month');
+
+  // Close currency picker when clicking outside
+  useEffect(() => {
+    function handleClickOutside(event: MouseEvent) {
+      if (currencyPickerRef.current && !currencyPickerRef.current.contains(event.target as Node)) {
+        setShowCurrencyPicker(false);
+      }
+    }
+    if (showCurrencyPicker) {
+      document.addEventListener('mousedown', handleClickOutside);
+    }
+    return () => {
+      document.removeEventListener('mousedown', handleClickOutside);
+    };
+  }, [showCurrencyPicker]);
+
+  const handleSelectCurrency = async (curr: CurrencyConfig) => {
+    try {
+      await updateSettings({ currency: curr });
+      playFeedbackChime('coin');
+      toast({
+        title: 'Master Currency Updated',
+        description: `Master ledger currency set to ${curr.name} (${curr.symbol} ${curr.code}).`,
+      });
+      setShowCurrencyPicker(false);
+    } catch {
+      toast({ title: 'Failed to update currency', variant: 'destructive' });
+    }
+  };
 
   // Categories query for live reactive emojis
   const categoriesList = useLiveQuery(() => Promise.all([
@@ -225,17 +266,72 @@ export default function DashboardPage() {
                   className="text-white/60"
                 />
               </div>
-              <div className="flex items-baseline gap-2 mt-1">
+              <div className="flex items-center gap-3 mt-1 flex-wrap">
                 {/* Live Animated Number Ticker (Motion Element 1) */}
                 <span
                   ref={balanceValRef}
-                  className="text-4xl sm:text-5xl font-extrabold tracking-tight tabular-nums text-white"
+                  className="text-4xl sm:text-5xl font-extrabold tracking-tight tabular-nums text-white privacy-blur"
                 >
-                  {formatCurrency(netBalance)}
+                  {formatCurrency(netBalance, masterCurrency)}
                 </span>
-                <span className="text-xs text-[#7cf046] font-extrabold bg-[#7cf046]/15 border border-[#7cf046]/30 px-2 py-0.5 rounded-md">
-                  INR
-                </span>
+
+                {/* Master Currency Switcher Pill & Dropdown directly on Hero Card */}
+                <div className="relative inline-block" ref={currencyPickerRef}>
+                  <button
+                    type="button"
+                    onClick={() => setShowCurrencyPicker(prev => !prev)}
+                    className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-white/10 hover:bg-white/20 border border-white/20 hover:border-[#7cf046]/60 text-white font-extrabold text-xs cursor-pointer select-none transition-all active:scale-95 shadow-xs"
+                    title="Change Master Currency"
+                  >
+                    <Globe className="w-3.5 h-3.5 text-[#7cf046]" />
+                    <span className="text-sm font-bold text-white">{masterCurrency.symbol}</span>
+                    <span className="font-extrabold text-[#7cf046]">{masterCurrency.code}</span>
+                    <ChevronDown className={`w-3.5 h-3.5 text-white/70 transition-transform duration-200 ${showCurrencyPicker ? 'rotate-180 text-[#7cf046]' : ''}`} />
+                  </button>
+
+                  {showCurrencyPicker && (
+                    <div className="absolute left-0 sm:left-auto sm:right-0 top-full mt-2 z-50 w-64 rounded-2xl bg-[#0c1d14] border border-[#1b3d2b] p-2.5 shadow-2xl backdrop-blur-xl animate-in fade-in zoom-in-95 duration-150">
+                      <div className="px-2.5 py-1.5 text-[11px] font-bold text-[#7cf046] uppercase tracking-wider border-b border-white/10 mb-1.5 flex items-center justify-between">
+                        <span className="flex items-center gap-1.5">
+                          <Globe className="w-3.5 h-3.5" /> Master Currency
+                        </span>
+                        <span className="text-[10px] text-white/60 lowercase font-normal">switch ledger</span>
+                      </div>
+                      <div className="max-h-64 overflow-y-auto space-y-1 pr-1 custom-scrollbar">
+                        {SUPPORTED_CURRENCIES.map(curr => {
+                          const isSelected = curr.code === masterCurrency.code;
+                          return (
+                            <button
+                              key={curr.code}
+                              type="button"
+                              onClick={() => handleSelectCurrency(curr)}
+                              className={`w-full flex items-center justify-between px-3 py-2 rounded-xl text-xs font-semibold transition-all cursor-pointer ${
+                                isSelected
+                                  ? 'bg-[#7cf046] text-[#082b14] font-extrabold shadow-xs'
+                                  : 'text-white/90 hover:bg-white/10 hover:text-white'
+                              }`}
+                            >
+                              <div className="flex items-center gap-2.5">
+                                <span className={`w-6 text-center text-sm font-bold ${isSelected ? 'text-[#082b14]' : 'text-[#7cf046]'}`}>
+                                  {curr.symbol}
+                                </span>
+                                <span className="truncate">{curr.name}</span>
+                              </div>
+                              <div className="flex items-center gap-1.5">
+                                <span className={`text-[11px] font-mono font-bold px-1.5 py-0.5 rounded ${
+                                  isSelected ? 'bg-[#082b14]/20 text-[#082b14]' : 'bg-white/5 text-white/60'
+                                }`}>
+                                  {curr.code}
+                                </span>
+                                {isSelected && <Check className="w-3.5 h-3.5 text-[#082b14]" />}
+                              </div>
+                            </button>
+                          );
+                        })}
+                      </div>
+                    </div>
+                  )}
+                </div>
               </div>
             </div>
           </div>
@@ -308,7 +404,7 @@ export default function DashboardPage() {
           </div>
           <div className="mt-3">
             <div className="text-2xl font-bold tracking-tight text-emerald-600 dark:text-emerald-400 tabular-nums">
-              +{formatCurrency(displayIncome)}
+              +{formatCurrency(displayIncome, masterCurrency)}
             </div>
             <p className="text-[11px] text-muted-foreground mt-1 flex items-center gap-1">
               <span className="text-emerald-600 font-semibold">● Active</span>
@@ -329,13 +425,13 @@ export default function DashboardPage() {
           </div>
           <div className="mt-3">
             <div className="text-2xl font-bold tracking-tight text-rose-600 dark:text-rose-400 tabular-nums">
-              -{formatCurrency(displaySpending)}
+              -{formatCurrency(displaySpending, masterCurrency)}
             </div>
             <p className="text-[11px] text-muted-foreground mt-1">
               {activePeriod !== 'today' ? (
-                <>Today: <span className="privacy-blur tabular-nums">{formatCurrency(todaySpending)}</span></>
+                <>Today: <span className="privacy-blur tabular-nums">{formatCurrency(todaySpending, masterCurrency)}</span></>
               ) : (
-                <>Month: <span className="privacy-blur tabular-nums">{formatCurrency(currentMonthSpending)}</span></>
+                <>Month: <span className="privacy-blur tabular-nums">{formatCurrency(currentMonthSpending, masterCurrency)}</span></>
               )}
             </p>
           </div>
@@ -357,9 +453,9 @@ export default function DashboardPage() {
             </div>
             <p className="text-[11px] text-muted-foreground mt-1">
               {displayIncome - displaySpending >= 0 ? (
-                <span className="text-emerald-600 font-semibold">Surplus +<span className="privacy-blur tabular-nums">{formatCurrency(displayIncome - displaySpending)}</span></span>
+                <span className="text-emerald-600 font-semibold">Surplus +<span className="privacy-blur tabular-nums">{formatCurrency(displayIncome - displaySpending, masterCurrency)}</span></span>
               ) : (
-                <span className="text-rose-600 font-semibold">Deficit <span className="privacy-blur tabular-nums">{formatCurrency(displayIncome - displaySpending)}</span></span>
+                <span className="text-rose-600 font-semibold">Deficit <span className="privacy-blur tabular-nums">{formatCurrency(displayIncome - displaySpending, masterCurrency)}</span></span>
               )}
             </p>
           </div>
@@ -399,10 +495,10 @@ export default function DashboardPage() {
             </div>
             <div className="flex justify-between text-[11px] font-medium text-muted-foreground mt-1.5">
               <span className="flex items-center gap-1 text-emerald-700 dark:text-emerald-400">
-                <span className="w-2 h-2 rounded-full bg-emerald-500 inline-block" /> 🌿 <span className="privacy-blur tabular-nums">{formatCurrency(necessaryExpenses || (displaySpending ? displaySpending * 0.65 : 0))}</span>
+                <span className="w-2 h-2 rounded-full bg-emerald-500 inline-block" /> 🌿 <span className="privacy-blur tabular-nums">{formatCurrency(necessaryExpenses || (displaySpending ? displaySpending * 0.65 : 0), masterCurrency)}</span>
               </span>
               <span className="flex items-center gap-1 text-amber-700 dark:text-amber-400">
-                <span className="w-2 h-2 rounded-full bg-amber-500 inline-block" /> ✨ <span className="privacy-blur tabular-nums">{formatCurrency(discretionaryExpenses || (displaySpending ? displaySpending * 0.35 : 0))}</span>
+                <span className="w-2 h-2 rounded-full bg-amber-500 inline-block" /> ✨ <span className="privacy-blur tabular-nums">{formatCurrency(discretionaryExpenses || (displaySpending ? displaySpending * 0.35 : 0), masterCurrency)}</span>
               </span>
             </div>
           </div>
@@ -463,7 +559,7 @@ export default function DashboardPage() {
                         </div>
                         <div className="text-right">
                           <span className="font-bold text-foreground tabular-nums privacy-blur">
-                            {formatCurrency(cat.amount)}
+                            {formatCurrency(cat.amount, masterCurrency)}
                           </span>
                           <span className="text-xs text-muted-foreground ml-2 font-medium">
                             <span className="privacy-blur tabular-nums">{cat.percentage.toFixed(1)}%</span>
@@ -538,8 +634,8 @@ export default function DashboardPage() {
                   </div>
                   <Progress value={Math.min(100, b.percentage)} className="h-2 rounded-full" />
                   <div className="flex justify-between text-[11px] text-muted-foreground">
-                    <span><span className="privacy-blur tabular-nums">{formatCurrency(b.spent)}</span></span>
-                    <span>Cap: <span className="privacy-blur tabular-nums">{formatCurrency(b.budgetAmount)}</span></span>
+                    <span><span className="privacy-blur tabular-nums">{formatCurrency(b.spent, masterCurrency)}</span></span>
+                    <span>Cap: <span className="privacy-blur tabular-nums">{formatCurrency(b.budgetAmount, masterCurrency)}</span></span>
                   </div>
                 </div>
               ))
@@ -654,7 +750,7 @@ export default function DashboardPage() {
                           isExpense ? 'text-rose-600 dark:text-rose-400' : 'text-emerald-600 dark:text-emerald-400'
                         }`}
                       >
-                        {isExpense ? '-' : '+'}{formatCurrency(item.amount)}
+                        {isExpense ? '-' : '+'}{formatCurrency(item.amount, masterCurrency)}
                       </p>
                       {isExpense && (item as any).classification && (
                         <span className="text-[10px] font-semibold uppercase tracking-wider text-muted-foreground">
