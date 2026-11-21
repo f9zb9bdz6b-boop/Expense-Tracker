@@ -302,6 +302,19 @@ export interface UserSettings {
   lastBackupDate?: Timestamp;
   coffeeShopMode?: boolean;
   biometricLockEnabled?: boolean;
+  // 12 Advanced Customizable Settings
+  privacyBlurStrength?: 'light' | 'medium' | 'heavy';
+  privacyDefaultActive?: boolean;
+  motionIntensity?: 'cinematic' | 'smooth' | 'snappy' | 'reduced';
+  soundFeedbackEnabled?: boolean;
+  billingCycleStartDay?: number;
+  defaultPaymentMethodId?: string;
+  autoCategorizeHeuristics?: boolean;
+  defaultTransactionView?: 'list' | 'grouped' | 'compact';
+  smartForexAutoSync?: boolean;
+  impulseRuleHours?: number;
+  emergencyFundTargetMonths?: number;
+  quickExportFormat?: 'csv' | 'json' | 'tax-summary';
   createdAt: Timestamp;
   updatedAt: Timestamp;
 }

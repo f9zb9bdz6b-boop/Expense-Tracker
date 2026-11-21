@@ -187,9 +187,9 @@ export default function WealthPage() {
             {formatCurrency(netWorth)}
           </p>
           <div className="flex items-center gap-3 mt-2 text-xs text-muted-foreground">
-            <span className="text-emerald-600 font-semibold">+{formatCurrency(totalAssets)} assets</span>
+            <span className="text-emerald-600 font-semibold">+<span className="privacy-blur tabular-nums">{formatCurrency(totalAssets)}</span> assets</span>
             <span>·</span>
-            <span className="text-rose-600 font-semibold">-{formatCurrency(totalDebts)} debt</span>
+            <span className="text-rose-600 font-semibold">-<span className="privacy-blur tabular-nums">{formatCurrency(totalDebts)}</span> debt</span>
           </div>
         </div>
 
@@ -198,7 +198,7 @@ export default function WealthPage() {
           <div className="flex items-center justify-between">
             <span className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">FIRE Independence</span>
             <span className="bg-amber-500/15 text-amber-700 dark:text-amber-300 border border-amber-500/30 text-[10px] font-extrabold px-2 py-0.5 rounded-full flex items-center gap-1">
-              <Flame className="w-3 h-3 text-amber-500" /> {fireProgress}% Ready
+              <Flame className="w-3 h-3 text-amber-500" /> <span className="privacy-blur tabular-nums">{fireProgress}%</span> Ready
             </span>
           </div>
           <p className="text-2xl sm:text-3xl font-extrabold text-foreground mt-2 tabular-nums">
@@ -207,7 +207,7 @@ export default function WealthPage() {
           <div className="mt-2 space-y-1">
             <Progress value={fireProgress} className="h-2 rounded-full" />
             <p className="text-[11px] text-muted-foreground">
-              Based on {targetFireMultiplier}x annual necessity burn ({formatCurrency(annualSpending)}/yr)
+              Based on {targetFireMultiplier}x annual necessity burn (<span className="privacy-blur tabular-nums">{formatCurrency(annualSpending)}</span>/yr)
             </p>
           </div>
         </div>
@@ -221,16 +221,16 @@ export default function WealthPage() {
                 ? 'bg-[#7cf046]/20 text-[#0d5926] border-[#7cf046]/40'
                 : 'bg-amber-500/15 text-amber-700 border-amber-500/30'
             }`}>
-              {emergencyFundCoverageMonths} Months
+              <span className="privacy-blur tabular-nums">{emergencyFundCoverageMonths}</span> Months
             </span>
           </div>
           <p className="text-2xl sm:text-3xl font-extrabold text-foreground mt-2 tabular-nums">
             {formatCurrency(liquidCash)}
           </p>
           <div className="mt-2 text-xs text-muted-foreground flex items-center justify-between">
-            <span>6-Mo Target: {formatCurrency(emergencyFund6M)}</span>
+            <span>6-Mo Target: <span className="privacy-blur tabular-nums">{formatCurrency(emergencyFund6M)}</span></span>
             <span className={creditUtilization > 30 ? 'text-rose-600 font-bold' : 'text-emerald-600 font-semibold'}>
-              Credit Util: {creditUtilization}%
+              Credit Util: <span className="privacy-blur tabular-nums">{creditUtilization}%</span>
             </span>
           </div>
         </div>
@@ -245,7 +245,7 @@ export default function WealthPage() {
               <TrendingUp className="w-4 h-4 text-emerald-600" /> Liquid & Invested Assets
               <InfoHint text="Accounts, index funds, real estate, cash reserves, and gold bonds." />
             </CardTitle>
-            <span className="text-xs font-bold text-emerald-600 dark:text-emerald-400">
+            <span className="text-xs font-bold text-emerald-600 dark:text-emerald-400 privacy-blur tabular-nums">
               +{formatCurrency(totalAssets)}
             </span>
           </CardHeader>
@@ -356,7 +356,7 @@ export default function WealthPage() {
                 </div>
 
                 <div className="flex items-center justify-between text-xs text-muted-foreground pt-1">
-                  <span>Min Payment: {formatCurrency(debt.minimumPayment)}/mo</span>
+                  <span>Min Payment: <span className="privacy-blur tabular-nums">{formatCurrency(debt.minimumPayment)}</span>/mo</span>
                   {index === 0 && (
                     <span className="text-emerald-600 font-bold bg-[#7cf046]/20 px-2 py-0.5 rounded-md text-[10px]">
                       ⚡ FOCUS TARGET

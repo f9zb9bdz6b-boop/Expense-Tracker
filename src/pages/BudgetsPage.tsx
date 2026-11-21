@@ -240,10 +240,14 @@ export default function BudgetsPage() {
                   <div className="space-y-1.5">
                     <div className="flex justify-between items-center text-xs">
                       <span className="font-semibold text-foreground">
-                        {Math.round(pct)}% used
+                        <span className="privacy-blur tabular-nums">{Math.round(pct)}%</span> used
                       </span>
                       <span className={`font-semibold ${isExceeded ? 'text-rose-600' : 'text-muted-foreground'}`}>
-                        {isExceeded ? `Over by ${formatCurrency(spent - b.amount)}` : `Remaining: ${formatCurrency(remaining)}`}
+                        {isExceeded ? (
+                          <>Over by <span className="privacy-blur tabular-nums">{formatCurrency(spent - b.amount)}</span></>
+                        ) : (
+                          <>Remaining: <span className="privacy-blur tabular-nums">{formatCurrency(remaining)}</span></>
+                        )}
                       </span>
                     </div>
 
@@ -262,8 +266,8 @@ export default function BudgetsPage() {
                   </div>
 
                   <div className="flex justify-between text-xs text-muted-foreground pt-1 border-t">
-                    <span>Spent: <strong className="text-foreground">{formatCurrency(spent)}</strong></span>
-                    <span>Cap: <strong className="text-foreground">{formatCurrency(b.amount)}</strong></span>
+                    <span>Spent: <strong className="text-foreground privacy-blur tabular-nums">{formatCurrency(spent)}</strong></span>
+                    <span>Cap: <strong className="text-foreground privacy-blur tabular-nums">{formatCurrency(b.amount)}</strong></span>
                   </div>
 
                   {isExceeded && (

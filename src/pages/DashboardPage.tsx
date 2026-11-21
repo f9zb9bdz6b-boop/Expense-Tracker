@@ -332,7 +332,11 @@ export default function DashboardPage() {
               -{formatCurrency(displaySpending)}
             </div>
             <p className="text-[11px] text-muted-foreground mt-1">
-              {activePeriod !== 'today' ? `Today: ${formatCurrency(todaySpending)}` : `Month: ${formatCurrency(currentMonthSpending)}`}
+              {activePeriod !== 'today' ? (
+                <>Today: <span className="privacy-blur tabular-nums">{formatCurrency(todaySpending)}</span></>
+              ) : (
+                <>Month: <span className="privacy-blur tabular-nums">{formatCurrency(currentMonthSpending)}</span></>
+              )}
             </p>
           </div>
         </div>
@@ -353,9 +357,9 @@ export default function DashboardPage() {
             </div>
             <p className="text-[11px] text-muted-foreground mt-1">
               {displayIncome - displaySpending >= 0 ? (
-                <span className="text-emerald-600 font-semibold">Surplus +{formatCurrency(displayIncome - displaySpending)}</span>
+                <span className="text-emerald-600 font-semibold">Surplus +<span className="privacy-blur tabular-nums">{formatCurrency(displayIncome - displaySpending)}</span></span>
               ) : (
-                <span className="text-rose-600 font-semibold">Deficit {formatCurrency(displayIncome - displaySpending)}</span>
+                <span className="text-rose-600 font-semibold">Deficit <span className="privacy-blur tabular-nums">{formatCurrency(displayIncome - displaySpending)}</span></span>
               )}
             </p>
           </div>
@@ -395,10 +399,10 @@ export default function DashboardPage() {
             </div>
             <div className="flex justify-between text-[11px] font-medium text-muted-foreground mt-1.5">
               <span className="flex items-center gap-1 text-emerald-700 dark:text-emerald-400">
-                <span className="w-2 h-2 rounded-full bg-emerald-500 inline-block" /> 🌿 {formatCurrency(necessaryExpenses || (displaySpending ? displaySpending * 0.65 : 0))}
+                <span className="w-2 h-2 rounded-full bg-emerald-500 inline-block" /> 🌿 <span className="privacy-blur tabular-nums">{formatCurrency(necessaryExpenses || (displaySpending ? displaySpending * 0.65 : 0))}</span>
               </span>
               <span className="flex items-center gap-1 text-amber-700 dark:text-amber-400">
-                <span className="w-2 h-2 rounded-full bg-amber-500 inline-block" /> ✨ {formatCurrency(discretionaryExpenses || (displaySpending ? displaySpending * 0.35 : 0))}
+                <span className="w-2 h-2 rounded-full bg-amber-500 inline-block" /> ✨ <span className="privacy-blur tabular-nums">{formatCurrency(discretionaryExpenses || (displaySpending ? displaySpending * 0.35 : 0))}</span>
               </span>
             </div>
           </div>
@@ -458,11 +462,11 @@ export default function DashboardPage() {
                           </span>
                         </div>
                         <div className="text-right">
-                          <span className="font-bold text-foreground tabular-nums">
+                          <span className="font-bold text-foreground tabular-nums privacy-blur">
                             {formatCurrency(cat.amount)}
                           </span>
                           <span className="text-xs text-muted-foreground ml-2 font-medium">
-                            {cat.percentage.toFixed(1)}%
+                            <span className="privacy-blur tabular-nums">{cat.percentage.toFixed(1)}%</span>
                           </span>
                         </div>
                       </div>
@@ -534,8 +538,8 @@ export default function DashboardPage() {
                   </div>
                   <Progress value={Math.min(100, b.percentage)} className="h-2 rounded-full" />
                   <div className="flex justify-between text-[11px] text-muted-foreground">
-                    <span>{formatCurrency(b.spent)}</span>
-                    <span>Cap: {formatCurrency(b.budgetAmount)}</span>
+                    <span><span className="privacy-blur tabular-nums">{formatCurrency(b.spent)}</span></span>
+                    <span>Cap: <span className="privacy-blur tabular-nums">{formatCurrency(b.budgetAmount)}</span></span>
                   </div>
                 </div>
               ))

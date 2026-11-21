@@ -584,7 +584,7 @@ export default function TransactionsPage() {
                     · {group.count} {group.count === 1 ? 'item' : 'items'}
                   </span>
                 </div>
-                <span className={`text-xs font-semibold ${group.subtotal >= 0 ? 'text-emerald-600 dark:text-emerald-400' : 'text-muted-foreground'}`}>
+                <span className={`text-xs font-semibold privacy-blur tabular-nums ${group.subtotal >= 0 ? 'text-emerald-600 dark:text-emerald-400' : 'text-muted-foreground'}`}>
                   {group.subtotal > 0 ? `+${formatCurrency(group.subtotal)}` : group.subtotal < 0 ? `-${formatCurrency(Math.abs(group.subtotal))}` : '₹0.00'}
                 </span>
               </div>
@@ -705,7 +705,7 @@ export default function TransactionsPage() {
                       {/* Right: Amount & Quick Actions */}
                       <div className="flex items-center gap-3 shrink-0">
                         <div className="text-right">
-                          <span className={`text-base font-bold tabular-nums tracking-tight ${
+                          <span className={`text-base font-bold tabular-nums tracking-tight privacy-blur ${
                             isExp ? 'text-rose-600 dark:text-rose-400' : 'text-emerald-600 dark:text-emerald-400'
                           }`}>
                             {isExp ? '-' : '+'}{formatCurrency(t.amount)}
@@ -713,7 +713,7 @@ export default function TransactionsPage() {
                           {isExp && 'originalCurrency' in t && (t as any).originalCurrency && (t as any).originalAmount && (t as any).originalCurrency !== (t.currency || 'INR') && (
                             <p className="text-[10px] text-muted-foreground font-semibold flex items-center justify-end gap-1">
                               <span>💱</span>
-                              <span>
+                              <span className="privacy-blur tabular-nums">
                                 {(t as any).originalCurrency} {((t as any).originalAmount / 100).toFixed(2)}
                               </span>
                             </p>

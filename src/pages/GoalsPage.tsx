@@ -302,17 +302,19 @@ export default function GoalsPage() {
                 <CardContent className="space-y-3">
                   <div className="space-y-1.5">
                     <div className="flex justify-between items-center text-xs">
-                      <span className="font-semibold text-foreground">{Math.round(pct)}% achieved</span>
+                      <span className="font-semibold text-foreground">
+                        <span className="privacy-blur tabular-nums">{Math.round(pct)}%</span> achieved
+                      </span>
                       <span className="text-muted-foreground">
-                        {isCompleted ? 'Goal Reached!' : `Remaining: ${formatCurrency(remaining)}`}
+                        {isCompleted ? 'Goal Reached!' : <>Remaining: <span className="privacy-blur tabular-nums">{formatCurrency(remaining)}</span></>}
                       </span>
                     </div>
                     <Progress value={Math.min(100, pct)} className="h-2.5" />
                   </div>
 
                   <div className="flex justify-between items-center text-xs pt-1 border-t">
-                    <span>Saved: <strong className="text-foreground">{formatCurrency(g.currentAmount)}</strong></span>
-                    <span>Target: <strong className="text-foreground">{formatCurrency(g.targetAmount)}</strong></span>
+                    <span>Saved: <strong className="text-foreground privacy-blur tabular-nums">{formatCurrency(g.currentAmount)}</strong></span>
+                    <span>Target: <strong className="text-foreground privacy-blur tabular-nums">{formatCurrency(g.targetAmount)}</strong></span>
                   </div>
 
                   <div className="flex items-center gap-2 pt-1">
@@ -379,7 +381,7 @@ export default function GoalsPage() {
                                       {c.notes && ` • "${c.notes}"`}
                                     </p>
                                   </div>
-                                  <span className={`font-semibold shrink-0 ml-2 ${isPositive ? 'text-emerald-600' : 'text-amber-600'}`}>
+                                  <span className={`font-semibold shrink-0 ml-2 privacy-blur tabular-nums ${isPositive ? 'text-emerald-600' : 'text-amber-600'}`}>
                                     {isPositive ? '+' : ''}{formatCurrency(c.amount)}
                                   </span>
                                 </div>

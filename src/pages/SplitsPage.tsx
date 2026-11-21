@@ -205,7 +205,7 @@ export default function SplitsPage() {
             />
           </div>
           <p className="text-xs text-muted-foreground mt-0.5">
-            Total currently owed to you: <strong className="text-emerald-600 dark:text-[#7cf046]">{formatCurrency(debtSimplification.totalOwedToMe)}</strong>
+            Total currently owed to you: <strong className="text-emerald-600 dark:text-[#7cf046] privacy-blur tabular-nums">{formatCurrency(debtSimplification.totalOwedToMe)}</strong>
           </p>
         </div>
         <div className="flex items-center gap-2">
@@ -268,7 +268,7 @@ export default function SplitsPage() {
                   <div>
                     <CardTitle className="text-base font-bold text-foreground">{split.description}</CardTitle>
                     <p className="text-sm font-extrabold text-primary mt-0.5">
-                      Total: {formatCurrency(split.totalAmount)}
+                      Total: <span className="privacy-blur tabular-nums">{formatCurrency(split.totalAmount)}</span>
                     </p>
                   </div>
                   <Button
@@ -299,7 +299,7 @@ export default function SplitsPage() {
                         <div key={p.id} className="flex items-center justify-between text-xs py-1">
                           <span className="font-semibold text-foreground">{p.name} {isMe && '(Payer)'}</span>
                           <div className="flex items-center gap-2">
-                            <span className="font-extrabold text-foreground">{formatCurrency(p.shareAmount)}</span>
+                            <span className="font-extrabold text-foreground privacy-blur tabular-nums">{formatCurrency(p.shareAmount)}</span>
                             
                             {!isMe && !p.isSettled && (
                               <button
@@ -361,7 +361,7 @@ export default function SplitsPage() {
                     <p className="text-[11px] text-muted-foreground">Owes you across active splits</p>
                   </div>
                   <div className="text-right">
-                    <span className="font-extrabold text-primary text-base">{formatCurrency(amount)}</span>
+                    <span className="font-extrabold text-primary text-base privacy-blur tabular-nums">{formatCurrency(amount)}</span>
                   </div>
                 </div>
               ))}
@@ -369,7 +369,7 @@ export default function SplitsPage() {
 
             <div className="p-3 rounded-xl bg-emerald-500/10 border border-emerald-500/20 text-xs flex justify-between items-center font-bold">
               <span className="text-emerald-800 dark:text-emerald-200">Total Net Receivables</span>
-              <span className="text-emerald-800 dark:text-emerald-200 text-sm">{formatCurrency(debtSimplification.totalOwedToMe)}</span>
+              <span className="text-emerald-800 dark:text-emerald-200 text-sm privacy-blur tabular-nums">{formatCurrency(debtSimplification.totalOwedToMe)}</span>
             </div>
           </div>
           <DialogFooter>

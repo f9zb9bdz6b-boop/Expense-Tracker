@@ -24,7 +24,18 @@ export function SettingsProvider({ children }: { children: React.ReactNode }) {
       setSettings(s);
       if (s?.coffeeShopMode !== undefined) {
         setCoffeeShopMode(s.coffeeShopMode);
+      } else if (s?.privacyDefaultActive) {
+        setCoffeeShopMode(true);
       }
+
+      // Apply blur radius CSS variable based on privacyBlurStrength setting
+      const blurRadiusMap: Record<string, string> = {
+        light: '4px',
+        medium: '8px',
+        heavy: '16px',
+      };
+      const radius = blurRadiusMap[s?.privacyBlurStrength || 'medium'] || '8px';
+      document.documentElement.style.setProperty('--privacy-blur-radius', radius);
     } catch {
       // Settings may not exist yet during initial setup
       setSettings(null);

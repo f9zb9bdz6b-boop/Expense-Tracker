@@ -159,3 +159,56 @@ export function animateSuccessCheck(element: HTMLElement) {
     )
     .to(element, { scale: 1, rotation: 0, duration: 0.15, ease: 'power2.out' });
 }
+
+/**
+ * Tactile Web Audio synthesizer for pleasant micro-chimes (zero latency, zero external assets)
+ */
+export function playFeedbackChime(type: 'tap' | 'success' | 'coin' | 'toggle' = 'tap') {
+  try {
+    const AudioCtx = window.AudioContext || (window as unknown as { webkitAudioContext: typeof AudioContext }).webkitAudioContext;
+    if (!AudioCtx) return;
+    const ctx = new AudioCtx();
+    const osc = ctx.createOscillator();
+    const gain = ctx.createGain();
+
+    osc.connect(gain);
+    gain.connect(ctx.destination);
+
+    const now = ctx.currentTime;
+    if (type === 'tap') {
+      osc.type = 'sine';
+      osc.frequency.setValueAtTime(440, now);
+      osc.frequency.exponentialRampToValueAtTime(880, now + 0.05);
+      gain.gain.setValueAtTime(0.06, now);
+      gain.gain.exponentialRampToValueAtTime(0.001, now + 0.05);
+      osc.start(now);
+      osc.stop(now + 0.05);
+    } else if (type === 'success' || type === 'coin') {
+      osc.type = 'triangle';
+      osc.frequency.setValueAtTime(587.33, now); // D5
+      osc.frequency.setValueAtTime(880, now + 0.06); // A5
+      gain.gain.setValueAtTime(0.08, now);
+      gain.gain.exponentialRampToValueAtTime(0.001, now + 0.18);
+      osc.start(now);
+      osc.stop(now + 0.18);
+    } else if (type === 'toggle') {
+      osc.type = 'sine';
+      osc.frequency.setValueAtTime(320, now);
+      osc.frequency.exponentialRampToValueAtTime(480, now + 0.04);
+      gain.gain.setValueAtTime(0.04, now);
+      gain.gain.exponentialRampToValueAtTime(0.001, now + 0.04);
+      osc.start(now);
+      osc.stop(now + 0.04);
+    }
+  } catch {
+    // AudioContext blocked or not allowed by browser autoplay policy
+  }
+}
+
+/**
+ * Subtle glow ripple animation on click
+ */
+export function animateRipple(e: React.MouseEvent<HTMLElement>) {
+  const target = e.currentTarget;
+  animateSpringPress(target);
+}

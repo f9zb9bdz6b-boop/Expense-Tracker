@@ -222,7 +222,7 @@ export default function HabitsPage() {
           <div className="mt-2 space-y-1">
             <Progress value={burnRatio} className="h-2 rounded-full" />
             <p className="text-[11px] text-muted-foreground">
-              Discretionary spending cap: {formatCurrency(wantsThreshold)}/week
+              Discretionary spending cap: <span className="privacy-blur tabular-nums">{formatCurrency(wantsThreshold)}</span>/week
             </p>
           </div>
         </div>
@@ -241,7 +241,7 @@ export default function HabitsPage() {
           <div className="mt-2 space-y-1">
             <Progress value={Math.round((challenge52WeeksSaved / challenge52WeeksTarget) * 100)} className="h-2 rounded-full" />
             <p className="text-[11px] text-muted-foreground">
-              Target: {formatCurrency(challenge52WeeksTarget)}
+              Target: <span className="privacy-blur tabular-nums">{formatCurrency(challenge52WeeksTarget)}</span>
             </p>
           </div>
         </div>
@@ -271,7 +271,7 @@ export default function HabitsPage() {
               >
                 <span className="text-xs">{d.dayNum}</span>
                 <span className="text-[10px] mt-1">
-                  {d.isNoSpend ? '✓ Clean' : `-${formatCurrency(d.spent).split('.')[0]}`}
+                  {d.isNoSpend ? '✓ Clean' : <span className="privacy-blur tabular-nums">-{formatCurrency(d.spent).split('.')[0]}</span>}
                 </span>
               </div>
             ))}
@@ -303,7 +303,7 @@ export default function HabitsPage() {
                   <div>
                     <h4 className="text-sm font-semibold text-foreground">{item.name}</h4>
                     <p className="text-xs text-muted-foreground flex items-center gap-1.5 mt-0.5">
-                      <span className="font-bold text-foreground">{formatCurrency(item.amount)}</span>
+                      <span className="font-bold text-foreground privacy-blur tabular-nums">{formatCurrency(item.amount)}</span>
                       <span>·</span>
                       <span className={isUnlocked ? 'text-emerald-600 font-bold' : 'text-amber-600'}>
                         {isUnlocked ? '🔓 72h Cooldown Completed' : '⏳ Cooling off in progress'}
