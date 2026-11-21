@@ -62,7 +62,7 @@ export default function BudgetsPage() {
   });
 
   useGSAP(() => {
-    gsap.from('.motion-header', { y: 16, opacity: 0.3, duration: 0.5, ease: 'power2.out', clearProps: 'all' });
+    gsap.fromTo('.motion-header', { y: 14, opacity: 0 }, { y: 0, opacity: 1, duration: 0.4, ease: 'power2.out', clearProps: 'all' });
     gsap.from(
       '.motion-budget-card',
       { y: 20, opacity: 0.3, duration: 0.6, stagger: 0.08, ease: 'power2.out', delay: 0.06, clearProps: 'all' }
@@ -146,7 +146,7 @@ export default function BudgetsPage() {
       {/* Top Header */}
       <div className="motion-header flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div className="flex items-center gap-2">
-          <h1 className="text-2xl font-bold tracking-tight">Budget Management</h1>
+          <h1 className="text-2xl font-extrabold tracking-tight text-foreground">Budget Management</h1>
           <InfoHint
             title="Budget Management"
             description="Set and monitor overall or category-specific spending caps with real-time threshold alerts."
@@ -157,7 +157,7 @@ export default function BudgetsPage() {
             handleBtnPress(e);
             handleOpenAdd();
           }}
-          className="gap-2 shadow-sm cursor-pointer select-none"
+          className="gap-2 bg-[#7cf046] hover:bg-[#6ee33a] text-[#082b14] font-extrabold shadow-sm rounded-xl px-4 py-2 cursor-pointer select-none"
         >
           <Plus className="w-4 h-4" /> Create Budget
         </Button>

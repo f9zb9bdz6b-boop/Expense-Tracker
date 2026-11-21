@@ -145,17 +145,17 @@ export default function TransactionsPage() {
 
   useGSAP(() => {
     const ctx = gsap.context(() => {
-      gsap.from('.motion-header', { y: 16, opacity: 0.3, duration: 0.5, ease: 'power2.out', clearProps: 'all' });
+      gsap.fromTo('.motion-header', { y: 14, opacity: 0 }, { y: 0, opacity: 1, duration: 0.35, ease: 'power2.out', clearProps: 'all' });
       gsap.fromTo(
         '.motion-pulse-card',
-        { y: 26, opacity: 0 },
-        { y: 0, opacity: 1, duration: 0.82, stagger: 0.08, ease: 'power3.out', clearProps: 'all', delay: 0.08 }
+        { y: 14, opacity: 0 },
+        { y: 0, opacity: 1, duration: 0.35, stagger: 0.04, ease: 'power2.out', clearProps: 'all' }
       );
-      gsap.fromTo('.motion-controls', { y: 20, opacity: 0 }, { y: 0, opacity: 1, duration: 0.75, ease: 'power3.out', delay: 0.14, clearProps: 'all' });
+      gsap.fromTo('.motion-controls', { y: 14, opacity: 0 }, { y: 0, opacity: 1, duration: 0.35, ease: 'power2.out', clearProps: 'all' });
       gsap.fromTo(
         '.motion-row',
-        { y: 16, opacity: 0 },
-        { y: 0, opacity: 1, duration: 0.7, stagger: 0.03, ease: 'power2.out', delay: 0.18, clearProps: 'all' }
+        { y: 10, opacity: 0 },
+        { y: 0, opacity: 1, duration: 0.3, stagger: 0.02, ease: 'power2.out', clearProps: 'all' }
       );
     }, pageRef);
     return () => ctx.revert();
@@ -364,7 +364,7 @@ export default function TransactionsPage() {
                 ↓ Outflow
               </span>
             </div>
-            <p className="text-xl font-bold text-rose-600 dark:text-rose-400 mt-1 tabular-nums">
+            <p className="text-xl font-bold text-rose-600 dark:text-rose-400 mt-1 privacy-blur tabular-nums">
               -{formatCurrency(metrics.spent)}
             </p>
           </div>
@@ -381,7 +381,7 @@ export default function TransactionsPage() {
                 ↑ Inflow
               </span>
             </div>
-            <p className="text-xl font-bold text-emerald-600 dark:text-emerald-400 mt-1 tabular-nums">
+            <p className="text-xl font-bold text-emerald-600 dark:text-emerald-400 mt-1 privacy-blur tabular-nums">
               +{formatCurrency(metrics.received)}
             </p>
           </div>
@@ -398,7 +398,7 @@ export default function TransactionsPage() {
                 ⚖️ Net
               </span>
             </div>
-            <p className={`text-xl font-bold mt-1 tabular-nums ${metrics.net >= 0 ? 'text-primary' : 'text-rose-600'}`}>
+            <p className={`text-xl font-bold mt-1 privacy-blur tabular-nums ${metrics.net >= 0 ? 'text-primary' : 'text-rose-600'}`}>
               {metrics.net >= 0 ? '+' : ''}{formatCurrency(metrics.net)}
             </p>
           </div>

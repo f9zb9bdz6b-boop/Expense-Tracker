@@ -61,18 +61,18 @@ export function Header() {
       <div className="flex items-center gap-2">
         {/* Coffee Shop Privacy Mode Button */}
         <Button
-          variant={coffeeShopMode ? 'default' : 'ghost'}
+          variant="outline"
           size="sm"
           onClick={toggleCoffeeShopMode}
           title={coffeeShopMode ? 'Privacy Mode Active (Amounts Blurred)' : 'Enable Coffee Shop Privacy Mode'}
-          className={`h-8 gap-1.5 rounded-xl px-2.5 text-xs font-semibold ${
+          className={`h-8 gap-1.5 rounded-xl px-2.5 text-xs font-bold cursor-pointer select-none transition-all ${
             coffeeShopMode
-              ? 'bg-[#7cf046] text-[#082b14] hover:bg-[#6ee33a]'
-              : 'text-muted-foreground hover:text-foreground'
+              ? 'bg-[#7cf046] text-[#082b14] border-[#7cf046] hover:bg-[#6ee33a] shadow-xs'
+              : 'bg-white dark:bg-card text-foreground border-border/80 hover:bg-slate-50 dark:hover:bg-muted/60 shadow-2xs'
           }`}
         >
-          {coffeeShopMode ? <EyeOff className="h-3.5 w-3.5" /> : <Eye className="h-3.5 w-3.5" />}
-          <span className="hidden md:inline">{coffeeShopMode ? 'Privacy On' : 'Privacy'}</span>
+          {coffeeShopMode ? <EyeOff className="h-3.5 w-3.5 text-[#082b14]" /> : <Eye className="h-3.5 w-3.5 text-emerald-600" />}
+          <span className="inline">{coffeeShopMode ? 'Privacy On' : 'Privacy Mode'}</span>
         </Button>
 
         <div className="hidden sm:flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-muted/60 border border-border/60 text-xs font-semibold text-muted-foreground">

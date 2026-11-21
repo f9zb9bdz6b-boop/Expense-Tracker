@@ -55,7 +55,7 @@ export default function HabitsPage() {
 
   useGSAP(() => {
     const ctx = gsap.context(() => {
-      gsap.from('.motion-header', { y: 16, opacity: 0.3, duration: 0.5, ease: 'power2.out', clearProps: 'all' });
+      gsap.fromTo('.motion-header', { y: 14, opacity: 0 }, { y: 0, opacity: 1, duration: 0.4, ease: 'power2.out', clearProps: 'all' });
       gsap.fromTo('.motion-kpi', { y: 26, opacity: 0 }, { y: 0, opacity: 1, duration: 0.82, stagger: 0.08, ease: 'power3.out', delay: 0.08, clearProps: 'all' });
       gsap.fromTo('.motion-card', { y: 26, opacity: 0 }, { y: 0, opacity: 1, duration: 0.82, stagger: 0.08, ease: 'power3.out', delay: 0.12, clearProps: 'all' });
     }, pageRef);
@@ -171,7 +171,7 @@ export default function HabitsPage() {
       <div className="motion-header flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div className="flex items-center gap-2">
           <Trophy className="w-6 h-6 text-[#7cf046]" />
-          <h1 className="text-2xl font-bold tracking-tight text-foreground">Habits, Challenges & Wrapped</h1>
+          <h1 className="text-2xl font-extrabold tracking-tight text-foreground">Habits, Challenges & Wrapped</h1>
           <InfoHint
             title="Gamified Financial Habits"
             description="Track your 0-100 Financial Vitality index, maintain No-Spend streaks, cool off impulse buys for 72 hours, and achieve milestone badges."

@@ -204,7 +204,10 @@ dialog[open] {
 .coffee-shop-mode .recharts-text,
 .coffee-shop-mode .recharts-cartesian-axis-tick-value,
 .coffee-shop-mode .recharts-tooltip-item-value,
-.coffee-shop-mode .recharts-default-tooltip {
+.coffee-shop-mode .recharts-default-tooltip,
+.coffee-shop-mode .recharts-wrapper,
+.coffee-shop-mode .recharts-surface,
+.coffee-shop-mode .recharts-responsive-container {
   filter: blur(var(--privacy-blur-radius, 8px)) !important;
   user-select: none;
   transition: filter 0.2s ease-in-out;
@@ -215,6 +218,13 @@ dialog[open] {
 .coffee-shop-mode .privacy-blur:hover,
 .coffee-shop-mode [data-money]:hover,
 .coffee-shop-mode .recharts-text:hover,
-.coffee-shop-mode .recharts-default-tooltip:hover {
+.coffee-shop-mode .recharts-default-tooltip:hover,
+.coffee-shop-mode .recharts-wrapper:hover,
+.coffee-shop-mode .recharts-responsive-container:hover {
   filter: blur(0px) !important;
+}
+
+/* Ensure motion headers never get stuck at 0.3 opacity */
+.motion-header {
+  opacity: 1;
 }

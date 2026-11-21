@@ -76,7 +76,7 @@ export default function IncomePage() {
 
   useGSAP(() => {
     const ctx = gsap.context(() => {
-      gsap.from('.motion-header', { y: 16, opacity: 0.3, duration: 0.5, ease: 'power2.out', clearProps: 'all' });
+      gsap.fromTo('.motion-header', { y: 14, opacity: 0 }, { y: 0, opacity: 1, duration: 0.4, ease: 'power2.out', clearProps: 'all' });
       gsap.fromTo('.motion-hero-card', { y: 26, opacity: 0, scale: 0.98 }, { y: 0, opacity: 1, scale: 1, duration: 0.82, ease: 'power3.out', clearProps: 'all' });
       gsap.fromTo('.motion-card', { y: 26, opacity: 0 }, { y: 0, opacity: 1, duration: 0.82, stagger: 0.08, ease: 'power3.out', delay: 0.08, clearProps: 'all' });
       gsap.fromTo('.motion-row', { y: 16, opacity: 0 }, { y: 0, opacity: 1, duration: 0.7, stagger: 0.03, ease: 'power2.out', delay: 0.16, clearProps: 'all' });
@@ -171,7 +171,7 @@ export default function IncomePage() {
     <div ref={pageRef} className="space-y-6 max-w-5xl mx-auto pb-12">
       <div className="motion-header flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div className="flex items-center gap-2">
-          <h1 className="text-xl font-bold tracking-tight">Income & Inflows</h1>
+          <h1 className="text-2xl font-extrabold tracking-tight text-foreground">Income & Inflows</h1>
           <InfoHint
             title="Income & Inflows"
             description="Track salaries, freelance, investments and other cash inflows."
@@ -179,7 +179,7 @@ export default function IncomePage() {
         </div>
         <div className="motion-hero-card bg-card border border-border/80 rounded-2xl px-5 py-3 shadow-xs text-right">
           <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">Total Received</p>
-          <p className="text-2xl font-extrabold text-emerald-600 dark:text-emerald-400 tabular-nums">
+          <p className="text-2xl font-extrabold text-emerald-600 dark:text-emerald-400 privacy-blur tabular-nums">
             +{formatCurrency(totalIncome)}
           </p>
         </div>

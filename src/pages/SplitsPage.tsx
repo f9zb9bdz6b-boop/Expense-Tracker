@@ -65,7 +65,7 @@ export default function SplitsPage() {
   });
 
   useGSAP(() => {
-    gsap.from('.motion-header', { y: 16, opacity: 0.3, duration: 0.5, ease: 'power2.out', clearProps: 'all' });
+    gsap.fromTo('.motion-header', { y: 14, opacity: 0 }, { y: 0, opacity: 1, duration: 0.4, ease: 'power2.out', clearProps: 'all' });
     gsap.from('.motion-card', { y: 20, opacity: 0.3, duration: 0.6, stagger: 0.08, ease: 'power2.out', delay: 0.06, clearProps: 'all' });
   }, []);
 
@@ -226,7 +226,7 @@ export default function SplitsPage() {
               handleBtnPress(e);
               setIsDialogOpen(true);
             }}
-            className="gap-2 shadow-xs cursor-pointer rounded-xl bg-primary text-primary-foreground font-bold"
+            className="gap-2 shadow-sm cursor-pointer rounded-xl bg-[#7cf046] hover:bg-[#6ee33a] text-[#082b14] font-extrabold px-4 py-2"
           >
             <Plus className="w-4 h-4" /> New Split
           </Button>

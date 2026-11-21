@@ -48,6 +48,15 @@ export function SettingsProvider({ children }: { children: React.ReactNode }) {
     void load();
   }, [load]);
 
+  // Synchronize coffee-shop-mode class on document.documentElement for universal blur across all pages and portals
+  React.useEffect(() => {
+    if (coffeeShopMode) {
+      document.documentElement.classList.add('coffee-shop-mode');
+    } else {
+      document.documentElement.classList.remove('coffee-shop-mode');
+    }
+  }, [coffeeShopMode]);
+
   const toggleCoffeeShopMode = React.useCallback(async () => {
     setCoffeeShopMode(prev => {
       const next = !prev;

@@ -96,7 +96,7 @@ export default function CategoriesPage() {
   });
 
   useGSAP(() => {
-    gsap.from('.motion-header', { y: 16, opacity: 0.3, duration: 0.5, ease: 'power2.out', clearProps: 'all' });
+    gsap.fromTo('.motion-header', { y: 14, opacity: 0 }, { y: 0, opacity: 1, duration: 0.4, ease: 'power2.out', clearProps: 'all' });
     gsap.from('.motion-controls', { y: 14, opacity: 0.3, duration: 0.5, ease: 'power2.out', delay: 0.05, clearProps: 'all' });
     gsap.from(
       '.motion-cat-card',
@@ -241,7 +241,7 @@ export default function CategoriesPage() {
             handleBtnPress(e);
             handleOpenAdd();
           }}
-          className="gap-2 shadow-xs cursor-pointer rounded-xl bg-primary text-primary-foreground font-bold"
+          className="gap-2 shadow-sm cursor-pointer rounded-xl bg-[#7cf046] hover:bg-[#6ee33a] text-[#082b14] font-extrabold px-4 py-2"
         >
           <Plus className="w-4 h-4" /> Add Category
         </Button>

@@ -92,7 +92,7 @@ export default function AddExpensePage() {
   });
 
   useGSAP(() => {
-    gsap.from('.motion-header', { y: 16, opacity: 0.3, duration: 0.5, ease: 'power2.out', clearProps: 'all' });
+    gsap.fromTo('.motion-header', { y: 14, opacity: 0 }, { y: 0, opacity: 1, duration: 0.4, ease: 'power2.out', clearProps: 'all' });
     gsap.from('.motion-hero-amount', { y: 16, opacity: 0.3, scale: 0.98, duration: 0.55, ease: 'power2.out', clearProps: 'all' });
     gsap.from('.motion-card', { y: 20, opacity: 0.3, duration: 0.6, stagger: 0.08, ease: 'power2.out', delay: 0.05, clearProps: 'all' });
     gsap.from('.motion-category-btn', { scale: 0.92, opacity: 0.3, duration: 0.4, stagger: 0.02, ease: 'back.out(1.4)', delay: 0.1, clearProps: 'all' });
@@ -321,7 +321,7 @@ export default function AddExpensePage() {
           <Button variant="ghost" size="sm" onClick={() => navigate(-1)} className="gap-1 text-muted-foreground">
             <ArrowLeft className="w-4 h-4" /> Back
           </Button>
-          <h1 className="text-xl font-bold tracking-tight">Record Expense</h1>
+          <h1 className="text-2xl font-extrabold tracking-tight text-foreground">Record Expense</h1>
           <InfoHint
             title="Fast Expense Entry"
             description="Log an expense with multi-currency support, live FX sync, tags, and Needs vs Wants classification."

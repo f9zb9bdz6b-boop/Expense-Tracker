@@ -53,7 +53,7 @@ export default function SettingsPage() {
   });
 
   useGSAP(() => {
-    gsap.from('.motion-header', { y: 16, opacity: 0.3, duration: 0.5, ease: 'power2.out', clearProps: 'all' });
+    gsap.fromTo('.motion-header', { y: 14, opacity: 0 }, { y: 0, opacity: 1, duration: 0.4, ease: 'power2.out', clearProps: 'all' });
     gsap.from(
       '.motion-setting-card',
       { y: 20, opacity: 0.3, duration: 0.55, stagger: 0.05, ease: 'power2.out', delay: 0.06, clearProps: 'all' }

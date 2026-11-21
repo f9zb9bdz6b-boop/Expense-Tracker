@@ -51,7 +51,7 @@ export default function ReceiptsPage() {
 
   useGSAP(() => {
     const ctx = gsap.context(() => {
-      gsap.from('.motion-header', { y: 16, opacity: 0.3, duration: 0.5, ease: 'power2.out', clearProps: 'all' });
+      gsap.fromTo('.motion-header', { y: 14, opacity: 0 }, { y: 0, opacity: 1, duration: 0.4, ease: 'power2.out', clearProps: 'all' });
       gsap.fromTo('.motion-upload-card', { y: 26, opacity: 0 }, { y: 0, opacity: 1, duration: 0.82, ease: 'power3.out', delay: 0.08, clearProps: 'all' });
       gsap.fromTo('.motion-receipt-card', { y: 26, opacity: 0 }, { y: 0, opacity: 1, duration: 0.82, stagger: 0.08, ease: 'power3.out', delay: 0.12, clearProps: 'all' });
     }, pageRef);
@@ -159,7 +159,7 @@ export default function ReceiptsPage() {
       {/* Header */}
       <div className="motion-header flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div className="flex items-center gap-2">
-          <h1 className="text-2xl font-bold tracking-tight">Receipt Scanner & OCR</h1>
+          <h1 className="text-2xl font-extrabold tracking-tight text-foreground">Receipt Scanner & OCR</h1>
           <InfoHint
             title="Receipt Scanner"
             description="Scan paper receipts, extract merchant and totals with local OCR heuristics, and link images directly to expenses."
